@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+/* ============ DESIGN TOKENS ============ */
+@theme {
+  --color-beige: #c9c1b1;
+  --color-ink: #131009;
+  --color-dark: #1a120b;
+
+  --font-sans: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-anton), "Arial Black", sans-serif;
+}
+
+/* ============ BASE ============ */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-beige);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-beige);
+  }
+}
+
+/* the custom cursor takes over on precise-pointer devices */
+@media (hover: hover) and (pointer: fine) {
+  body,
+  a,
+  button {
+    cursor: none;
+  }
+}
+
+/* ============ KEYFRAMES ============ */
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes logoIn {
+  from {
+    opacity: 0;
+    transform: translateY(60px) scaleY(1.07);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1.07);
+  }
+}
+
+@keyframes wmIn {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

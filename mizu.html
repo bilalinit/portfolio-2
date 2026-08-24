@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MIZU — Move fast, build to last.</title>
+<meta name="description" content="MIZU is a digital agency. Move fast, build to last." />
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="%23c9c1b1"/><text x="32" y="47" font-family="Arial Black,Arial" font-size="40" font-weight="900" text-anchor="middle" fill="%23131009">M</text></svg>' />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<script>document.documentElement.classList.add('js');</script>
+<style>
+  /* ============ RESET / TOKENS ============ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --beige: #c9c1b1;
+    --ink:   #131009;
+    --dark:  #1a120b;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--beige);
+    color: var(--ink);
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: var(--ink); color: var(--beige); }
+
+  /* ============ CUSTOM CURSOR ============ */
+  /* outer wrapper: positioning ONLY (JS writes transform here, nothing else) */
+  .cursor-dot { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 999; }
+
+  /* inner element: visuals + transitions only (JS never touches these) */
+  .cursor-dot .dot {
+    width: 10px; height: 10px;
+    margin: -5px 0 0 -5px;
+    border-radius: 50%;
+    background: #fff;
+    mix-blend-mode: difference;
+    opacity: 0;
+    transition: transform .28s cubic-bezier(.22,.61,.36,1), opacity .2s ease;
+  }
+  .cursor-dot.is-visible .dot { opacity: 1; }
+  .cursor-dot.grow .dot { transform: scale(2.4); }
+
+  @media (hover: hover) and (pointer: fine) {
+    body, a, button { cursor: none; }
+  }
+  @media (hover: none) {
+    .cursor-dot { display: none; }
+  }
+
+  /* ============ HERO ============ */
+  .hero { padding: 20px 24px 26px; }
+
+  .hero-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 32px;
+  }
+
+  .logo {
+    font-family: "Anton", "Arial Black", sans-serif;
+    font-weight: 400;
+    font-size: clamp(76px, 10.5vw, 210px);
+    line-height: .8;
+    letter-spacing: .005em;
+    color: var(--ink);
+    text-decoration: none;
+    text-transform: uppercase;
+    transform: scaleY(1.07);
+    transform-origin: top left;
+    user-select: none;
+    flex: 0 0 auto;
+  }
+
+  .hero-right {
+    width: 50%;
+    min-width: 0;
+    align-self: stretch;
+    min-height: clamp(240px, 16.5vw, 320px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .top-row {
+    position: relative;
+    z-index: 600; /* stays above the work dropdown */
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 2vw, 36px);
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
+
+  .nav { display: flex; gap: clamp(14px, 1.7vw, 30px); }
+  .nav a {
+    position: relative;
+    font-size: 12px; font-weight: 500;
+    letter-spacing: .05em; text-transform: uppercase;
+    color: var(--ink); text-decoration: none;
+    padding: 4px 0;
+  }
+  .nav a::after {
+    content: "";
+    position: absolute; left: 0; bottom: 0;
+    width: 100%; height: 1px;
+    background: currentColor;
+    transform: scaleX(0); transform-origin: right;
+    transition: transform .38s cubic-bezier(.4,0,.2,1);
+  }
+  .nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+
+  .actions { margin-left: auto; display: flex; gap: 8px; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 34px; padding: 0 16px;
+    border: 1px solid var(--ink);
+    background: transparent; color: var(--ink);
+    font-family: inherit; font-size: 11px; font-weight: 500;
+    letter-spacing: .06em; text-transform: uppercase;
+    text-decoration: none;
+    transition: background .3s ease, color .3s ease;
+  }
+  .btn:hover { background: var(--ink); color: var(--beige); }
+  .btn-icon { width: 34px; padding: 0; }
+
+  .intro {
+    margin-top: clamp(36px, 5vw, 94px);
+    max-width: 360px;
+    font-size: 14px;
+    line-height: 1.42;
+    letter-spacing: -.005em;
+    color: #191510;
+  }
+
+  .headline {
+    margin-top: auto;
+    padding-top: 32px;
+    font-size: clamp(28px, 3.2vw, 64px);
+    font-weight: 500;
+    letter-spacing: -.035em;
+    line-height: 1.02;
+    color: var(--ink);
+  }
+
+  /* ============ WORK DROPDOWN MENU ============ */
+  .work-menu {
+    position: fixed;
+    top: 0; right: 0;
+    width: min(750px, 100%);
+    z-index: 500;
+    transform: translateY(-103%);
+    visibility: hidden;
+    transition: transform .65s cubic-bezier(.77,0,.18,1), visibility 0s linear .65s;
+  }
+  .work-menu.open {
+    transform: translateY(0);
+    visibility: visible;
+    transition: transform .65s cubic-bezier(.77,0,.18,1), visibility 0s;
+  }
+
+  /* beige category area */
+  .wm-top {
+    background: var(--beige);
+    padding: 70px 30px 20px;
+  }
+  .wm-cats {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: start;
+    column-gap: 44px;
+    row-gap: 6px;
+  }
+  .wm-cats a {
+    position: relative;
+    width: fit-content;
+    font-size: clamp(19px, 1.5vw, 28px);
+    font-weight: 500;
+    letter-spacing: -.02em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .wm-cats a::after {
+    content: "";
+    position: absolute; left: 0; bottom: -3px;
+    width: 100%; height: 1px;
+    background: currentColor;
+    transform: scaleX(0); transform-origin: right;
+    transition: transform .35s cubic-bezier(.4,0,.2,1);
+  }
+  .wm-cats a:hover::after { transform: scaleX(1); transform-origin: left; }
+  .wm-cats sup {
+    font-size: .45em;
+    line-height: 0;
+    position: relative;
+    top: -.8em;
+    margin-left: 4px;
+  }
+
+  /* folder tab */
+  .wm-tabbar { background: #fff; display: flex; }
+  .wm-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    padding: 0 32px 0 14px;
+    background: var(--beige);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 15px) 100%, 0 100%);
+    font-size: 11.5px; font-weight: 500;
+    letter-spacing: .05em; text-transform: uppercase;
+    color: var(--ink);
+  }
+  .wm-tab svg { width: 14px; height: 14px; flex: 0 0 auto; }
+
+  /* featured projects list */
+  .wm-body { background: #fff; padding: 0 14px 14px; }
+  .wm-list { border-top: 1px solid #ddd7ca; }
+  .wm-row {
+    display: grid;
+    grid-template-columns: 112px 1fr 1.35fr 76px;
+    gap: 20px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #ddd7ca;
+    text-decoration: none;
+    color: var(--ink);
+    transition: background .25s ease;
+  }
+  .wm-row:hover { background: #f4f0e7; }
+  .wm-thumb { width: 112px; height: 94px; overflow: hidden; }
+  .wm-thumb svg { display: block; width: 100%; height: 100%; }
+  .wm-name, .wm-desc, .wm-code {
+    font-size: 11.5px; font-weight: 500;
+    letter-spacing: .03em; text-transform: uppercase;
+    line-height: 1.4;
+  }
+  .wm-code { text-align: right; }
+
+  .wm-all {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    margin-top: 12px;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 11.5px; font-weight: 500;
+    letter-spacing: .05em; text-transform: uppercase;
+    transition: background .3s ease, color .3s ease;
+  }
+  .wm-all:hover { background: var(--ink); color: #fff; }
+
+  /* [WORK] brackets while the menu is open */
+  .nav a.open .lbl::before { content: "["; margin-right: .15em; }
+  .nav a.open .lbl::after  { content: "]"; margin-left: .15em; }
+
+  /* staggered entrance for menu content — keyframes always play on .open */
+  .work-menu .wm-a { opacity: 0; }
+  .work-menu:not(.open) .wm-a { transition: opacity .3s ease; } /* soft fade while closing */
+  .work-menu.open .wm-a {
+    animation: wmIn .55s cubic-bezier(.22,.61,.36,1) forwards;
+  }
+  .work-menu.open .wd1 { animation-delay: .3s; }
+  .work-menu.open .wd2 { animation-delay: .36s; }
+  .work-menu.open .wd3 { animation-delay: .42s; }
+  .work-menu.open .wd4 { animation-delay: .48s; }
+  .work-menu.open .wd5 { animation-delay: .54s; }
+  @keyframes wmIn {
+    from { opacity: 0; transform: translateY(26px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 1024px) {
+    .wm-row { grid-template-columns: 88px 1fr 70px; }
+    .wm-desc { display: none; }
+    .wm-thumb { width: 88px; height: 74px; }
+  }
+  @media (max-width: 860px) {
+    .work-menu { width: 100%; }
+    .wm-top { padding: 64px 20px 18px; }
+    .wm-cats { column-gap: 28px; }
+  }
+
+  /* ============ VIDEO BLOCK (DARK SECTION) ============ */
+  .showcase {
+    background: var(--dark);
+    padding: clamp(48px, 4vw, 76px) 0 clamp(64px, 6vw, 112px);
+  }
+
+  /* showreel fills the frame */
+  .video-block {
+    position: relative;
+    width: min(1080px, 86vw);
+    margin: 0 auto;
+    aspect-ratio: 16 / 9;
+    background: #060504;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .video-block video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ============ REVEAL ANIMATIONS ============ */
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity .9s ease, transform .9s cubic-bezier(.22,.61,.36,1);
+  }
+  .js .reveal.d1 { transition-delay: .05s; }
+  .js .reveal.d2 { transition-delay: .18s; }
+  .js .reveal.d3 { transition-delay: .32s; }
+  .js .is-loaded .reveal { opacity: 1; transform: none; }
+
+  .js .logo.reveal { transform: translateY(60px) scaleY(1.07); }
+  .js .is-loaded .logo.reveal { transform: scaleY(1.07); }
+
+  .js .video-block {
+    opacity: 0;
+    transform: translateY(48px);
+    transition: opacity 1s ease, transform 1s cubic-bezier(.22,.61,.36,1);
+  }
+  .js .video-block.in { opacity: 1; transform: none; }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1024px) {
+    .nav { gap: 18px; }
+    .nav a { font-size: 12px; }
+    .btn { height: 36px; padding: 0 14px; font-size: 11.5px; }
+    .btn-icon { width: 36px; }
+  }
+
+  @media (max-width: 860px) {
+    .hero { padding: 18px 18px 40px; }
+    .hero-inner { flex-direction: column; gap: 28px; }
+    .logo { font-size: clamp(72px, 18vw, 140px); }
+    .hero-right { width: 100%; min-height: 0; }
+    .intro { margin-top: 40px; }
+    .headline { margin-top: 56px; padding-top: 0; font-size: clamp(34px, 8.4vw, 56px); }
+  }
+</style>
+</head>
+<body>
+
+  <!-- custom cursor -->
+  <div class="cursor-dot" aria-hidden="true"><div class="dot"></div></div>
+
+  <!-- ============ WORK DROPDOWN ============ -->
+  <div class="work-menu" id="work-menu" aria-hidden="true">
+    <div class="wm-top">
+      <nav class="wm-cats" aria-label="Work categories">
+        <a href="#" class="wm-a wd1">Website<sup>7</sup></a>
+        <a href="#" class="wm-a wd2">Mobile App<sup>4</sup></a>
+        <a href="#" class="wm-a wd3">Experiential<sup>4</sup></a>
+        <a href="#" class="wm-a wd4">E-commerce<sup>3</sup></a>
+      </nav>
+    </div>
+
+    <div class="wm-tabbar">
+      <div class="wm-tab wm-a wd2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4.6l1.9 2h8.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-10Z"/>
+        </svg>
+        <span>Featured projects</span>
+      </div>
+    </div>
+
+    <div class="wm-body">
+      <div class="wm-list">
+        <a class="wm-row wm-a wd3" href="#">
+          <span class="wm-thumb" aria-hidden="true">
+            <svg viewBox="0 0 140 120" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="th-dime" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#a99f8e"/>
+                  <stop offset="1" stop-color="#57514a"/>
+                </linearGradient>
+              </defs>
+              <rect width="140" height="120" fill="url(#th-dime)"/>
+              <rect width="140" height="26" fill="#b3aa99" opacity=".5"/>
+              <circle cx="70" cy="47" r="16" fill="#3f3a34"/>
+              <path d="M40 120 C40 88 52 73 70 73 C88 73 100 88 100 120 Z" fill="#33302b"/>
+            </svg>
+          </span>
+          <span class="wm-name">Dime</span>
+          <span class="wm-desc">Modernizing an iconic streetwear brand</span>
+          <span class="wm-code">PDM-1025</span>
+        </a>
+
+        <a class="wm-row wm-a wd4" href="#">
+          <span class="wm-thumb" aria-hidden="true">
+            <svg viewBox="0 0 140 120" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="th-sop" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#9fb0a8"/>
+                  <stop offset="1" stop-color="#4a5a52"/>
+                </linearGradient>
+              </defs>
+              <rect width="140" height="120" fill="url(#th-sop)"/>
+              <g fill="#3c4a42" opacity=".85">
+                <path d="M18 120 L26 58 L34 120 Z"/>
+                <path d="M44 120 L54 40 L64 120 Z"/>
+                <path d="M76 120 L84 52 L92 120 Z"/>
+                <path d="M104 120 L114 64 L124 120 Z"/>
+              </g>
+              <rect y="86" width="140" height="34" fill="#2f3a34" opacity=".55"/>
+            </svg>
+          </span>
+          <span class="wm-name">Sopfeu</span>
+          <span class="wm-desc">Harnessing real-time data to create the ultimate prevention tool</span>
+          <span class="wm-code">PSF-0325</span>
+        </a>
+
+        <a class="wm-row wm-a wd5" href="#">
+          <span class="wm-thumb" aria-hidden="true">
+            <svg viewBox="0 0 140 120" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="th-halo" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#ff5a1f"/>
+                  <stop offset="1" stop-color="#dd3110"/>
+                </linearGradient>
+              </defs>
+              <rect width="140" height="120" fill="url(#th-halo)"/>
+              <rect x="52" y="66" width="10" height="54" rx="5" fill="#17130f" transform="rotate(24 57 66)"/>
+              <g transform="rotate(-30 78 50)">
+                <ellipse cx="78" cy="50" rx="27" ry="20" fill="#141210"/>
+                <ellipse cx="78" cy="50" rx="20" ry="13" fill="#2a241f"/>
+                <path d="M60 45 A20 13 0 0 1 94 40" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+              </g>
+            </svg>
+          </span>
+          <span class="wm-name">Halo Dental</span>
+          <span class="wm-desc">Building trust to propel a new player in dentistry</span>
+          <span class="wm-code">PHD-0524</span>
+        </a>
+      </div>
+
+      <a class="wm-all wm-a wd5" href="#work">See all work [17]</a>
+    </div>
+  </div>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-inner">
+      <a href="#" class="logo reveal d1">Mizu</a>
+
+      <div class="hero-right">
+        <div class="top-row reveal d2">
+          <nav class="nav" aria-label="Primary">
+            <a href="#work" class="nav-work" id="work-trigger" aria-controls="work-menu" aria-expanded="false" aria-haspopup="true"><span class="lbl">Work</span></a>
+            <a href="#">About</a>
+            <a href="#">Services</a>
+            <a href="#">Careers</a>
+          </nav>
+          <div class="actions">
+            <a class="btn" href="#">Contact</a>
+            <button class="btn btn-icon" type="button" aria-label="Accessibility options">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                <circle cx="12" cy="4.4" r="2.05"/>
+                <path d="M12 7.6c-2.6 0-5.1-.46-5.1-.46l.36 1.9s2 .4 3.34.47c.06.92.02 1.94-.16 2.8-.27 1.34-1.66 4.42-1.66 4.42l1.82.78s1.28-3.06 1.4-3.34c.12.28 1.4 3.34 1.4 3.34l1.82-.78s-1.39-3.08-1.66-4.42c-.18-.86-.22-1.88-.16-2.8 1.34-.07 3.34-.47 3.34-.47l.36-1.9s-2.5.46-5.1.46Z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <p class="intro reveal d3">Some say move fast, break things. MIZU is a digital agency that believes we&rsquo;ve broken enough things already.</p>
+
+        <h1 class="headline reveal d4">Move fast, build to last.</h1>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VIDEO BLOCK ============ -->
+  <section class="showcase" id="work">
+    <div class="video-block" data-reveal-scroll>
+      <video src="showreel.mp4" autoplay muted loop playsinline></video>
+    </div>
+  </section>
+
+<script>
+(function () {
+  'use strict';
+
+  var dot  = document.querySelector('.cursor-dot');
+  var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* ---------- custom cursor (dot only) ---------- */
+  if (!fine) {
+    if (dot) dot.remove();
+  } else {
+    var tx = 0, ty = 0, dx = 0, dy = 0;
+    var started = false;
+
+    window.addEventListener('mousemove', function (e) {
+      tx = e.clientX; ty = e.clientY;
+      if (!started) {                      /* first move: snap into place, no fly-in */
+        started = true;
+        dx = tx;  dy = ty;
+        dot.classList.add('is-visible');
+      }
+    });
+
+    /* hide when the mouse leaves the window, show again when it returns */
+    document.addEventListener('mouseleave', function () {
+      dot.classList.remove('is-visible');
+    });
+    document.addEventListener('mouseenter', function () {
+      if (started) dot.classList.add('is-visible');
+    });
+
+    (function loop() {
+      dx += (tx - dx) * 0.55;  dy += (ty - dy) * 0.55;   /* dot hugs the mouse */
+      dot.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0)';
+      requestAnimationFrame(loop);
+    })();
+
+    document.querySelectorAll('a, button').forEach(function (el) {
+      el.addEventListener('mouseenter', function () { dot.classList.add('grow'); });
+      el.addEventListener('mouseleave', function () { dot.classList.remove('grow'); });
+    });
+  }
+
+  /* ---------- work dropdown ---------- */
+  var workBtn  = document.getElementById('work-trigger');
+  var workMenu = document.getElementById('work-menu');
+
+  function setWorkMenu(open) {
+    workMenu.classList.toggle('open', open);
+    workBtn.classList.toggle('open', open);
+    workBtn.setAttribute('aria-expanded', String(open));
+    workMenu.setAttribute('aria-hidden', String(!open));
+  }
+
+  if (workBtn && workMenu) {
+    workBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      setWorkMenu(!workMenu.classList.contains('open'));
+    });
+    /* click anywhere outside closes it */
+    document.addEventListener('click', function (e) {
+      if (!workMenu.classList.contains('open')) return;
+      if (workMenu.contains(e.target) || workBtn.contains(e.target)) return;
+      setWorkMenu(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') setWorkMenu(false);
+    });
+    workMenu.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () { setWorkMenu(false); });
+    });
+  }
+
+  /* ---------- load reveal ---------- */
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      document.body.classList.add('is-loaded');
+    });
+  });
+
+  /* ---------- scroll reveal ---------- */
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('[data-reveal-scroll]').forEach(function (el) { io.observe(el); });
+  } else {
+    document.querySelectorAll('[data-reveal-scroll]').forEach(function (el) { el.classList.add('in'); });
+  }
+})();
+</script>
+</body>
+</html>
