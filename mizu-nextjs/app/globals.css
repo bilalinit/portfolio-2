@@ -5,6 +5,7 @@
   --color-beige: #c9c1b1;
   --color-ink: #131009;
   --color-dark: #1a120b;
+  --color-coal: #121212;
 
   --font-sans: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-anton), "Arial Black", sans-serif;
@@ -31,8 +32,9 @@
   }
 }
 
-/* the custom cursor takes over on precise-pointer devices */
-@media (hover: hover) and (pointer: fine) {
+/* the custom cursor takes over on desktop-class devices with a fine
+   pointer (same conditions the Cursor component uses to render) */
+@media (hover: hover) and (pointer: fine) and (min-width: 1025px) {
   body,
   a,
   button {
@@ -71,5 +73,149 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* soft fade-out while the menu slides away (mirrors mizu.html's exit) */
+@keyframes wmOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* ============ SKILL-SET ENTRANCE (drift) ============
+   The section root gets .is-shown once it scrolls into view. Left
+   column elements carry .el-l, right-column ones .el-r; per-element
+   stagger comes from the --d custom property set inline. */
+.sk .el {
+  will-change: opacity, transform;
+}
+.sk .el {
+  opacity: 0;
+  transition:
+    opacity 0.7s ease,
+    transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition-delay: var(--d, 0ms);
+}
+.sk .el-l {
+  transform: translateX(-30px);
+}
+.sk .el-r {
+  transform: translateX(30px);
+}
+.sk.is-shown .el {
+  opacity: 1;
+  transform: none;
+}
+
+/* respect reduced-motion: everything simply appears */
+@media (prefers-reduced-motion: reduce) {
+  .sk .el {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ============ PRICING SECTION (ported from price.html) ============
+   Elastic easing everywhere: cubic-bezier(0.34, 1.56, 0.64, 1). */
+.pr-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px) scale(0.98);
+  transition:
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: opacity, transform;
+}
+
+.pr-panel.active {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0) scale(1);
+}
+
+/* staggered entrance for form steps */
+.pr-panel.active .pr-step {
+  animation: prStepIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+  transform: translateY(15px);
+}
+.pr-panel.active .pr-step:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.pr-panel.active .pr-step:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.pr-panel.active .pr-step:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.pr-panel.active .pr-step:nth-child(5) {
+  animation-delay: 0.2s;
+}
+
+/* staggered entrance for pricing cards */
+.pr-panel.active .pr-card {
+  animation: prCardIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+  transform: translateY(30px) scale(0.96);
+}
+.pr-panel.active .pr-card:nth-child(1) {
+  animation-delay: 0.08s;
+}
+.pr-panel.active .pr-card:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+@keyframes prStepIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes prCardIn {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* select box (chevron drawn via background SVG, like the source) */
+.pr-select {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+  background-color: #f0f0f0;
+  font-family: inherit;
+  font-size: 15px;
+  color: #666666;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pr-panel {
+    transition: none !important;
+  }
+  .pr-indicator {
+    transition: none !important;
+  }
+  .pr-panel.active .pr-step,
+  .pr-panel.active .pr-card {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

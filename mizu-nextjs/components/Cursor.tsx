@@ -2,9 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/* Custom cursor: outer wrapper is positioned by JS only,
-   the inner dot owns all visuals/transitions.
-   Only rendered on devices with a fine pointer (mouse / trackpad). */
+/* Custom cursor: outer wrapper is positioned by JS and carries
+   mix-blend-difference, so the white dot inverts against whatever is
+   beneath it (light on dark areas, dark on light areas).
+   NOTE: the blend must live on the transformed wrapper itself — a
+   transformed parent creates an isolated stacking group, which would
+   stop a blended child from seeing the page behind it.
+
+   Only rendered on desktop-class devices with a fine pointer
+   (mouse/trackpad); never on phones or tablets. */
 export default function Cursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const [enabled, setEnabled] = useState(false);
@@ -12,9 +18,17 @@ export default function Cursor() {
   const [grow, setGrow] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-      setEnabled(true);
-    }
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const desktop = window.matchMedia("(min-width: 1025px)");
+    const update = () => setEnabled(fine.matches && desktop.matches);
+
+    update();
+    fine.addEventListener("change", update);
+    desktop.addEventListener("change", update);
+    return () => {
+      fine.removeEventListener("change", update);
+      desktop.removeEventListener("change", update);
+    };
   }, []);
 
   useEffect(() => {
@@ -83,9 +97,13 @@ export default function Cursor() {
   if (!enabled) return null;
 
   return (
-    <div ref={dotRef} className="pointer-events-none fixed top-0 left-0 z-[999]" aria-hidden="true">
+    <div
+      ref={dotRef}
+      className="pointer-events-none fixed top-0 left-0 z-[999] mix-blend-difference"
+      aria-hidden="true"
+    >
       <div
-        className={`-ml-[5px] -mt-[5px] h-2.5 w-2.5 rounded-full bg-white mix-blend-difference transition-[scale,opacity] duration-[280ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
+        className={`-ml-[5px] -mt-[5px] h-2.5 w-2.5 rounded-full bg-white transition-[scale,opacity] duration-[280ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
           visible ? "opacity-100" : "opacity-0"
         } ${grow ? "scale-[2.4]" : "scale-100"}`}
       />

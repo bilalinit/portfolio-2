@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing — Elastic Animation Replica</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f0f0f0;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --text-secondary: #666666;
+            --text-muted: #aaaaaa;
+            --border: #e5e5e5;
+            --accent: #1a1a1a;
+            --pill-bg: #e8e8e8;
+            --pill-active: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 80px 24px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 80px;
+            align-items: start;
+        }
+
+        /* Left Column */
+        .left-col {
+            position: sticky;
+            top: 80px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 72px;
+            font-weight: 500;
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+            margin-bottom: 24px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        /* Tab Switcher */
+        .tab-switcher {
+            display: inline-flex;
+            background: var(--pill-bg);
+            border-radius: 100px;
+            padding: 4px;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .tab-indicator {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            height: calc(100% - 8px);
+            width: calc(50% - 4px);
+            background: var(--pill-active);
+            border-radius: 100px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            /* ELASTIC EASING: overshoots then settles */
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: transform;
+        }
+
+        .tab-btn {
+            position: relative;
+            z-index: 1;
+            padding: 10px 24px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 100px;
+            transition: color 0.3s ease;
+            user-select: none;
+        }
+
+        .tab-btn.active {
+            color: var(--text);
+        }
+
+        /* Content Area */
+        .content-wrapper {
+            position: relative;
+            min-height: 600px;
+        }
+
+        .panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px) scale(0.98);
+            /* ELASTIC CONTENT TRANSITION */
+            transition: 
+                opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: opacity, transform;
+        }
+
+        .panel.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Single Project Panel */
+        .form-card {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .form-header h2 {
+            font-size: 32px;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .form-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .form-step {
+            margin-bottom: 24px;
+            opacity: 0.4;
+            transition: opacity 0.3s ease;
+        }
+
+        .form-step.active {
+            opacity: 1;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .step-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .select-box {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            font-family: inherit;
+            font-size: 15px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+        }
+
+        /* Recurring Panel */
+        .recurring-header {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .recurring-header h2 {
+            font-size: 32px;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .recurring-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .pricing-card {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .plan-name {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .price {
+            font-size: 48px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .price span {
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+
+        .plan-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .feature-list {
+            list-style: none;
+            flex: 1;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .cta-btn {
+            width: 100%;
+            margin-top: 24px;
+            padding: 14px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .cta-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Top Nav */
+        .top-nav {
+            position: absolute;
+            top: -60px;
+            right: 0;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--text);
+            text-decoration: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background: var(--surface);
+        }
+
+        .nav-link.primary {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .lang-switch {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .lang-switch .active-lang {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        /* Staggered entrance for form steps */
+        .panel.active .form-step {
+            animation: stepIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        .panel.active .form-step:nth-child(2) { animation-delay: 0.05s; }
+        .panel.active .form-step:nth-child(3) { animation-delay: 0.10s; }
+        .panel.active .form-step:nth-child(4) { animation-delay: 0.15s; }
+        .panel.active .form-step:nth-child(5) { animation-delay: 0.20s; }
+
+        @keyframes stepIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Staggered entrance for pricing cards */
+        .panel.active .pricing-card {
+            animation: cardIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px) scale(0.96);
+        }
+
+        .panel.active .pricing-card:nth-child(1) { animation-delay: 0.08s; }
+        .panel.active .pricing-card:nth-child(2) { animation-delay: 0.16s; }
+
+        @keyframes cardIn {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            .left-col {
+                position: relative;
+                top: 0;
+            }
+            h1 {
+                font-size: 48px;
+            }
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <div class="left-col">
+            <div class="logo">/</div>
+            <h1>Simple<br>pricing</h1>
+            <p class="subtitle">
+                Most projects will be priced according to your needs, but we can still give a clear idea of timelines and budget.
+            </p>
+            <p class="subtitle">
+                For ongoing demands, we can also offer monthly engagements.
+            </p>
+        </div>
+
+        <div class="right-col">
+            <div class="top-nav">
+                <a href="#" class="nav-link">Pricing</a>
+                <a href="#" class="nav-link primary">Start a conversation</a>
+                <span class="lang-switch">FR <span class="active-lang">EN</span></span>
+            </div>
+
+            <div class="tab-switcher" id="tabSwitcher">
+                <div class="tab-indicator" id="tabIndicator"></div>
+                <button class="tab-btn active" data-tab="single">Single project</button>
+                <button class="tab-btn" data-tab="recurring">Recurring</button>
+            </div>
+
+            <div class="content-wrapper">
+                <!-- Single Project Panel -->
+                <div class="panel active" id="panel-single">
+                    <div class="form-card">
+                        <div class="form-header">
+                            <h2>Single Project</h2>
+                            <p>For clearly defined projects, with a fixed scope, timeline, and budget.</p>
+                        </div>
+
+                        <div class="form-step active">
+                            <div class="step-header">
+                                <div class="step-number">1</div>
+                                <div class="step-label">Project Type</div>
+                            </div>
+                            <select class="select-box">
+                                <option>Select project type*</option>
+                                <option>Web Development</option>
+                                <option>Web Design</option>
+                                <option>Branding</option>
+                                <option>E-commerce</option>
+                            </select>
+                        </div>
+
+                        <div class="form-step">
+                            <div class="step-header">
+                                <div class="step-number">2</div>
+                                <div class="step-label">Project Size</div>
+                            </div>
+                            <select class="select-box">
+                                <option>Select project size*</option>
+                                <option>Small (1-2 weeks)</option>
+                                <option>Medium (2-4 weeks)</option>
+                                <option>Large (1-3 months)</option>
+                                <option>Enterprise (3+ months)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-step">
+                            <div class="step-header">
+                                <div class="step-number">3</div>
+                                <div class="step-label">Project Creativity</div>
+                            </div>
+                            <select class="select-box">
+                                <option>Select project creativity*</option>
+                                <option>Standard</option>
+                                <option>High-end</option>
+                                <option>Award-winning</option>
+                            </select>
+                        </div>
+
+                        <div class="form-step">
+                            <div class="step-header">
+                                <div class="step-number">4</div>
+                                <div class="step-label">Project Timeline</div>
+                            </div>
+                            <select class="select-box">
+                                <option>Select project timeline*</option>
+                                <option>ASAP</option>
+                                <option>1-2 months</option>
+                                <option>3-6 months</option>
+                                <option>Flexible</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recurring Panel -->
+                <div class="panel" id="panel-recurring">
+                    <div class="recurring-header">
+                        <h2>Recurring collaboration</h2>
+                        <p>For ongoing needs, with flexible capacity and continuous delivery over time.</p>
+                    </div>
+
+                    <div class="pricing-grid">
+                        <div class="pricing-card">
+                            <div class="plan-name">Standard</div>
+                            <div class="price">€4,999<span>/month</span></div>
+                            <div class="plan-desc">Great for small agencies with a lighter flow of projects.</div>
+                            <ul class="feature-list">
+                                <li>Shared capacity</li>
+                                <li>One project at a time</li>
+                                <li>One expert-level developer</li>
+                                <li>Unlimited requests</li>
+                                <li>Dedicated communication channel</li>
+                            </ul>
+                            <button class="cta-btn">Start a conversation</button>
+                        </div>
+
+                        <div class="pricing-card">
+                            <div class="plan-name">Extended</div>
+                            <div class="price">€9,999<span>/month</span></div>
+                            <div class="plan-desc">Great for agencies handling multiple projects at once.</div>
+                            <ul class="feature-list">
+                                <li>Dedicated capacity</li>
+                                <li>Up to two concurrent projects</li>
+                                <li>Two expert-level developers</li>
+                                <li>Unlimited requests</li>
+                                <li>Dedicated communication channel</li>
+                            </ul>
+                            <button class="cta-btn">Start a conversation</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tabSwitcher = document.getElementById('tabSwitcher');
+        const tabIndicator = document.getElementById('tabIndicator');
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const panels = document.querySelectorAll('.panel');
+
+        tabBtns.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                const targetTab = btn.dataset.tab;
+
+                // Move indicator with elastic easing (handled by CSS transition)
+                if (index === 0) {
+                    tabIndicator.style.transform = 'translateX(0)';
+                } else {
+                    tabIndicator.style.transform = 'translateX(100%)';
+                }
+
+                // Update active states
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Switch panels
+                panels.forEach(panel => {
+                    if (panel.id === 'panel-' + targetTab) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // Optional: Add hover preview effect on form steps
+        const formSteps = document.querySelectorAll('.form-step');
+        formSteps.forEach(step => {
+            const select = step.querySelector('.select-box');
+            if (select) {
+                select.addEventListener('focus', () => {
+                    formSteps.forEach(s => s.classList.remove('active'));
+                    step.classList.add('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

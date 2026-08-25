@@ -6,6 +6,8 @@ type NavRowProps = {
   className?: string;
   menuOpen: boolean;
   onToggleMenu: () => void;
+  onWorkMouseEnter: () => void;
+  onWorkMouseLeave: () => void;
 };
 
 const links = [
@@ -19,12 +21,18 @@ const navLink =
   "relative py-1 text-[12px] font-medium tracking-[0.05em] uppercase text-ink no-underline " +
   "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-px after:bg-current " +
   "after:scale-x-0 after:origin-right after:transition-transform after:duration-[380ms] after:ease-[cubic-bezier(0.4,0,0.2,1)] " +
-  "hover:after:scale-x-100 hover:after:origin-left";
+  "hover:after:scale-x-100 hover:after:origin-left max-[1024px]:py-2";
 
-export default function NavRow({ className = "", menuOpen, onToggleMenu }: NavRowProps) {
+export default function NavRow({
+  className = "",
+  menuOpen,
+  onToggleMenu,
+  onWorkMouseEnter,
+  onWorkMouseLeave,
+}: NavRowProps) {
   return (
     <div
-      className={`relative z-[600] flex flex-wrap items-center gap-x-[clamp(16px,2vw,36px)] gap-y-3 ${className}`}
+      className={`relative z-[600] flex flex-wrap items-center gap-x-[clamp(16px,2vw,36px)] gap-y-3 max-[860px]:hidden ${className}`}
     >
       <nav className="flex gap-[clamp(14px,1.7vw,30px)] max-[1024px]:gap-[18px]" aria-label="Primary">
         <a
@@ -37,6 +45,15 @@ export default function NavRow({ className = "", menuOpen, onToggleMenu }: NavRo
           onClick={(e) => {
             e.preventDefault();
             onToggleMenu();
+          }}
+          onPointerEnter={(e) => {
+            /* hover-to-open is mouse-only: a touch tap also fires compat
+               enter events, which would open the panel and then the click
+               would immediately toggle it shut */
+            if (e.pointerType === "mouse") onWorkMouseEnter();
+          }}
+          onPointerLeave={(e) => {
+            if (e.pointerType === "mouse") onWorkMouseLeave();
           }}
         >
           <span>

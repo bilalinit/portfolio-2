@@ -29,7 +29,9 @@ components/
   NavRow.tsx            # nav links, WORK trigger, contact + a11y buttons
   WorkMenu.tsx          # the WORK dropdown panel
   Showcase.tsx          # dark section wrapper
-  VideoBlock.tsx        # showreel + scroll-in reveal
+  skills/SkillSets.tsx  # "Design skill sets" section (Rows layout, drift entrance)
+  Pricing.tsx           # pricing section (elastic tabs, ported from price.html)
+  Footer.tsx            # footer (rounded cream card, link columns, legal row)
   ProjectThumb.tsx      # SVG placeholder thumbs for featured projects
   icons.tsx             # folder + accessibility icons
 data/
