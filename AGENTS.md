@@ -65,7 +65,7 @@ mizu-nextjs/
 
 - Branches: `dev` = working branch · `main` = stable · `backup` = archive
 - Commit work on `dev` with descriptive messages; **merge `dev` → `main` only when the user asks**
-- Remote: `origin` = `github.com/bilalinit/portfolio-2` (private). Push after commits/merges
+- Remote: `origin` = `github.com/bilalinit/portfolio-2` (private). **Push only when the user explicitly asks** — never push on your own
 - Root-level `*.png` / `*.html` files are design references — commit them alongside the work they relate to
 
 ## Reference material (repo root)
