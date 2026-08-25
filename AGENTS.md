@@ -4,9 +4,12 @@ Rules and context for AI agents working in this repo. Read this before making ch
 
 ## Project
 
-**MIZU** — digital agency landing page (portfolio). Single page, section order set in `mizu-nextjs/app/page.tsx`:
+**MIZU** — digital agency site (portfolio). Built with Next.js App Router, so new pages go in `mizu-nextjs/app/<route>/page.tsx`.
 
-`Cursor → Hero (nav + work menu) → Showcase (skill sets) → Pricing → Footer`
+Current pages:
+
+- `/` — landing page (`mizu-nextjs/app/page.tsx`), section order: `Cursor → Hero (nav + work menu) → Showcase (skill sets) → Pricing → Footer`
+- More pages are planned — when adding one, reuse the existing shell (Cursor, nav via Hero, Footer) and follow the design system below
 
 ## Stack
 
