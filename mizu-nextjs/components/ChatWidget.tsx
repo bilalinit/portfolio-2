@@ -1,0 +1,475 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { DotsIcon } from "@/components/icons";
+
+/* Chat widget (home page) — the UI is unchanged (pill → panel with
+   Chat/Contact tabs, portrait, greeting from "Nami", suggestion chips,
+   chat log, dotted input row); the open/close MOTION is ported 1:1 from
+   animation_refrance_chat.html:
+
+   open  : pill shrinks into a circle → width expands into a thin bar
+           → height expands into the full panel, content cascading in
+   close : height collapses back into the bar → width collapses into
+           the circle → the circle relaxes into the pill
+
+   ONE persistent container carries the geometry transition (a swap of
+   two elements can't read as a single object morphing). Inside it, the
+   pill face and the dialog face crossfade. Pill width and panel height
+   are measured (ResizeObserver) so the morph tracks live content — the
+   same measuring pattern the pricing section uses.
+
+   The UI is backend-agnostic: every send routes through `sendToAgent`,
+   which currently returns a canned preview reply. The plan is a Python
+   service (OpenAI Agents SDK) behind /api/agent — swap the body of that
+   one function when the backend lands. */
+
+type Msg = { from: "user" | "agent"; text: string; time: string };
+type View = "greet" | "chat" | "contact";
+/* morph geometry stages: pill → circle → bar → open (close reverses) */
+type Stage = "pill" | "circle" | "bar" | "open";
+
+const ASSISTANT_NAME = "Nami";
+
+const GREETING =
+  "Hey — I'm Nami, MIZU's AI assistant. Anything catch your eye?";
+
+const SUGGESTIONS = [
+  "Where should I start?",
+  "What do you do?",
+  "I have a project",
+];
+
+/* placeholder replies until the Agents SDK backend exists */
+const PREVIEW_REPLIES = [
+  "I'm a preview for now — my real brain (an OpenAI Agents SDK backend) is still being wired in. Soon I'll walk you through projects, pricing and process.",
+  "Meanwhile: MIZU builds websites, mobile apps, brand systems and e-commerce. Move fast, build to last.",
+  "Try the WORK menu up top, or reach a human via the Contact tab — hello@mizu.studio.",
+];
+
+async function sendToAgent(_text: string): Promise<string> {
+  /* TODO: POST to the Python agent (OpenAI Agents SDK) and return its reply */
+  await new Promise((r) => setTimeout(r, 900)); /* pretend latency */
+  return PREVIEW_REPLIES[Math.floor(Math.random() * PREVIEW_REPLIES.length)];
+}
+
+const now = () =>
+  new Date()
+    .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    .toLowerCase();
+
+/* ===== morph geometry (matches the old widget's footprint) ===== */
+const PILL_H = 56; /* h-14 */
+const RADIUS_PILL = PILL_H / 2;
+const RADIUS_PANEL = 24; /* rounded-[24px] */
+const PANEL_W = "min(400px, calc(100vw - 32px))"; /* 16px gutters each side */
+/* stage holds — each next leg fires BEFORE the previous 0.4s
+   transition ends, so the morph never stops moving: the slow tail of
+   one leg overlaps the pickup of the next (CSS transitions retarget
+   smoothly from wherever they are — no snap, no pause). */
+const HOLD_CIRCLE = 340; /* pill → circle · width growth starts as the circle settles */
+const HOLD_BAR_OPEN = 280; /* circle → bar · height starts rising while width finishes its last px */
+const HOLD_BAR_CLOSE = 300; /* panel → bar · width folds in while height lands */
+const HOLD_CIRCLE_CLOSE = 330; /* bar → circle · pill restores as width closes */
+
+const chip =
+  "inline-flex min-h-[44px] items-center rounded-full px-4 text-[14px] leading-tight no-underline transition-colors duration-200";
+
+const iconBtn =
+  "inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white";
+
+export default function ChatWidget() {
+  /* morph stage machine (drives the container's width/height/radius) */
+  const [stage, setStage] = useState<Stage>("pill");
+  const [view, setView] = useState<View>("greet");
+  const [messages, setMessages] = useState<Msg[]>([]);
+  const [input, setInput] = useState("");
+  const [thinking, setThinking] = useState(false);
+
+  /* measured geometry: the pill's natural width and the panel's natural
+     height (per-view, capped by its own max-h) feed the transitions */
+  const [pillW, setPillW] = useState(208);
+  const [panelH, setPanelH] = useState(520);
+
+  /* bump whenever the panel opens so its content re-cascades */
+  const [seq, setSeq] = useState(0);
+
+  const busy = useRef(false);
+  const timers = useRef<number[]>([]);
+
+  const pillFaceRef = useRef<HTMLButtonElement>(null);
+  const panelFaceRef = useRef<HTMLElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const logRef = useRef<HTMLDivElement>(null);
+
+  const later = useCallback((fn: () => void, ms: number) => {
+    timers.current.push(window.setTimeout(fn, ms));
+  }, []);
+
+  /* never leave dangling stage timers behind */
+  useEffect(
+    () => () => {
+      timers.current.forEach((t) => clearTimeout(t));
+    },
+    []
+  );
+
+  /* track the pill face's natural width (font load can shift it) */
+  useEffect(() => {
+    const el = pillFaceRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      const w = el.offsetWidth;
+      setPillW((prev) => (prev === w ? prev : w));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  /* track the panel face's natural height (view switches + new messages) */
+  useEffect(() => {
+    const el = panelFaceRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      const h = el.offsetHeight;
+      setPanelH((prev) => (prev === h ? prev : h));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const reducedMotion = () =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* pill → circle → bar → open (reference timings; reduced motion skips
+     straight to the end state, transitions being disabled anyway) */
+  const openChat = useCallback(() => {
+    if (busy.current || stage !== "pill") return;
+    if (reducedMotion()) {
+      setSeq((s) => s + 1);
+      setStage("open");
+      return;
+    }
+    busy.current = true;
+    setStage("circle");
+    later(() => {
+      setStage("bar");
+      later(() => {
+        setSeq((s) => s + 1);
+        setStage("open");
+        busy.current = false;
+      }, HOLD_BAR_OPEN);
+    }, HOLD_CIRCLE);
+  }, [stage, later]);
+
+  /* open → bar → circle → pill */
+  const closeChat = useCallback(() => {
+    if (busy.current || stage !== "open") return;
+    if (reducedMotion()) {
+      setStage("pill");
+      return;
+    }
+    busy.current = true;
+    setStage("bar");
+    later(() => {
+      setStage("circle");
+      later(() => {
+        setStage("pill");
+        busy.current = false;
+      }, HOLD_CIRCLE_CLOSE);
+    }, HOLD_BAR_CLOSE);
+  }, [stage, later]);
+
+  /* Escape closes the panel (once it's fully open) */
+  useEffect(() => {
+    if (stage !== "open") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeChat();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [stage, closeChat]);
+
+  /* focus the input once open — mouse/keyboard users only, so mobile
+     keyboards don't jump up on their own */
+  useEffect(() => {
+    if (stage !== "open") return;
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      inputRef.current?.focus();
+    }
+  }, [stage, view]);
+
+  /* keep the log pinned to the newest message */
+  useEffect(() => {
+    const el = logRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages, thinking]);
+
+  const send = async (raw: string) => {
+    const text = raw.trim();
+    if (!text || thinking) return;
+    setMessages((m) => [...m, { from: "user", text, time: now() }]);
+    setInput("");
+    setView("chat");
+    setThinking(true);
+    const reply = await sendToAgent(text);
+    setMessages((m) => [...m, { from: "agent", text: reply, time: now() }]);
+    setThinking(false);
+  };
+
+  /* the container's geometry per stage — these are what transition */
+  const geom =
+    stage === "pill"
+      ? { width: pillW, height: PILL_H, borderRadius: RADIUS_PILL }
+      : stage === "circle"
+        ? { width: PILL_H, height: PILL_H, borderRadius: RADIUS_PILL }
+        : stage === "bar"
+          ? { width: PANEL_W, height: PILL_H, borderRadius: RADIUS_PILL }
+          : { width: PANEL_W, height: panelH, borderRadius: RADIUS_PANEL };
+
+  return (
+    /* the morph container: one element, pill and panel are faces inside it */
+    <div
+      className={`chat-morph fixed bottom-4 left-4 z-[440] ${
+        stage === "open" ? "open" : ""
+      } ${stage === "pill" ? "idle cursor-pointer" : ""}`}
+      style={geom}
+    >
+      {/* black backdrop — its own layer so idle hover grows the button
+          without scaling what's inside it */}
+      <div
+        aria-hidden="true"
+        className={`chat-bg absolute inset-0 rounded-[inherit] bg-black ${
+          stage === "open"
+            ? "shadow-[0_24px_60px_rgba(0,0,0,0.3)]"
+            : "shadow-[0_10px_30px_rgba(0,0,0,0.18)]"
+        }`}
+      />
+
+      {/* clip layer: rounds and crops the faces while they morph */}
+      <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
+      {/* ===== pill face ===== */}
+      <button
+        type="button"
+        ref={pillFaceRef}
+        onClick={openChat}
+        aria-haspopup="dialog"
+        aria-expanded={false}
+        aria-hidden={stage !== "pill"}
+        tabIndex={stage === "pill" ? 0 : -1}
+        className={`face-pill absolute left-0 top-0 flex h-14 w-max items-center gap-3 pl-5 pr-6 text-white ${
+          stage === "pill" ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      >
+        <DotsIcon className="h-7 w-7 shrink-0" />
+        <span className="whitespace-nowrap text-[14px] font-medium tracking-[-0.01em]">
+          Let&rsquo;s work together
+        </span>
+      </button>
+
+      {/* ===== panel face ===== */}
+      <section
+        ref={panelFaceRef}
+        role="dialog"
+        aria-label={`Chat with ${ASSISTANT_NAME}, MIZU's AI assistant`}
+        aria-hidden={stage !== "open"}
+        className={`face-panel absolute left-0 top-0 flex max-h-[calc(100dvh-32px)] w-[min(400px,calc(100vw-32px))] flex-col overflow-hidden text-white ${
+          stage === "open" ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      >
+        {/* keyed wrapper: re-cascades the content on every open (and on
+            view switches, which remount children as before) */}
+        <div
+          key={seq}
+          className={`flex min-h-0 flex-1 flex-col ${
+            stage === "open" ? "chat-panel-enter" : ""
+          }`}
+        >
+          {/* header: tabs (greet/contact) or back (chat), close always */}
+          <div className="relative flex shrink-0 items-center px-6 pt-4">
+            {view === "chat" ? (
+              <button
+                type="button"
+                aria-label="Back to greeting"
+                onClick={() => setView("greet")}
+                className={iconBtn}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-5 w-5" aria-hidden="true">
+                  <path d="M14.5 5.5 8 12l6.5 6.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            ) : (
+              <nav className="flex items-center gap-4 pl-1" aria-label="Chat panels">
+                <button
+                  type="button"
+                  onClick={() => setView("greet")}
+                  aria-pressed={view === "greet"}
+                  className={`py-2 text-[15px] transition-colors duration-200 ${
+                    view === "greet" ? "text-white" : "text-white/40 hover:text-white/70"
+                  }`}
+                >
+                  Chat
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setView("contact")}
+                  aria-pressed={view === "contact"}
+                  className={`py-2 text-[15px] transition-colors duration-200 ${
+                    view === "contact" ? "text-white" : "text-white/40 hover:text-white/70"
+                  }`}
+                >
+                  Contact
+                </button>
+              </nav>
+            )}
+
+            <button
+              type="button"
+              aria-label="Close chat"
+              onClick={closeChat}
+              className={`${iconBtn} absolute right-4 top-4`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-5 w-5" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+
+          {view === "greet" && (
+            <>
+              {/* portrait — no separate fill: same near-black as the panel,
+                  so the block reads as one uniform surface until a real
+                  portrait asset exists. Dots bloom outward on open. */}
+              <div className="relative h-[min(300px,38dvh)] w-full shrink-0">
+                <DotsIcon
+                  className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 text-beige/40"
+                  bloom
+                  bloomBase={350}
+                />
+              </div>
+
+              <div className="px-6 pt-4">
+                <p className="text-[14px] text-white/50">{ASSISTANT_NAME}</p>
+                <p className="mt-1 text-[19px] leading-[1.45] tracking-[-0.01em]">
+                  {GREETING}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2 px-6 pt-5">
+                {SUGGESTIONS.map((s, i) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => send(s)}
+                    className={
+                      i === 0
+                        ? `${chip} bg-beige text-ink hover:bg-white`
+                        : `${chip} bg-[#2b2b2b] text-white/60 hover:bg-[#333333] hover:text-white/90`
+                    }
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-auto flex items-center gap-3 px-6 pb-5 pt-6">
+                <DotsIcon className="h-7 w-7 shrink-0 text-white/80" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") send(input);
+                  }}
+                  placeholder="Ask me anything..."
+                  aria-label="Ask me anything"
+                  className="w-full bg-transparent text-[16px] text-white outline-none placeholder:text-white/40"
+                />
+              </div>
+            </>
+          )}
+
+          {view === "chat" && (
+            <>
+              <div
+                ref={logRef}
+                role="log"
+                aria-live="polite"
+                aria-label="Conversation"
+                className="flex-1 overflow-y-auto overscroll-contain px-6 pb-2 pt-3"
+              >
+                {messages.map((m, i) => (
+                  <div key={i} className="mb-4">
+                    <p className="text-[13px]">
+                      <span className="font-medium text-white">
+                        {m.from === "user" ? "You" : ASSISTANT_NAME}
+                      </span>{" "}
+                      <span className="text-white/40">{m.time}</span>
+                    </p>
+                    <p
+                      className={`mt-0.5 text-[15px] leading-[1.5] ${
+                        m.from === "user" ? "text-white/60" : "text-white/85"
+                      }`}
+                    >
+                      {m.text}
+                    </p>
+                  </div>
+                ))}
+
+                {thinking && (
+                  <div className="mb-4">
+                    <p className="text-[13px]">
+                      <span className="font-medium text-white">{ASSISTANT_NAME}</span>
+                      <span className="text-white/40"> is typing</span>
+                    </p>
+                    <div className="mt-1.5 flex gap-1.5">
+                      {[0, 1, 2].map((i) => (
+                        <span
+                          key={i}
+                          className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/60"
+                          style={{ animationDelay: `${i * 140}ms` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex shrink-0 items-center gap-3 px-6 pb-5 pt-2">
+                <DotsIcon className="h-7 w-7 shrink-0 text-white/80" spin={thinking} />
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") send(input);
+                  }}
+                  placeholder="Ask me anything..."
+                  aria-label="Ask me anything"
+                  className="w-full bg-transparent text-[16px] text-white outline-none placeholder:text-white/40"
+                />
+              </div>
+            </>
+          )}
+
+          {view === "contact" && (
+            <div className="px-6 pb-6 pt-4">
+              <p className="text-[13px] text-white/50">Prefer a human?</p>
+              <a
+                href="mailto:hello@mizu.studio"
+                className="relative mt-2 inline-block w-fit text-[19px] text-white no-underline after:absolute after:left-0 after:-bottom-[3px] after:h-px after:w-full after:bg-current after:origin-right after:scale-x-0 after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.4,0,0.2,1)] hover:after:origin-left hover:after:scale-x-100"
+              >
+                hello@mizu.studio
+              </a>
+              <p className="mt-3 text-[14px] leading-[1.5] text-white/60">
+                We reply within one business day.
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+      </div>
+    </div>
+  );
+}

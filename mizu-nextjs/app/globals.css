@@ -9,6 +9,7 @@
 
   --font-sans: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-anton), "Arial Black", sans-serif;
+  --font-hand: var(--font-caveat), "Segoe Script", cursive;
 }
 
 /* ============ BASE ============ */
@@ -117,6 +118,138 @@
     transition: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+}
+
+/* ============ ALL-WORK GRID ENTRANCE (rise) ============
+   Same pattern as the skill-set drift: the section root gets .is-shown
+   once it scrolls into view, per-element stagger comes from --d. */
+.aw .el {
+  will-change: opacity, transform;
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition-delay: var(--d, 0ms);
+}
+.aw.is-shown .el {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aw .el {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ============ PROJECT PAGE (/work/[slug]) ============
+   Load-in uses the shared riseIn keyframe with staggered delays;
+   under reduced motion everything simply appears. */
+@media (prefers-reduced-motion: reduce) {
+  .pp .rise {
+    animation: none !important;
+  }
+}
+
+/* ============ CHAT WIDGET (pill ⇄ panel morph) ============
+   Ported from animation_refrance_chat.html: ONE container morphs
+   through pill → circle → bar → panel (close reverses). The geometry
+   stages transition on the container; the two faces crossfade inside
+   it; panel content cascades in once the box is open. */
+
+.chat-morph {
+  transition:
+    width 0.4s cubic-bezier(0.65, 0, 0.35, 1),
+    height 0.4s cubic-bezier(0.65, 0, 0.35, 1),
+    border-radius 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: width, height;
+}
+
+/* the black backdrop is its own layer so idle hover can grow the
+   BUTTON without scaling its contents (label/dots keep their size);
+   it carries the shadow so it swaps with the stage like before */
+.chat-bg {
+  transition:
+    transform 0.3s cubic-bezier(0.33, 1, 0.68, 1),
+    box-shadow 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.chat-morph.idle:hover .chat-bg {
+  transform: scale(1.04);
+}
+
+/* face crossfades — out fast, in delayed until the box has expanded */
+.face-pill {
+  transition: opacity 0.22s ease;
+}
+.face-panel {
+  transition: opacity 0.24s ease;
+}
+.chat-morph.open .face-panel {
+  transition: opacity 0.32s ease 0.14s;
+}
+
+/* content cascade on open — delays ride just behind the box as it
+   finishes expanding: header .18s · media .26s · text .34s ·
+   chips .46s · input row .3s. Replays on every open (keyed wrapper)
+   and on view switches. */
+.chat-panel-enter > * {
+  animation: chatContentIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.chat-panel-enter > :nth-child(1) {
+  animation-delay: 0.18s;
+}
+.chat-panel-enter > :nth-child(2) {
+  animation-delay: 0.26s;
+}
+.chat-panel-enter > :nth-child(3) {
+  animation-delay: 0.34s;
+}
+.chat-panel-enter > :nth-child(4) {
+  animation-delay: 0.46s;
+}
+.chat-panel-enter > :nth-child(5) {
+  animation-delay: 0.3s;
+}
+
+/* avatar dots bloom outward from the center */
+.chat-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: chatDotIn 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes chatContentIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes chatDotIn {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* the whole widget goes static under reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .chat-morph,
+  .chat-morph * {
+    animation: none !important;
+    transition: none !important;
   }
 }
 

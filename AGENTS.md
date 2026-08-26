@@ -2,6 +2,8 @@
 
 Rules and context for AI agents working in this repo. Read this before making changes.
 
+**Prime rule: only act on explicit user instructions.** No commits, pushes, merges, or branch operations unless asked. All work happens on `dev`.
+
 ## Project
 
 **MIZU** — digital agency site (portfolio). Built with Next.js App Router, so new pages go in `mizu-nextjs/app/<route>/page.tsx`.
@@ -64,8 +66,8 @@ mizu-nextjs/
 ## Git
 
 - Branches: `dev` = working branch · `main` = stable · `backup` = archive
-- Commit work on `dev` with descriptive messages; **merge `dev` → `main` only when the user asks**
-- Remote: `origin` = `github.com/bilalinit/portfolio-2` (private). **Push only when the user explicitly asks** — never push on your own
+- **Do nothing on your own initiative: no commits, no pushes, no merges, no branch switching unless the user explicitly asks.** All work happens on `dev`
+- Remote: `origin` = `github.com/bilalinit/portfolio-2` (private)
 - Root-level `*.png` / `*.html` files are design references — commit them alongside the work they relate to
 
 ## Reference material (repo root)

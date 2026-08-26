@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Off Menu Chat Animation</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f5f5;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ===== MORPHING CHAT CONTAINER ===== */
+  .morph {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: #111111;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    z-index: 100;
+
+    /* Idle = pill */
+    width: 186px;
+    height: 46px;
+    border-radius: 23px;
+    transition:
+      width 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+      height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+      border-radius 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.22s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  .morph:hover:not(.open):not(.busy) {
+    transform: scale(1.05);
+  }
+
+  /* Stage: collapsed circle */
+  .morph.circle {
+    width: 46px;
+    height: 46px;
+    border-radius: 23px;
+    cursor: default;
+  }
+
+  /* Stage: width expanded, height still collapsed */
+  .morph.width {
+    width: 380px;
+    height: 46px;
+    border-radius: 23px;
+    cursor: default;
+  }
+
+  /* Stage: fully open panel */
+  .morph.open {
+    width: 380px;
+    height: 510px;
+    border-radius: 14px;
+    cursor: default;
+  }
+
+  /* ===== PILL FACE (idle) ===== */
+  .face-pill {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 17px;
+    opacity: 1;
+    transition: opacity 0.18s ease;
+    pointer-events: none;
+  }
+
+  .morph.circle .face-pill,
+  .morph.width .face-pill,
+  .morph.open .face-pill {
+    opacity: 0;
+  }
+
+  .dot-grid {
+    width: 20px;
+    height: 20px;
+    color: #888;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dot-grid svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .dot-grid.small {
+    width: 16px;
+    height: 16px;
+    color: #555;
+  }
+
+  .pill-label {
+    font-size: 13.5px;
+    color: #bbb;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+
+  /* ===== PANEL FACE (open) ===== */
+  .face-panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.22s ease;
+    pointer-events: none;
+  }
+
+  .morph.open .face-panel {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.28s ease 0.12s;
+  }
+
+  /* Header */
+  .p-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 17px 9px;
+    flex-shrink: 0;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.25s ease 0.14s, transform 0.25s ease 0.14s;
+  }
+
+  .morph.open .p-header {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .p-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 400;
+  }
+
+  .p-tab {
+    color: #555;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .p-tab.active {
+    color: #fff;
+  }
+
+  .p-tab-sep {
+    color: #333;
+    font-size: 10px;
+  }
+
+  .p-close {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #777;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0 2px 0;
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+
+  .p-close:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.06);
+  }
+
+  /* Body */
+  .p-body {
+    flex: 1;
+    padding: 5px 17px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  /* Avatar */
+  .p-avatar {
+    width: 100%;
+    height: 200px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #1a1a1a;
+    position: relative;
+    flex-shrink: 0;
+    opacity: 0;
+    transform: scale(0.98);
+    transition: opacity 0.3s ease 0.2s, transform 0.3s ease 0.2s;
+  }
+
+  .morph.open .p-avatar {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .av-wrap {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  .av-shirt {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 160px;
+    height: 90px;
+    background: #0a0a0a;
+    border-radius: 80px 80px 0 0;
+  }
+
+  .av-neck {
+    position: absolute;
+    bottom: 78px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 40px;
+    background: linear-gradient(to bottom, #c4956a, #a67c52);
+    border-radius: 0 0 18px 18px;
+  }
+
+  .av-face {
+    position: absolute;
+    bottom: 110px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 74px;
+    height: 90px;
+    background: linear-gradient(145deg, #e8c4a0, #c9956a);
+    border-radius: 37px 37px 40px 40px;
+    z-index: 2;
+  }
+
+  .av-eyes {
+    position: absolute;
+    top: 38px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 42px;
+    height: 7px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .av-eyes::before,
+  .av-eyes::after {
+    content: '';
+    width: 9px;
+    height: 5px;
+    background: #3d2b1f;
+    border-radius: 50%;
+    display: block;
+  }
+
+  .av-mouth {
+    position: absolute;
+    top: 62px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 9px;
+    background: #b07055;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .av-hair-back {
+    position: absolute;
+    bottom: 180px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92px;
+    height: 52px;
+    background: #1a1a1a;
+    border-radius: 46px 46px 22px 22px;
+    z-index: 1;
+  }
+
+  .av-hair-front {
+    position: absolute;
+    bottom: 180px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92px;
+    height: 34px;
+    background: #1a1a1a;
+    border-radius: 46px 46px 0 0;
+    z-index: 3;
+  }
+
+  .av-hair-front::before {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: -8px;
+    width: 30px;
+    height: 65px;
+    background: #1a1a1a;
+    border-radius: 15px;
+  }
+
+  .av-hair-front::after {
+    content: '';
+    position: absolute;
+    top: 16px;
+    right: -8px;
+    width: 30px;
+    height: 65px;
+    background: #1a1a1a;
+    border-radius: 15px;
+  }
+
+  /* Chat text */
+  .p-chat {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s ease 0.28s, transform 0.25s ease 0.28s;
+  }
+
+  .morph.open .p-chat {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .p-name {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 1px;
+  }
+
+  .p-line {
+    font-size: 14.5px;
+    line-height: 1.4;
+    color: #ddd;
+    font-weight: 400;
+  }
+
+  /* Chips */
+  .p-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 2px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s ease 0.36s, transform 0.25s ease 0.36s;
+  }
+
+  .morph.open .p-chips {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .p-chip {
+    padding: 6px 13px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.025);
+    color: #888;
+    font-size: 12.5px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .p-chip:hover {
+    background: rgba(255,255,255,0.06);
+    color: #ccc;
+    border-color: rgba(255,255,255,0.12);
+  }
+
+  /* Footer */
+  .p-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 17px;
+    height: 50px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease 0.22s;
+  }
+
+  .morph.open .p-footer {
+    opacity: 1;
+  }
+
+  .p-ftext {
+    font-size: 13.5px;
+    color: #444;
+    font-weight: 400;
+  }
+
+  /* Hint */
+  .hint {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #999;
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 1;
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+  <div class="hint">Click the pill to open/close</div>
+
+  <div class="morph" id="morph">
+    <!-- Pill face -->
+    <div class="face-pill" id="facePill">
+      <div class="dot-grid">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="4" cy="4" r="1.4" fill="currentColor"/>
+          <circle cx="8" cy="4" r="1.4" fill="currentColor"/>
+          <circle cx="12" cy="4" r="1.4" fill="currentColor"/>
+          <circle cx="16" cy="4" r="1.4" fill="currentColor"/>
+          <circle cx="20" cy="4" r="1.4" fill="currentColor"/>
+          <circle cx="4" cy="9" r="1.4" fill="currentColor"/>
+          <circle cx="8" cy="9" r="1.4" fill="currentColor"/>
+          <circle cx="12" cy="9" r="1.4" fill="currentColor"/>
+          <circle cx="16" cy="9" r="1.4" fill="currentColor"/>
+          <circle cx="20" cy="9" r="1.4" fill="currentColor"/>
+          <circle cx="4" cy="14" r="1.4" fill="currentColor"/>
+          <circle cx="8" cy="14" r="1.4" fill="currentColor"/>
+          <circle cx="12" cy="14" r="1.4" fill="currentColor"/>
+          <circle cx="16" cy="14" r="1.4" fill="currentColor"/>
+          <circle cx="20" cy="14" r="1.4" fill="currentColor"/>
+        </svg>
+      </div>
+      <span class="pill-label">Let's work together</span>
+    </div>
+
+    <!-- Panel face -->
+    <div class="face-panel" id="facePanel">
+      <div class="p-header">
+        <div class="p-tabs">
+          <span class="p-tab active">Chat</span>
+          <span class="p-tab-sep">|</span>
+          <span class="p-tab">Contact</span>
+        </div>
+        <button class="p-close" onclick="closeChat()" aria-label="Close">×</button>
+      </div>
+
+      <div class="p-body">
+        <div class="p-avatar">
+          <div class="av-wrap">
+            <div class="av-hair-back"></div>
+            <div class="av-neck"></div>
+            <div class="av-face">
+              <div class="av-eyes"></div>
+              <div class="av-mouth"></div>
+            </div>
+            <div class="av-hair-front"></div>
+            <div class="av-shirt"></div>
+          </div>
+        </div>
+
+        <div class="p-chat">
+          <div class="p-name">Remi</div>
+          <div class="p-line">Hey — I'm Remi, Off Menu's AI assistant.</div>
+          <div class="p-line">Anything catch your eye?</div>
+        </div>
+
+        <div class="p-chips">
+          <button class="p-chip">How do I start?</button>
+          <button class="p-chip">What do you do?</button>
+          <button class="p-chip">I have a project</button>
+        </div>
+      </div>
+
+      <div class="p-footer">
+        <div class="dot-grid small">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="4" cy="4" r="1.4" fill="currentColor"/>
+            <circle cx="8" cy="4" r="1.4" fill="currentColor"/>
+            <circle cx="12" cy="4" r="1.4" fill="currentColor"/>
+            <circle cx="16" cy="4" r="1.4" fill="currentColor"/>
+            <circle cx="20" cy="4" r="1.4" fill="currentColor"/>
+            <circle cx="4" cy="9" r="1.4" fill="currentColor"/>
+            <circle cx="8" cy="9" r="1.4" fill="currentColor"/>
+            <circle cx="12" cy="9" r="1.4" fill="currentColor"/>
+            <circle cx="16" cy="9" r="1.4" fill="currentColor"/>
+            <circle cx="20" cy="9" r="1.4" fill="currentColor"/>
+            <circle cx="4" cy="14" r="1.4" fill="currentColor"/>
+            <circle cx="8" cy="14" r="1.4" fill="currentColor"/>
+            <circle cx="12" cy="14" r="1.4" fill="currentColor"/>
+            <circle cx="16" cy="14" r="1.4" fill="currentColor"/>
+            <circle cx="20" cy="14" r="1.4" fill="currentColor"/>
+          </svg>
+        </div>
+        <span class="p-ftext">Ask me anything...</span>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const morph = document.getElementById('morph');
+  let isOpen = false;
+  let busy = false;
+
+  function openChat() {
+    if (busy || isOpen) return;
+    busy = true;
+    morph.classList.add('busy');
+
+    // 1. Shrink pill width to circle, text fades out
+    morph.classList.add('circle');
+
+    setTimeout(() => {
+      // 2. Expand width only (still thin height)
+      morph.classList.remove('circle');
+      morph.classList.add('width');
+
+      setTimeout(() => {
+        // 3. Expand height to reveal full panel
+        morph.classList.remove('width');
+        morph.classList.add('open');
+        isOpen = true;
+        busy = false;
+        morph.classList.remove('busy');
+      }, 380);
+    }, 320);
+  }
+
+  function closeChat() {
+    if (busy || !isOpen) return;
+    busy = true;
+    morph.classList.add('busy');
+
+    // 1. Collapse height first
+    morph.classList.remove('open');
+    morph.classList.add('width');
+
+    setTimeout(() => {
+      // 2. Collapse width to circle
+      morph.classList.remove('width');
+      morph.classList.add('circle');
+
+      setTimeout(() => {
+        // 3. Expand circle back to pill
+        morph.classList.remove('circle');
+        isOpen = false;
+        busy = false;
+        morph.classList.remove('busy');
+      }, 320);
+    }, 300);
+  }
+
+  morph.addEventListener('click', (e) => {
+    if (e.target.closest('.p-close') || e.target.closest('.p-chip')) return;
+    if (!isOpen && !busy) openChat();
+  });
+
+  // Optional auto-demo on load
+  // setTimeout(openChat, 800);
+  // setTimeout(closeChat, 3000);
+  // setTimeout(openChat, 4200);
+</script>
+
+</body>
+</html>

@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { featuredProjects } from "@/data/projects";
+import Link from "next/link";
+import { allWork, featuredProjects, totalWork, workCategories } from "@/data/projects";
 import ProjectThumb from "@/components/ProjectThumb";
 import { FolderIcon } from "@/components/icons";
+
+/* featured rows link straight to their /work/[slug] case studies */
+const slugByName = new Map(allWork.map((w) => [w.name, w.slug]));
 
 type WorkMenuProps = {
   open: boolean;
@@ -160,18 +164,19 @@ export default function WorkMenu({
             className="grid grid-cols-[auto_auto] justify-start gap-x-11 gap-y-1.5 max-[860px]:gap-x-8 max-[860px]:gap-y-2"
             aria-label="Work categories"
           >
-            <a href="#" className={`${catLink} ${item(delays[0], phase)}`} onClick={(e) => { e.preventDefault(); onClose(); }}>
-              Website<sup className="text-[0.45em] leading-[0] relative -top-[0.8em] ml-1">7</sup>
-            </a>
-            <a href="#" className={`${catLink} ${item(delays[1], phase)}`} onClick={(e) => { e.preventDefault(); onClose(); }}>
-              Mobile App<sup className="text-[0.45em] leading-[0] relative -top-[0.8em] ml-1">4</sup>
-            </a>
-            <a href="#" className={`${catLink} ${item(delays[2], phase)}`} onClick={(e) => { e.preventDefault(); onClose(); }}>
-              Experiential<sup className="text-[0.45em] leading-[0] relative -top-[0.8em] ml-1">4</sup>
-            </a>
-            <a href="#" className={`${catLink} ${item(delays[3], phase)}`} onClick={(e) => { e.preventDefault(); onClose(); }}>
-              E-commerce<sup className="text-[0.45em] leading-[0] relative -top-[0.8em] ml-1">3</sup>
-            </a>
+            {workCategories.map((cat, i) => (
+              <Link
+                key={cat.label}
+                href={`/work/category/${cat.slug}`}
+                className={`${catLink} ${item(delays[i], phase)}`}
+                onClick={onCloseAll}
+              >
+                {cat.label}
+                <sup className="text-[0.45em] leading-[0] relative -top-[0.8em] ml-1">
+                  {cat.count}
+                </sup>
+              </Link>
+            ))}
           </nav>
         </div>
 
@@ -188,36 +193,36 @@ export default function WorkMenu({
         {/* featured projects list */}
         <div className="bg-white px-3.5 pb-3.5 max-[860px]:px-5 max-[860px]:pb-5">
           <div className="border-t border-[#ddd7ca]">
-            {featuredProjects.map((project, i) => (
-              <a
-                key={project.code}
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onClose();
-                }}
-                className={`grid grid-cols-[112px_1fr_1.35fr_76px] gap-5 items-center py-3 border-b border-[#ddd7ca] no-underline text-ink transition-[background-color] duration-[250ms] hover:bg-[#f4f0e7] min-[861px]:max-[1024px]:grid-cols-[88px_1fr_70px] max-[860px]:grid-cols-[130px_1fr_auto] max-[860px]:grid-rows-[auto_1fr] max-[860px]:gap-x-4 max-[860px]:gap-y-1 ${item(delays[Math.min(i + 2, delays.length - 1)], phase)}`}
-              >
-                <span
-                  aria-hidden="true"
-                  className="w-[112px] h-[94px] overflow-hidden min-[861px]:max-[1024px]:w-[88px] min-[861px]:max-[1024px]:h-[74px] max-[860px]:row-span-2 max-[860px]:w-[130px] max-[860px]:h-[150px] [&>svg]:block [&>svg]:w-full [&>svg]:h-full"
+            {featuredProjects.map((project, i) => {
+              const slug = slugByName.get(project.name);
+              return (
+                <Link
+                  key={project.code}
+                  href={slug ? `/work/${slug}` : "#"}
+                  onClick={onCloseAll}
+                  className={`grid grid-cols-[112px_1fr_1.35fr_76px] gap-5 items-center py-3 border-b border-[#ddd7ca] no-underline text-ink transition-[background-color] duration-[250ms] hover:bg-[#f4f0e7] min-[861px]:max-[1024px]:grid-cols-[88px_1fr_70px] max-[860px]:grid-cols-[130px_1fr_auto] max-[860px]:grid-rows-[auto_1fr] max-[860px]:gap-x-4 max-[860px]:gap-y-1 ${item(delays[Math.min(i + 2, delays.length - 1)], phase)}`}
                 >
-                  <ProjectThumb kind={project.thumb} />
-                </span>
-                <span className={`${rowText} max-[860px]:col-start-2`}>{project.name}</span>
-                <span className={`${rowText} min-[861px]:max-[1024px]:hidden max-[860px]:col-start-2`}>{project.description}</span>
-                <span className={`${rowText} text-right max-[860px]:col-start-3 max-[860px]:row-start-2 max-[860px]:self-end`}>{project.code}</span>
-              </a>
-            ))}
+                  <span
+                    aria-hidden="true"
+                    className="w-[112px] h-[94px] overflow-hidden min-[861px]:max-[1024px]:w-[88px] min-[861px]:max-[1024px]:h-[74px] max-[860px]:row-span-2 max-[860px]:w-[130px] max-[860px]:h-[150px] [&>svg]:block [&>svg]:w-full [&>svg]:h-full"
+                  >
+                    <ProjectThumb kind={project.thumb} />
+                  </span>
+                  <span className={`${rowText} max-[860px]:col-start-2`}>{project.name}</span>
+                  <span className={`${rowText} min-[861px]:max-[1024px]:hidden max-[860px]:col-start-2`}>{project.description}</span>
+                  <span className={`${rowText} text-right max-[860px]:col-start-3 max-[860px]:row-start-2 max-[860px]:self-end`}>{project.code}</span>
+                </Link>
+              );
+            })}
           </div>
 
-          <a
-            href="#work"
-            onClick={onClose}
+          <Link
+            href="/work"
+            onClick={onCloseAll}
             className={`flex items-center justify-center h-10 mt-3 border border-ink text-ink no-underline text-[11.5px] font-medium tracking-[0.05em] uppercase transition-colors duration-300 hover:bg-ink hover:text-white ${item(delays[4], phase)}`}
           >
-            See all work [17]
-          </a>
+            See all work [{totalWork}]
+          </Link>
         </div>
       </div>
     </>

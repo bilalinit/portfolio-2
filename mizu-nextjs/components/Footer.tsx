@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-/* Footer — rounded cream card inset from the page edges:
+/* Footer — light-gray card with rounded top corners, inset from the page edges:
    statement heading on the left, three link columns, an underlined
    "Contact us", and a muted legal row along the bottom. */
 
@@ -10,7 +10,7 @@ const columns: { title: string; links: FooterLink[] }[] = [
   {
     title: "Explore",
     links: [
-      { label: "Work", href: "#work" },
+      { label: "Work", href: "/work" },
       { label: "Services", href: "#" },
       { label: "Process", href: "#" },
       { label: "Press kit", href: "#", arrow: true },

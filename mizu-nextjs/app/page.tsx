@@ -3,6 +3,7 @@ import Hero from "@/components/Hero";
 import Showcase from "@/components/Showcase";
 import Pricing from "@/components/Pricing";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 
 export default function Home() {
   return (
@@ -12,6 +13,7 @@ export default function Home() {
       <Showcase />
       <Pricing />
       <Footer />
+      <ChatWidget />
     </>
   );
 }
