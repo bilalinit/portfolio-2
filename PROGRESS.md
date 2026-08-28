@@ -16,11 +16,11 @@ For agent rules, hard-won bug rules, and design system details see [AGENTS.md](A
 | Work grid `/work` | ✅ Done |
 | Case studies `/work/[slug]` | ✅ Done (17 projects, static-generated; shared `showreel.mp4` as media block) |
 | Category views `/work/category/[slug]` | ✅ Done |
-| Chat widget "Nami" | 🔶 In progress — UI + morph + DotSphere modes done; agent backend stubbed |
+| Chat widget "Nami" | 🔶 In progress — UI + morph + DotSphere modes done; agent UI wired to `/api/agent`, awaiting Gemini key |
 | About / Services / Careers pages | ⬜ Not started — nav links are `#` placeholders |
 | Footer social links | ⬜ Placeholder `#` |
 | Real project media | ⬜ Placeholder SVG thumbs (`ProjectThumb.tsx`) + shared showreel |
-| Python agent backend (`/api/agent`) | ⬜ Not started — OpenAI Agents SDK planned |
+| Python agent backend (`backend/`) | 🔶 Built — FastAPI + Agents SDK on Gemini (uv); needs `GEMINI_API_KEY` in `backend/.env`; deployment (HF Spaces) later |
 
 **Branches:** `dev` working · `main` stable · `backup` archive · `chat-agent` current (chat widget work)
 **Latest commit:** `66a5497` Add work pages, all-work grid, and chat widget with morph animation
@@ -87,7 +87,11 @@ Pricing ported 1:1 from `price.html` — animations identical. Inverted cursor.
 - **UI:** greet view (portrait + suggestion chips), chat log (user/agent, typing dots), contact view
 - **Morph:** one persistent strip; pill → circle → bar → panel with deliberately overlapped legs (no pause between stages); clip-edge wipes; measurer-derived pill width
 - **DotSphere animation system (2026-08-27):** 5 modes — rest (drift + breathing), hover (mouse-only, guarded), open (calm roll + precession), thinking (agitated spin + traveling wave + white sparkle flash, fake lighting), morph (spring "inhale" with overshoot release). All channels exponentially ease toward mode targets; phases accumulate, so mode hand-offs never cut. Dots shrunk 4.6px → 3.2px.
-- **Next up:** Python agent (OpenAI Agents SDK) behind `/api/agent`; replace `sendToAgent()` stub in ChatWidget.tsx
+- **Agent backend `backend/` (2026-08-28):** uv project — FastAPI + openai-agents, single no-tools agent on Gemini via `AsyncOpenAI` + `OpenAIChatCompletionsModel` against Google's OpenAI-compatible endpoint. `POST /api/agent` takes `{message, history[]}` → `{reply}`; CORS pinned to the site origin; 503 pre-key, 502 on run failure. `sendToAgent()` now POSTs there (history rides along) with a chat fallback message on failure; `npx tsc --noEmit` green, endpoints smoke-tested, verified end-to-end through the widget with the real key. Model: default `gemini-3.6-flash` in code, but `.env` overrides to `gemini-3.5-flash-lite` — flash is only **20 req/day** on the free tier and burns out mid-testing; flash-lite has its own, larger bucket.
+- **Nami instructions v2 (2026-08-28):** front-desk persona — studio positioning + short project summaries + hard boundaries: informs but never transacts, and never narrates limitations — commercial intent gets a warm "we'd love to — hello@mizu.studio" hand-off, no "I can't start projects" meta-talk. Voice rule: always "we built / we design", third-person "MIZU..." only when directly asked what MIZU is. Frontend copy (work grid, pricing numbers) deliberately kept out — it's placeholder and being reworked.
+- **Project knowledge tool (2026-08-28):** `get_project_details(project)` function tool — full client-facing write-ups live in `backend/knowledge/*.md` (`dropsync.md`, `camera-navigator-chain.md`, distilled from the projects' READMEs/docs: what it IS, no build history); the tool loads a whole file into context on demand so the instructions stay short. Instructions carry only 2-line summaries + slugs and a "digest, don't dump" rule. Tool invocations log to the server console. New projects: drop a distilled markdown in `knowledge/`, add its slug to `PROJECT_DOCS` + the tool's Literal + a short summary in the instructions.
+- **Streaming + activity label (2026-08-28):** `POST /api/agent/stream` — SSE frames (`activity`/`delta`/`delta_reset`/`final`/`error`) off `Runner.run_streamed()`; thinking-out-loud guard sends `delta_reset` when a tool call follows streamed text. Widget consumes via `lib/agentStream.ts` (fetch + ReadableStream; labels mapped client-side: `get_project_details` → "Reading up on our work…", generating → "Thinking…"). Thinking UI: shimmer label over the bouncing dots (`.shimmer-text` in globals.css; solid-color fallback under reduced motion — transparent text + no animation would vanish). Once text flows, the loader row is replaced by a streaming bubble (`useSmoothStream` hook, 40ms ticker, reduced-motion = instant reveal); the reply commits to the log only when the reveal catches up, so streaming-bubble → message swap is invisible. Non-streaming `/api/agent` kept as fallback (widget retries it only if the stream can't be established).
+- **Next up:** scheduling tool behind /api/agent; deployment (Hugging Face Spaces) later — SSE needs `Cache-Control: no-cache` / `X-Accel-Buffering: no` (already set) and no gzip at the proxy.
 
 ---
 
@@ -97,7 +101,7 @@ Pricing ported 1:1 from `price.html` — animations identical. Inverted cursor.
 2. Real portrait for Nami (greet view uses DotsIcon bloom on near-black block)
 3. Real project thumbnails + per-project media (currently SVG placeholders + shared showreel)
 4. Footer social links (`#`)
-5. `/api/agent` backend + swap `sendToAgent`
+5. `GEMINI_API_KEY` into `backend/.env` + end-to-end chat test
 6. README.md is stale (mentions CSS Modules; app uses Tailwind v4 utilities)
 
 ---

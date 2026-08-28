@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DotsIcon } from "@/components/icons";
 import DotSphere, { type SphereMode } from "@/components/DotSphere";
+import {
+  AGENT_URL,
+  AgentStreamError,
+  streamAgentChat,
+} from "@/lib/agentStream";
 
 /* Chat widget (home page) — pill ⇄ panel morph (ported from
    animation_refrance_chat.html) built around ONE persistent strip:
@@ -29,9 +34,10 @@ import DotSphere, { type SphereMode } from "@/components/DotSphere";
    block ready for later heartbeat/thinking treatments (spins while
    thinking today).
 
-   Backend-agnostic: every send routes through `sendToAgent`, currently
-   a canned preview reply. Swap its body when the Python agent
-   (OpenAI Agents SDK) lands behind /api/agent. */
+   Every send routes through `sendToAgent` — a POST to Nami's brain: a
+   Python agent (OpenAI Agents SDK on Gemini) in backend/, served at
+   /api/agent as {reply}. History rides along so it sees the whole
+   conversation. */
 
 type Msg = { from: "user" | "agent"; text: string; time: string };
 type View = "greet" | "chat" | "contact";
@@ -52,23 +58,127 @@ const SUGGESTIONS = [
   "I have a project",
 ];
 
-/* placeholder replies until the Agents SDK backend exists */
-const PREVIEW_REPLIES = [
-  "I'm a preview for now — my real brain (an OpenAI Agents SDK backend) is still being wired in. Soon I'll walk you through projects, pricing and process.",
-  "Meanwhile: MIZU builds websites, mobile apps, brand systems and e-commerce. Move fast, build to last.",
-  "Try the WORK menu up top, or reach a human via the Contact tab — hello@mizu.studio.",
-];
+/* the widget log → the wire format both endpoints accept */
+const toHistory = (messages: Msg[]) =>
+  messages.map((m) => ({
+    role: m.from === "agent" ? ("assistant" as const) : ("user" as const),
+    content: m.text,
+  }));
 
-async function sendToAgent(_text: string): Promise<string> {
-  /* TODO: POST to the Python agent (OpenAI Agents SDK) and return its reply */
-  await new Promise((r) => setTimeout(r, 900)); /* pretend latency */
-  return PREVIEW_REPLIES[Math.floor(Math.random() * PREVIEW_REPLIES.length)];
+/* Non-streaming fallback — used only when the stream endpoint can't be
+   reached at all (e.g. an older backend behind AGENT_URL). */
+async function sendToAgent(text: string, history: Msg[]): Promise<string> {
+  const res = await fetch(`${AGENT_URL}/api/agent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: text,
+      history: toHistory(history),
+    }),
+  });
+  if (!res.ok) throw new Error(`agent HTTP ${res.status}`);
+  const data = (await res.json()) as { reply?: unknown };
+  if (typeof data.reply !== "string" || !data.reply) {
+    throw new Error("agent returned no reply");
+  }
+  return data.reply;
 }
 
 const now = () =>
   new Date()
     .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     .toLowerCase();
+
+/* ===== smooth streaming reveal =====
+   Nami's answer streams in as token deltas; this hook buffers the full text
+   and reveals it on a steady tick — a small fixed step plus ~1/50 of the
+   remaining backlog per tick, so slow streams drip calmly and bursts
+   auto-accelerate. Reduced motion reveals instantly. Must live at module
+   scope (AGENTS.md rule #2). */
+function useSmoothStream() {
+  const [revealed, setRevealed] = useState("");
+  const [hasText, setHasText] = useState(false);
+  const [isDone, setIsDone] = useState(false);
+  const fullRef = useRef("");
+  const lenRef = useRef(0);
+  const timerRef = useRef<number | null>(null);
+
+  const stop = useCallback(() => {
+    if (timerRef.current !== null) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  const tick = useCallback(() => {
+    const full = fullRef.current;
+    if (lenRef.current >= full.length) {
+      stop();
+      setIsDone(true);
+      return;
+    }
+    const step = Math.max(1, Math.ceil((full.length - lenRef.current) / 50));
+    lenRef.current = Math.min(full.length, lenRef.current + step);
+    setRevealed(full.slice(0, lenRef.current));
+  }, [stop]);
+
+  const start = useCallback(() => {
+    if (timerRef.current !== null) return;
+    timerRef.current = window.setInterval(tick, 40);
+    tick(); /* first step immediately — short replies shouldn't wait a tick */
+  }, [tick]);
+
+  const revealInstantly = useCallback(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      lenRef.current = fullRef.current.length;
+      setRevealed(fullRef.current);
+      setIsDone(true);
+      return true;
+    }
+    return false;
+  }, []);
+
+  const append = useCallback(
+    (chunk: string) => {
+      if (!chunk) return;
+      fullRef.current += chunk;
+      setHasText(true);
+      setIsDone(false);
+      if (!revealInstantly()) start();
+    },
+    [revealInstantly, start],
+  );
+
+  /* the final frame is authoritative — top the reveal up to it */
+  const setFull = useCallback(
+    (text: string) => {
+      fullRef.current = text;
+      setHasText(true);
+      if (lenRef.current > text.length) {
+        lenRef.current = text.length;
+        setRevealed(text);
+      }
+      if (!revealInstantly()) start();
+    },
+    [revealInstantly, start],
+  );
+
+  const reset = useCallback(() => {
+    stop();
+    fullRef.current = "";
+    lenRef.current = 0;
+    setRevealed("");
+    setHasText(false);
+    setIsDone(false);
+  }, [stop]);
+
+  useEffect(() => stop, [stop]);
+
+  return { revealed, hasText, isDone, append, setFull, reset };
+}
 
 /* ===== morph geometry ===== */
 const PILL_H = 56; /* h-14 — the strip's height at pill/circle */
@@ -118,6 +228,19 @@ export default function ChatWidget() {
 
   const busy = useRef(false);
   const timers = useRef<number[]>([]);
+
+  /* Nami's current activity label ("Thinking…", "Reading up on our work…"),
+     fed by the stream's activity frames; null → the render falls back */
+  const [activity, setActivity] = useState<string | null>(null);
+  /* smooth reveal of the streamed answer */
+  const smooth = useSmoothStream();
+  /* the final frame lands before the reveal finishes — the reply is only
+     committed to the log once the reveal catches up, so the swap from
+     streaming bubble to real message is invisible (same text, same style) */
+  const settledRef = useRef<string | null>(null);
+  /* timestamp captured at send time, shared by the streaming bubble and the
+     committed message */
+  const pendingTimeRef = useRef<string>("");
 
   const measureRef = useRef<HTMLSpanElement>(null);
   const panelFaceRef = useRef<HTMLElement>(null);
@@ -250,11 +373,24 @@ export default function ChatWidget() {
     }
   }, [stage, view]);
 
-  /* keep the log pinned to the newest message */
+  /* keep the log pinned to the newest message (and to the streaming reveal
+     as it grows) */
   useEffect(() => {
     const el = logRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages, thinking]);
+  }, [messages, thinking, smooth.revealed]);
+
+  /* commit the finished reply only once the reveal has dripped out fully —
+     swapping earlier would replace the visible streaming bubble mid-typing */
+  useEffect(() => {
+    if (settledRef.current === null || !smooth.isDone) return;
+    const text = settledRef.current;
+    settledRef.current = null;
+    setMessages((m) => [...m, { from: "agent", text, time: pendingTimeRef.current }]);
+    setThinking(false);
+    setActivity(null);
+    smooth.reset();
+  }, [smooth.isDone]);
 
   const send = async (raw: string) => {
     const text = raw.trim();
@@ -263,9 +399,44 @@ export default function ChatWidget() {
     setInput("");
     setView("chat");
     setThinking(true);
-    const reply = await sendToAgent(text);
-    setMessages((m) => [...m, { from: "agent", text: reply, time: now() }]);
-    setThinking(false);
+    pendingTimeRef.current = now();
+    smooth.reset();
+    try {
+      const reply = await streamAgentChat({
+        message: text,
+        history: toHistory(messages),
+        onActivity: setActivity,
+        onDelta: smooth.append,
+        onDeltaReset: smooth.reset,
+      });
+      settledRef.current = reply;
+      smooth.setFull(reply);
+    } catch (error) {
+      /* if no stream was ever established (older backend, network refused),
+         retry once without streaming; a mid-stream failure goes straight to
+         the fallback message — partial text is discarded */
+      if (error instanceof AgentStreamError && error.stage === "connect") {
+        try {
+          const reply = await sendToAgent(text, messages);
+          settledRef.current = reply;
+          smooth.setFull(reply);
+          return;
+        } catch {
+          /* fall through */
+        }
+      }
+      smooth.reset();
+      setMessages((m) => [
+        ...m,
+        {
+          from: "agent",
+          text: "Sorry — I couldn't reach my brain just now. Give it another go in a moment, or email hello@mizu.studio.",
+          time: now(),
+        },
+      ]);
+      setThinking(false);
+      setActivity(null);
+    }
   };
 
   /* ===== slot rules =====
@@ -465,11 +636,20 @@ export default function ChatWidget() {
                   </div>
                 ))}
 
-                {thinking && (
+                {/* Nami at work: a shimmering activity label over the
+                    bouncing dots while nothing has streamed yet ("Thinking…"
+                    → "Reading up on our work…" when the tool fires), then
+                    the label row collapses and the reply reveals in place,
+                    dripping out as the stream arrives */}
+                {thinking && !smooth.hasText && (
                   <div className="mb-4">
                     <p className="text-[13px]">
-                      <span className="font-medium text-white">{ASSISTANT_NAME}</span>
-                      <span className="text-white/40"> is typing</span>
+                      <span className="font-medium text-white">
+                        {ASSISTANT_NAME}
+                      </span>{" "}
+                      <span className="shimmer-text text-[13px] font-medium">
+                        {activity ?? "Thinking…"}
+                      </span>
                     </p>
                     <div className="mt-1.5 flex gap-1.5">
                       {[0, 1, 2].map((i) => (
@@ -480,6 +660,22 @@ export default function ChatWidget() {
                         />
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {thinking && smooth.hasText && (
+                  <div className="mb-4">
+                    <p className="text-[13px]">
+                      <span className="font-medium text-white">
+                        {ASSISTANT_NAME}
+                      </span>{" "}
+                      <span className="text-white/40">
+                        {pendingTimeRef.current}
+                      </span>
+                    </p>
+                    <p className="mt-0.5 min-h-6 text-[15px] leading-[1.5] text-white/85">
+                      {smooth.revealed}
+                    </p>
                   </div>
                 )}
               </div>
