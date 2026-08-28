@@ -1,19 +1,27 @@
 """Nami — MIZU's chat agent.
 
-A single Gemini agent (no tools) behind a tiny HTTP API:
+A single Gemini agent behind a tiny HTTP API:
 
     GET  /health                → {"status": "ok"}
     POST /api/agent             {message, history?} → {reply}
+    POST /api/agent/stream      same run, pushed as SSE frames
 
 `history` is the prior turn list, oldest first, roles "user"/"assistant" —
 feeding it back gives the agent the whole conversation, not just the last line.
+
+Both POST endpoints are rate limited per visitor (sliding windows, in-memory):
+5 requests/minute and 15 requests/hour. Over the limit → 429 with a
+`Retry-After` header and {"error": "rate_limited", "retryAfter": seconds}.
 
 Run:  uv run main.py     (config via .env, see .env.example)
 """
 
 import json
 import logging
+import math
 import os
+import time
+from collections import defaultdict, deque
 from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Literal
@@ -29,9 +37,9 @@ from agents import (
     set_tracing_disabled,
 )
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 
@@ -47,6 +55,8 @@ ALLOWED_ORIGINS = [
     for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
     if o.strip()
 ]
+RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "5"))
+RATE_LIMIT_PER_HOUR = int(os.getenv("RATE_LIMIT_PER_HOUR", "15"))
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("mizu-agent")
@@ -188,17 +198,87 @@ app.add_middleware(
 )
 
 
+# ---- per-visitor rate limiting ==========================================
+# Sliding windows over one shared log of request timestamps per visitor:
+# the minute and hour caps read the same deque, so a burst burns both.
+# In-memory on purpose — this is a long-lived process, and a restart
+# merely forgives limits (acceptable for a portfolio; no Redis to run).
+
+MINUTE_WINDOW = 60.0
+HOUR_WINDOW = 3600.0
+
+_rate_hits: dict[str, deque[float]] = defaultdict(deque)
+
+
+def client_ip(request: Request) -> str:
+    # Behind a proxy (HF Spaces, Vercel) the last X-Forwarded-For entry is
+    # the one our own trusted proxy appended — earlier entries are set by
+    # the client and trivially spoofable.
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[-1].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def check_rate_limit(ip: str) -> tuple[bool, float, str]:
+    """Record one request for `ip`; sliding-window caps. Returns
+    (allowed, retry_after_seconds, window_exceeded)."""
+    now = time.monotonic()
+    hits = _rate_hits[ip]
+    while hits and now - hits[0] > HOUR_WINDOW:
+        hits.popleft()
+
+    if len(hits) >= RATE_LIMIT_PER_HOUR:
+        return False, HOUR_WINDOW - (now - hits[0]), "hour"
+
+    minute_ago = now - MINUTE_WINDOW
+    per_minute = 0
+    oldest_in_minute = now
+    for stamp in reversed(hits):  # newest first
+        if stamp < minute_ago:
+            break
+        per_minute += 1
+        oldest_in_minute = stamp
+    if per_minute >= RATE_LIMIT_PER_MINUTE:
+        return False, MINUTE_WINDOW - (now - oldest_in_minute), "minute"
+
+    hits.append(now)
+    # don't let long-gone visitors accumulate forever
+    if len(_rate_hits) > 10_000:
+        for key in [k for k, v in _rate_hits.items() if not v]:
+            del _rate_hits[key]
+    return True, 0.0, ""
+
+
+def too_many_requests(retry_after: float, window: str) -> JSONResponse:
+    secs = max(1, math.ceil(retry_after))
+    friendly = f"about {max(1, secs // 60)} min" if secs >= 90 else f"{secs}s"
+    return JSONResponse(
+        status_code=429,
+        headers={"Retry-After": str(secs)},
+        content={
+            "error": "rate_limited",
+            "message": f"Too many messages — try again in {friendly}.",
+            "retryAfter": secs,
+            "window": window,
+        },
+    )
+
+
 @app.get("/health")
 async def health() -> dict:
     return {"status": "ok"}
 
 
 @app.post("/api/agent")
-async def run_agent(req: AgentRequest) -> dict:
+async def run_agent(req: AgentRequest, request: Request) -> dict:
     if not GEMINI_API_KEY:
         raise HTTPException(
             status_code=503, detail="Agent not configured: GEMINI_API_KEY is missing"
         )
+    allowed, retry_after, window = check_rate_limit(client_ip(request))
+    if not allowed:
+        return too_many_requests(retry_after, window)
 
     thread = [m.model_dump() for m in req.history]
     thread.append({"role": "user", "content": req.message})
@@ -282,11 +362,14 @@ async def stream_run(thread: list[dict]) -> AsyncIterator[str]:
 
 
 @app.post("/api/agent/stream")
-async def run_agent_stream(req: AgentRequest) -> StreamingResponse:
+async def run_agent_stream(req: AgentRequest, request: Request) -> StreamingResponse:
     if not GEMINI_API_KEY:
         raise HTTPException(
             status_code=503, detail="Agent not configured: GEMINI_API_KEY is missing"
         )
+    allowed, retry_after, window = check_rate_limit(client_ip(request))
+    if not allowed:
+        return too_many_requests(retry_after, window)
 
     thread = [m.model_dump() for m in req.history]
     thread.append({"role": "user", "content": req.message})
