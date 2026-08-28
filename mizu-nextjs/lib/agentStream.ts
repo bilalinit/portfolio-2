@@ -30,11 +30,39 @@ export function activityLabelFor(phase: string, tool?: string): string | null {
 
 export class AgentStreamError extends Error {
   stage: "connect" | "stream";
+  /* seconds until the visitor may chat again — set only when the backend
+     answered 429 (per-visitor rate limit); null for every other failure */
+  retryAfter: number | null;
 
-  constructor(stage: "connect" | "stream", message: string) {
+  constructor(
+    stage: "connect" | "stream",
+    message: string,
+    retryAfter: number | null = null,
+  ) {
     super(message);
     this.stage = stage;
+    this.retryAfter = retryAfter;
   }
+}
+
+/* Turn a 429 from either endpoint into an error carrying the server's
+   retry time (JSON body first, Retry-After header as fallback). */
+export async function rateLimitError(res: Response): Promise<AgentStreamError> {
+  let retryAfter: number | null = null;
+  try {
+    const data = (await res.json()) as { retryAfter?: unknown };
+    if (typeof data.retryAfter === "number" && data.retryAfter > 0) {
+      retryAfter = data.retryAfter;
+    }
+  } catch {
+    /* body wasn't JSON — fall back to the header */
+  }
+  if (retryAfter === null) {
+    const header = res.headers.get("retry-after");
+    const parsed = header ? Number.parseInt(header, 10) : Number.NaN;
+    retryAfter = Number.isFinite(parsed) && parsed > 0 ? parsed : 60;
+  }
+  return new AgentStreamError("connect", "Chat limit reached.", retryAfter);
 }
 
 interface StreamSession {
@@ -125,6 +153,7 @@ export async function streamAgentChat(opts: {
     throw new AgentStreamError("connect", "Could not reach the agent.");
   }
   if (!res.ok || !res.body) {
+    if (res.status === 429) throw await rateLimitError(res);
     throw new AgentStreamError("connect", `agent HTTP ${res.status}`);
   }
 

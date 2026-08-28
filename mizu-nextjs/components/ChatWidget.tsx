@@ -6,6 +6,7 @@ import DotSphere, { type SphereMode } from "@/components/DotSphere";
 import {
   AGENT_URL,
   AgentStreamError,
+  rateLimitError,
   streamAgentChat,
 } from "@/lib/agentStream";
 
@@ -76,7 +77,10 @@ async function sendToAgent(text: string, history: Msg[]): Promise<string> {
       history: toHistory(history),
     }),
   });
-  if (!res.ok) throw new Error(`agent HTTP ${res.status}`);
+  if (!res.ok) {
+    if (res.status === 429) throw await rateLimitError(res);
+    throw new Error(`agent HTTP ${res.status}`);
+  }
   const data = (await res.json()) as { reply?: unknown };
   if (typeof data.reply !== "string" || !data.reply) {
     throw new Error("agent returned no reply");
@@ -202,6 +206,10 @@ const HOLD_CIRCLE_CLOSE = 330; /* bar → circle · pill restores as width close
 const chip =
   "inline-flex min-h-[44px] items-center rounded-full px-4 text-[14px] leading-tight no-underline transition-colors duration-200";
 
+/* seconds → human gap for the rate-limit note ("42s" / "3 min") */
+const formatRetry = (s: number) =>
+  s >= 90 ? `${Math.round(s / 60)} min` : `${s}s`;
+
 const iconBtn =
   "inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white";
 
@@ -241,6 +249,22 @@ export default function ChatWidget() {
   /* timestamp captured at send time, shared by the streaming bubble and the
      committed message */
   const pendingTimeRef = useRef<string>("");
+
+  /* rate-limit cooldown: the backend said 429 → sends are blocked until the
+     retry time passes; `cooldownLeft` drives the placeholder countdown */
+  const [cooldownEnd, setCooldownEnd] = useState<number | null>(null);
+  const [cooldownLeft, setCooldownLeft] = useState(0);
+  useEffect(() => {
+    if (cooldownEnd === null) return;
+    const update = () => {
+      const left = Math.max(0, Math.ceil((cooldownEnd - Date.now()) / 1000));
+      setCooldownLeft(left);
+      if (left <= 0) setCooldownEnd(null);
+    };
+    update();
+    const timer = window.setInterval(update, 500);
+    return () => window.clearInterval(timer);
+  }, [cooldownEnd]);
 
   const measureRef = useRef<HTMLSpanElement>(null);
   const panelFaceRef = useRef<HTMLElement>(null);
@@ -394,7 +418,7 @@ export default function ChatWidget() {
 
   const send = async (raw: string) => {
     const text = raw.trim();
-    if (!text || thinking) return;
+    if (!text || thinking || cooldownLeft > 0) return;
     setMessages((m) => [...m, { from: "user", text, time: now() }]);
     setInput("");
     setView("chat");
@@ -412,10 +436,19 @@ export default function ChatWidget() {
       settledRef.current = reply;
       smooth.setFull(reply);
     } catch (error) {
-      /* if no stream was ever established (older backend, network refused),
-         retry once without streaming; a mid-stream failure goes straight to
-         the fallback message — partial text is discarded */
-      if (error instanceof AgentStreamError && error.stage === "connect") {
+      /* the backend's per-visitor rate limit → say so and block sends
+         until the retry time passes (no point letting requests fail) */
+      const retryAfter =
+        error instanceof AgentStreamError ? error.retryAfter : null;
+      /* otherwise: if no stream was ever established (older backend,
+         network refused), retry once without streaming; a mid-stream
+         failure goes straight to the fallback message — partial text is
+         discarded */
+      if (
+        retryAfter === null &&
+        error instanceof AgentStreamError &&
+        error.stage === "connect"
+      ) {
         try {
           const reply = await sendToAgent(text, messages);
           settledRef.current = reply;
@@ -425,17 +458,20 @@ export default function ChatWidget() {
           /* fall through */
         }
       }
+      /* rate-limit note and failure apology are announced like any other
+         Nami turn: dripped through the same smooth reveal and committed
+         by the settled effect (which also drops the thinking state) — a
+         pop-in bubble would break the conversation's rhythm */
+      const notice =
+        retryAfter !== null
+          ? `I need a breather — you've reached the chat limit. Try again in ${formatRetry(retryAfter)}.`
+          : "Sorry — I couldn't reach my brain just now. Give it another go in a moment, or email hello@mizu.studio.";
       smooth.reset();
-      setMessages((m) => [
-        ...m,
-        {
-          from: "agent",
-          text: "Sorry — I couldn't reach my brain just now. Give it another go in a moment, or email hello@mizu.studio.",
-          time: now(),
-        },
-      ]);
-      setThinking(false);
-      setActivity(null);
+      settledRef.current = notice;
+      smooth.setFull(notice);
+      if (retryAfter !== null) {
+        setCooldownEnd(Date.now() + retryAfter * 1000);
+      }
     }
   };
 
@@ -752,7 +788,11 @@ export default function ChatWidget() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") send(input);
               }}
-              placeholder="Ask me anything..."
+              placeholder={
+                cooldownLeft > 0
+                  ? `Rate limited — try again in ${formatRetry(cooldownLeft)}`
+                  : "Ask me anything..."
+              }
               aria-label="Ask me anything"
               className="absolute inset-0 h-full w-full bg-transparent text-[16px] text-white outline-none placeholder:text-white/40 [transition:transform_.4s_cubic-bezier(.65,0,.35,1)]"
               style={{
