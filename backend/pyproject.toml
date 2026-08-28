@@ -1,0 +1,15 @@
+[project]
+name = "mizu-agent"
+version = "0.1.0"
+description = "Nami — MIZU's chat agent (OpenAI Agents SDK on Gemini), served over HTTP"
+readme = "README.md"
+authors = [
+    { name = "bilalinit", email = "ahmedbilalyt20@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.141.1",
+    "openai-agents>=0.22.0",
+    "python-dotenv>=1.2.3",
+    "uvicorn[standard]>=0.52.4",
+]
