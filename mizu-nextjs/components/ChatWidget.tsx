@@ -2,32 +2,44 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DotsIcon } from "@/components/icons";
+import DotSphere, { type SphereMode } from "@/components/DotSphere";
 
-/* Chat widget (home page) — the UI is unchanged (pill → panel with
-   Chat/Contact tabs, portrait, greeting from "Nami", suggestion chips,
-   chat log, dotted input row); the open/close MOTION is ported 1:1 from
-   animation_refrance_chat.html:
+/* Chat widget (home page) — pill ⇄ panel morph (ported from
+   animation_refrance_chat.html) built around ONE persistent strip:
 
-   open  : pill shrinks into a circle → width expands into a thin bar
-           → height expands into the full panel, content cascading in
-   close : height collapses back into the bar → width collapses into
-           the circle → the circle relaxes into the pill
+     [ dots icon | prompt slot ]      ← never unmounts, never fades
 
-   ONE persistent container carries the geometry transition (a swap of
-   two elements can't read as a single object morphing). Inside it, the
-   pill face and the dialog face crossfade. Pill width and panel height
-   are measured (ResizeObserver) so the morph tracks live content — the
-   same measuring pattern the pricing section uses.
+   The strip is the whole pill (icon + "Let's work together") and also
+   the panel's input row (icon + "Ask me anything…" input) — same slot,
+   same icon. All text movement is done by the clip edge; the input
+   repositions only inside the circle leg, always ahead of the wall, so
+   every reveal is a pure stationary wipe:
 
-   The UI is backend-agnostic: every send routes through `sendToAgent`,
-   which currently returns a canned preview reply. The plan is a Python
-   service (OpenAI Agents SDK) behind /api/agent — swap the body of that
-   one function when the backend lands. */
+     open    label wiped away by the narrowing width · input glides to
+             rest inside the shrinking circle (never exposed) · the
+             widening bar reveals it in place — no slide at reveal time
+     close   panel folds onto its input strip · wall wipes the input
+             out during the retract · the extending pill wipes the CTA
+             back in
+
+   The resting pill ALWAYS reads "Let's work together"; its width is
+   measured from a permanent hidden measurer span (absolutely posed,
+   so flex can never squeeze it and corrupt the value). The panel face
+   reserves the strip's 56px via bottom padding. The icon is a single
+   block ready for later heartbeat/thinking treatments (spins while
+   thinking today).
+
+   Backend-agnostic: every send routes through `sendToAgent`, currently
+   a canned preview reply. Swap its body when the Python agent
+   (OpenAI Agents SDK) lands behind /api/agent. */
 
 type Msg = { from: "user" | "agent"; text: string; time: string };
 type View = "greet" | "chat" | "contact";
 /* morph geometry stages: pill → circle → bar → open (close reverses) */
 type Stage = "pill" | "circle" | "bar" | "open";
+/* the circle stage is shared by the open-shrink and the close-retract
+   legs — the slot rules need to know which motion is running */
+type Dir = "opening" | "closing" | null;
 
 const ASSISTANT_NAME = "Nami";
 
@@ -58,11 +70,16 @@ const now = () =>
     .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     .toLowerCase();
 
-/* ===== morph geometry (matches the old widget's footprint) ===== */
-const PILL_H = 56; /* h-14 */
+/* ===== morph geometry ===== */
+const PILL_H = 56; /* h-14 — the strip's height at pill/circle */
+const STRIP_H_OPEN = 72; /* hosting the live input restores the original 24/20 row rhythm */
 const RADIUS_PILL = PILL_H / 2;
 const RADIUS_PANEL = 24; /* rounded-[24px] */
-const PANEL_W = "min(400px, calc(100vw - 32px))"; /* 16px gutters each side */
+const PANEL_W = "min(400px, calc(100vw - 32px))"; /* 16px gutters */
+/* pill width = measurer span + icon 28 + gap 12 + padding 24×2 */
+const STRIP_CHROME = 88;
+/* slot start inside the container: padding 24 + icon 28 + gap 12 */
+const SLOT_X = 64;
 /* stage holds — each next leg fires BEFORE the previous 0.4s
    transition ends, so the morph never stops moving: the slow tail of
    one leg overlaps the pickup of the next (CSS transitions retarget
@@ -81,13 +98,18 @@ const iconBtn =
 export default function ChatWidget() {
   /* morph stage machine (drives the container's width/height/radius) */
   const [stage, setStage] = useState<Stage>("pill");
+  const [dir, setDir] = useState<Dir>(null);
   const [view, setView] = useState<View>("greet");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
+  /* desktop-fine-pointer only — touch taps fire compat mouse events,
+     and hover is a mouse-only effect (AGENTS.md rule #1) */
+  const [sphereHover, setSphereHover] = useState(false);
 
-  /* measured geometry: the pill's natural width and the panel's natural
-     height (per-view, capped by its own max-h) feed the transitions */
+  /* measured geometry: pill width comes from a permanent hidden
+     measurer (never squeezed → never corrupted); panel height from the
+     panel face (per-view, capped by its own max-h) */
   const [pillW, setPillW] = useState(208);
   const [panelH, setPanelH] = useState(520);
 
@@ -97,7 +119,7 @@ export default function ChatWidget() {
   const busy = useRef(false);
   const timers = useRef<number[]>([]);
 
-  const pillFaceRef = useRef<HTMLButtonElement>(null);
+  const measureRef = useRef<HTMLSpanElement>(null);
   const panelFaceRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
@@ -114,12 +136,13 @@ export default function ChatWidget() {
     []
   );
 
-  /* track the pill face's natural width (font load can shift it) */
+  /* track the measurer span (constant text, absolute → stable width;
+     picks up font-load shifts too) */
   useEffect(() => {
-    const el = pillFaceRef.current;
+    const el = measureRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(() => {
-      const w = el.offsetWidth;
+      const w = STRIP_CHROME + el.offsetWidth;
       setPillW((prev) => (prev === w ? prev : w));
     });
     ro.observe(el);
@@ -141,10 +164,11 @@ export default function ChatWidget() {
   const reducedMotion = () =>
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* pill → circle → bar → open (reference timings; reduced motion skips
+  /* pill → circle → bar → open (overlapped legs; reduced motion skips
      straight to the end state, transitions being disabled anyway) */
   const openChat = useCallback(() => {
     if (busy.current || stage !== "pill") return;
+    setDir("opening");
     if (reducedMotion()) {
       setSeq((s) => s + 1);
       setStage("open");
@@ -165,6 +189,7 @@ export default function ChatWidget() {
   /* open → bar → circle → pill */
   const closeChat = useCallback(() => {
     if (busy.current || stage !== "open") return;
+    setDir("closing");
     if (reducedMotion()) {
       setStage("pill");
       return;
@@ -188,6 +213,32 @@ export default function ChatWidget() {
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
+  }, [stage, closeChat]);
+
+  /* clicking anywhere outside the widget collapses it back into the
+     pill. Containment is recorded at POINTERDOWN — the click that
+     unmounts a button (chip → chat view, back → tabs) leaves a
+     detached node in the click's target by bubble time, which would
+     make contains() lie; pointerdown always sees the live tree */
+  const rootRef = useRef<HTMLDivElement>(null);
+  const insideRef = useRef(true);
+  useEffect(() => {
+    if (stage !== "open") return;
+
+    const onDocPointerDown = (e: PointerEvent) => {
+      const root = rootRef.current;
+      insideRef.current = !!root && root.contains(e.target as Node);
+    };
+    const onDocClick = () => {
+      if (!insideRef.current) closeChat();
+    };
+
+    document.addEventListener("pointerdown", onDocPointerDown, true);
+    document.addEventListener("click", onDocClick);
+    return () => {
+      document.removeEventListener("pointerdown", onDocPointerDown, true);
+      document.removeEventListener("click", onDocClick);
+    };
   }, [stage, closeChat]);
 
   /* focus the input once open — mouse/keyboard users only, so mobile
@@ -217,6 +268,36 @@ export default function ChatWidget() {
     setThinking(false);
   };
 
+  /* ===== slot rules =====
+     the input is parked ONLY while resting at pill — every other stage
+     it sits at translateX(0):
+       open   circle: it glides park→0 while the box shrinks; it stays
+              ahead of the wall the whole way (edge−wall = 48−40p ≥ 8),
+              so the reposition is invisible · bar: stationary at 0,
+              the widening wall alone wipes it into view
+       close  bar/circle: at 0, the wall wipes it out (the slide to
+              park only assists after the wall has done most of the work)
+     the CTA label needs direction because 'circle' is shared: it owns
+     pill + circle-on-open, and only mounts at pill on close */
+  const showInput = stage !== "pill";
+  const labelVisible =
+    stage === "pill" || (stage === "circle" && dir === "opening");
+  const parkX = pillW - SLOT_X + 48;
+
+  /* strip sphere mode: rest/hover while closed · agitated + white
+     sparkle while Nami thinks · calm roll once open · elastic inhale
+     during the morph legs (DotSphere eases between modes — no cuts) */
+  const sphereMode: SphereMode =
+    stage === "circle" || stage === "bar"
+      ? "morph"
+      : thinking
+        ? "thinking"
+        : stage === "open"
+          ? "open"
+          : sphereHover
+            ? "hover"
+            : "rest";
+
   /* the container's geometry per stage — these are what transition */
   const geom =
     stage === "pill"
@@ -228,8 +309,8 @@ export default function ChatWidget() {
           : { width: PANEL_W, height: panelH, borderRadius: RADIUS_PANEL };
 
   return (
-    /* the morph container: one element, pill and panel are faces inside it */
     <div
+      ref={rootRef}
       className={`chat-morph fixed bottom-4 left-4 z-[440] ${
         stage === "open" ? "open" : ""
       } ${stage === "pill" ? "idle cursor-pointer" : ""}`}
@@ -246,152 +327,119 @@ export default function ChatWidget() {
         }`}
       />
 
-      {/* clip layer: rounds and crops the faces while they morph */}
+      {/* clip layer: rounds and crops everything while the box morphs —
+          this edge is what wipes the prompts in and out */}
       <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
-      {/* ===== pill face ===== */}
-      <button
-        type="button"
-        ref={pillFaceRef}
-        onClick={openChat}
-        aria-haspopup="dialog"
-        aria-expanded={false}
-        aria-hidden={stage !== "pill"}
-        tabIndex={stage === "pill" ? 0 : -1}
-        className={`face-pill absolute left-0 top-0 flex h-14 w-max items-center gap-3 pl-5 pr-6 text-white ${
-          stage === "pill" ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-      >
-        <DotsIcon className="h-7 w-7 shrink-0" />
-        <span className="whitespace-nowrap text-[14px] font-medium tracking-[-0.01em]">
-          Let&rsquo;s work together
-        </span>
-      </button>
-
-      {/* ===== panel face ===== */}
-      <section
-        ref={panelFaceRef}
-        role="dialog"
-        aria-label={`Chat with ${ASSISTANT_NAME}, MIZU's AI assistant`}
-        aria-hidden={stage !== "open"}
-        className={`face-panel absolute left-0 top-0 flex max-h-[calc(100dvh-32px)] w-[min(400px,calc(100vw-32px))] flex-col overflow-hidden text-white ${
-          stage === "open" ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-      >
-        {/* keyed wrapper: re-cascades the content on every open (and on
-            view switches, which remount children as before) */}
-        <div
-          key={seq}
-          className={`flex min-h-0 flex-1 flex-col ${
-            stage === "open" ? "chat-panel-enter" : ""
+        {/* ===== panel face (header + body; the strip is the input row) ===== */}
+        <section
+          ref={panelFaceRef}
+          role="dialog"
+          aria-label={`Chat with ${ASSISTANT_NAME}, MIZU's AI assistant`}
+          aria-hidden={stage !== "open"}
+          className={`face-panel pointer-events-none absolute left-0 top-0 flex max-h-[calc(100dvh-32px)] w-[min(400px,calc(100vw-32px))] flex-col overflow-hidden text-white ${
+            stage === "bar" || stage === "open" ? "pb-[72px]" : "pb-14"
+          } ${
+            stage === "open" ? "opacity-100" : "opacity-0"
           }`}
         >
-          {/* header: tabs (greet/contact) or back (chat), close always */}
-          <div className="relative flex shrink-0 items-center px-6 pt-4">
-            {view === "chat" ? (
+          {/* keyed wrapper: re-cascades the content on every open (and on
+              view switches, which remount children as before) */}
+          <div
+            key={seq}
+            className={`pointer-events-auto flex min-h-0 flex-1 flex-col ${
+              stage === "open" ? "chat-panel-enter" : ""
+            }`}
+          >
+            {/* header: tabs (greet/contact) or back (chat), close always */}
+            <div className="relative flex shrink-0 items-center px-6 pt-4">
+              {view === "chat" ? (
+                <button
+                  type="button"
+                  aria-label="Back to greeting"
+                  onClick={() => setView("greet")}
+                  className={iconBtn}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-5 w-5" aria-hidden="true">
+                    <path d="M14.5 5.5 8 12l6.5 6.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              ) : (
+                <nav className="flex items-center gap-4 pl-1" aria-label="Chat panels">
+                  <button
+                    type="button"
+                    onClick={() => setView("greet")}
+                    aria-pressed={view === "greet"}
+                    className={`py-2 text-[15px] transition-colors duration-200 ${
+                      view === "greet" ? "text-white" : "text-white/40 hover:text-white/70"
+                    }`}
+                  >
+                    Chat
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setView("contact")}
+                    aria-pressed={view === "contact"}
+                    className={`py-2 text-[15px] transition-colors duration-200 ${
+                      view === "contact" ? "text-white" : "text-white/40 hover:text-white/70"
+                    }`}
+                  >
+                    Contact
+                  </button>
+                </nav>
+              )}
+
               <button
                 type="button"
-                aria-label="Back to greeting"
-                onClick={() => setView("greet")}
-                className={iconBtn}
+                aria-label="Close chat"
+                onClick={closeChat}
+                className={`${iconBtn} absolute right-4 top-4`}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-5 w-5" aria-hidden="true">
-                  <path d="M14.5 5.5 8 12l6.5 6.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
                 </svg>
               </button>
-            ) : (
-              <nav className="flex items-center gap-4 pl-1" aria-label="Chat panels">
-                <button
-                  type="button"
-                  onClick={() => setView("greet")}
-                  aria-pressed={view === "greet"}
-                  className={`py-2 text-[15px] transition-colors duration-200 ${
-                    view === "greet" ? "text-white" : "text-white/40 hover:text-white/70"
-                  }`}
-                >
-                  Chat
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setView("contact")}
-                  aria-pressed={view === "contact"}
-                  className={`py-2 text-[15px] transition-colors duration-200 ${
-                    view === "contact" ? "text-white" : "text-white/40 hover:text-white/70"
-                  }`}
-                >
-                  Contact
-                </button>
-              </nav>
+            </div>
+
+            {view === "greet" && (
+              <>
+                {/* portrait — no separate fill: same near-black as the panel,
+                    so the block reads as one uniform surface until a real
+                    portrait asset exists. Dots bloom outward on open. */}
+                <div className="relative h-[min(300px,38dvh)] w-full shrink-0">
+                  <DotsIcon
+                    className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 text-beige/40"
+                    bloom
+                    bloomBase={350}
+                  />
+                </div>
+
+                <div className="px-6 pt-4">
+                  <p className="text-[14px] text-white/50">{ASSISTANT_NAME}</p>
+                  <p className="mt-1 text-[19px] leading-[1.45] tracking-[-0.01em]">
+                    {GREETING}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 px-6 pb-4 pt-5">
+                  {SUGGESTIONS.map((s, i) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => send(s)}
+                      className={
+                        i === 0
+                          ? `${chip} bg-beige text-ink hover:bg-white`
+                          : `${chip} bg-[#2b2b2b] text-white/60 hover:bg-[#333333] hover:text-white/90`
+                      }
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
 
-            <button
-              type="button"
-              aria-label="Close chat"
-              onClick={closeChat}
-              className={`${iconBtn} absolute right-4 top-4`}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-5 w-5" aria-hidden="true">
-                <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-              </svg>
-            </button>
-          </div>
-
-          {view === "greet" && (
-            <>
-              {/* portrait — no separate fill: same near-black as the panel,
-                  so the block reads as one uniform surface until a real
-                  portrait asset exists. Dots bloom outward on open. */}
-              <div className="relative h-[min(300px,38dvh)] w-full shrink-0">
-                <DotsIcon
-                  className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 text-beige/40"
-                  bloom
-                  bloomBase={350}
-                />
-              </div>
-
-              <div className="px-6 pt-4">
-                <p className="text-[14px] text-white/50">{ASSISTANT_NAME}</p>
-                <p className="mt-1 text-[19px] leading-[1.45] tracking-[-0.01em]">
-                  {GREETING}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2 px-6 pt-5">
-                {SUGGESTIONS.map((s, i) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => send(s)}
-                    className={
-                      i === 0
-                        ? `${chip} bg-beige text-ink hover:bg-white`
-                        : `${chip} bg-[#2b2b2b] text-white/60 hover:bg-[#333333] hover:text-white/90`
-                    }
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-auto flex items-center gap-3 px-6 pb-5 pt-6">
-                <DotsIcon className="h-7 w-7 shrink-0 text-white/80" />
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") send(input);
-                  }}
-                  placeholder="Ask me anything..."
-                  aria-label="Ask me anything"
-                  className="w-full bg-transparent text-[16px] text-white outline-none placeholder:text-white/40"
-                />
-              </div>
-            </>
-          )}
-
-          {view === "chat" && (
-            <>
+            {view === "chat" && (
               <div
                 ref={logRef}
                 role="log"
@@ -435,40 +483,100 @@ export default function ChatWidget() {
                   </div>
                 )}
               </div>
+            )}
 
-              <div className="flex shrink-0 items-center gap-3 px-6 pb-5 pt-2">
-                <DotsIcon className="h-7 w-7 shrink-0 text-white/80" spin={thinking} />
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") send(input);
-                  }}
-                  placeholder="Ask me anything..."
-                  aria-label="Ask me anything"
-                  className="w-full bg-transparent text-[16px] text-white outline-none placeholder:text-white/40"
-                />
+            {view === "contact" && (
+              <div className="px-6 pb-6 pt-4">
+                <p className="text-[13px] text-white/50">Prefer a human?</p>
+                <a
+                  href="mailto:hello@mizu.studio"
+                  className="relative mt-2 inline-block w-fit text-[19px] text-white no-underline after:absolute after:left-0 after:-bottom-[3px] after:h-px after:w-full after:bg-current after:origin-right after:scale-x-0 after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.4,0,0.2,1)] hover:after:origin-left hover:after:scale-x-100"
+                >
+                  hello@mizu.studio
+                </a>
+                <p className="mt-3 text-[14px] leading-[1.5] text-white/60">
+                  We reply within one business day.
+                </p>
               </div>
-            </>
-          )}
+            )}
+          </div>
+        </section>
 
-          {view === "contact" && (
-            <div className="px-6 pb-6 pt-4">
-              <p className="text-[13px] text-white/50">Prefer a human?</p>
-              <a
-                href="mailto:hello@mizu.studio"
-                className="relative mt-2 inline-block w-fit text-[19px] text-white no-underline after:absolute after:left-0 after:-bottom-[3px] after:h-px after:w-full after:bg-current after:origin-right after:scale-x-0 after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.4,0,0.2,1)] hover:after:origin-left hover:after:scale-x-100"
-              >
-                hello@mizu.studio
-              </a>
-              <p className="mt-3 text-[14px] leading-[1.5] text-white/60">
-                We reply within one business day.
-              </p>
-            </div>
-          )}
+        {/* ===== the persistent strip: one icon + one prompt slot ===== */}
+        <div
+          role={stage === "pill" ? "button" : undefined}
+          tabIndex={stage === "pill" ? 0 : -1}
+          aria-haspopup={stage === "pill" ? "dialog" : undefined}
+          aria-label={
+            stage === "pill" ? `Chat with ${ASSISTANT_NAME}, MIZU's AI assistant` : undefined
+          }
+          onClick={() => {
+            if (stage === "pill") openChat();
+          }}
+          onKeyDown={(e) => {
+            if (stage === "pill" && (e.key === "Enter" || e.key === " ")) {
+              e.preventDefault();
+              openChat();
+            }
+          }}
+          onPointerEnter={(e) => {
+            if (stage === "pill" && e.pointerType === "mouse") setSphereHover(true);
+          }}
+          onPointerLeave={(e) => {
+            if (e.pointerType === "mouse") setSphereHover(false);
+          }}
+          className={`absolute bottom-0 left-0 flex w-full items-center gap-3 px-6 text-white [transition:height_.4s_cubic-bezier(.65,0,.35,1)] ${
+            stage === "pill" || stage === "circle" ? "h-14" : "h-[72px]"
+          }`}
+        >
+          {/* THE mark — a real 3D dot sphere: drifts at rest, perks up
+              under the mouse, agitates with white sparkles while Nami
+              thinks, and does an elastic inhale through every morph */}
+          <DotSphere className="h-7 w-7 shrink-0 text-white/80" mode={sphereMode} />
+
+          {/* prompt slot: label and input are stacked absolutely, so the
+              narrow box can never flex-squeeze them; the clip edge wipes
+              them in/out and the slide does the hand-off */}
+          <div className="relative h-full min-w-0 flex-1">
+            <span
+              aria-hidden={!labelVisible}
+              className={`absolute left-0 top-1/2 -translate-y-1/2 whitespace-nowrap text-[14px] font-medium tracking-[-0.01em] ${
+                labelVisible ? "visible" : "invisible"
+              }`}
+            >
+              Let&rsquo;s work together
+            </span>
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              tabIndex={showInput ? 0 : -1}
+              aria-hidden={!showInput}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") send(input);
+              }}
+              placeholder="Ask me anything..."
+              aria-label="Ask me anything"
+              className="absolute inset-0 h-full w-full bg-transparent text-[16px] text-white outline-none placeholder:text-white/40 [transition:transform_.4s_cubic-bezier(.65,0,.35,1)]"
+              style={{
+                /* same duration + curve as the geometry legs, so the
+                   slide never slips relative to the moving wall */
+                transform: showInput ? "translateX(0)" : `translateX(${parkX}px)`,
+              }}
+            />
+
+            {/* hidden measurer: constant text the pill width is derived
+                from — absolute, so nothing can ever squeeze it */}
+            <span
+              aria-hidden="true"
+              ref={measureRef}
+              className="invisible pointer-events-none absolute left-0 top-0 whitespace-nowrap text-[14px] font-medium tracking-[-0.01em]"
+            >
+              Let&rsquo;s work together
+            </span>
+          </div>
         </div>
-      </section>
       </div>
     </div>
   );

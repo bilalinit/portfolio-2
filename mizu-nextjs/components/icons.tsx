@@ -33,16 +33,15 @@ export function AccessibilityIcon({ className }: IconProps) {
   );
 }
 
-/* dot-matrix circle — the chat widget's mark (pill, input row, and the
-   "thinking" spinner via the spin prop). With `bloom`, each dot scales
-   in with a stagger (delay = bloomBase + index * 24ms), blooming
-   outward from the center — used when the chat panel opens. */
+/* dot-matrix circle — the portrait mark in the chat panel's greet view.
+   With `bloom`, each dot scales in with a stagger (delay = bloomBase +
+   index * 24ms), blooming outward from the center — used when the chat
+   panel opens. (The animated strip mark is DotSphere.) */
 export function DotsIcon({
   className,
-  spin = false,
   bloom = false,
   bloomBase = 0,
-}: IconProps & { spin?: boolean; bloom?: boolean; bloomBase?: number }) {
+}: IconProps & { bloom?: boolean; bloomBase?: number }) {
   const dots: { x: number; y: number }[] = [{ x: 0, y: 0 }];
   for (let i = 0; i < 6; i++) {
     const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
@@ -57,7 +56,7 @@ export function DotsIcon({
       viewBox="-16 -16 32 32"
       fill="currentColor"
       aria-hidden="true"
-      className={`${className ?? ""} ${spin ? "animate-[spin_1.6s_linear_infinite]" : ""}`}
+      className={className}
     >
       {dots.map((d, i) => (
         <circle

@@ -181,10 +181,9 @@
   transform: scale(1.04);
 }
 
-/* face crossfades — out fast, in delayed until the box has expanded */
-.face-pill {
-  transition: opacity 0.22s ease;
-}
+/* panel face crossfade — out fast on close; on open it waits 0.14s so
+   the box leads. (The old pill face is gone: the [icon + prompt] strip
+   persists through the whole morph and the clip edge wipes it.) */
 .face-panel {
   transition: opacity 0.24s ease;
 }
