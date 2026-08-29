@@ -81,12 +81,13 @@ export default function Footer() {
           {/* statement + tagline */}
           <Cell>
             <p className="max-w-[440px] text-[clamp(26px,2.7vw,40px)] font-medium leading-[1.15] tracking-[-0.015em] text-[#1a1a1a]">
-              MIZU, a digital agency building things that move fast and last.
+              MIZU — a studio that builds digital employees and the products
+              they live in.
             </p>
             <p className="mt-[clamp(40px,5vw,80px)] text-[clamp(15px,1.15vw,18px)] leading-[1.5] text-[#8f8f8f]">
               Designed with intent.
               <br />
-              Built to last.
+              Built to work.
             </p>
           </Cell>
 

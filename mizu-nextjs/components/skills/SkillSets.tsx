@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { skillGroups, skillsIntro } from "@/data/skills";
 
-/* "Design skill sets" section — B2 "Rows" layout.
+/* "Skill sets" section — B2 "Rows" layout.
    Entrance: drift — the left column slides in from the left, the rows
    from the right, staggered via the --d custom property (CSS in
    globals.css). Elements stay hidden until the section scrolls into
@@ -62,9 +62,7 @@ export default function SkillSets() {
 
           <div className="el el-l" style={d(90)}>
             <h2 className="mt-6 text-[clamp(34px,3.4vw,58px)] font-normal leading-[1.05] tracking-[-0.02em] text-white">
-              Design
-              <br />
-              skill sets
+              Skill sets
             </h2>
           </div>
 

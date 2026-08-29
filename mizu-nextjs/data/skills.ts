@@ -11,73 +11,94 @@ export interface SkillGroup {
 
 /* shared intro copy */
 export const skillsIntro =
-  "I propose an end-to-end design process that spans my skills in Digital Product Design for website and mobile application, with a high-stander UI/Visual and UX prudence.";
+  "A product needs three things to work: design that makes sense, code that holds up, and more and more often AI that does part of the job. We cover all three.";
 
 export const skillGroups: SkillGroup[] = [
   {
-    title: "UI design",
+    title: "Design",
     count: "(06)",
     skills: [
       {
         name: "Visual direction",
         detail:
-          "Setting the visual north star for a product — mood, references and art direction that keep every screen coherent from the first sketch to the final build.",
+          "We set the overall look before anything gets built: references, mood, and art direction that keep the whole product consistent.",
       },
       {
         name: "Design concept",
         detail:
-          "Translating strategy into a tangible concept: the big idea, core layouts and key interactions that make a product feel intentional rather than assembled.",
+          "The big idea behind the product. Layouts, structure, and the main interactions, decided before detailed design starts.",
       },
       {
         name: "Typography",
         detail:
-          "Choosing and pairing typefaces, building scales and rhythm so text is not only readable but carries the brand's voice at every size.",
+          "Typeface choices, sizes, and spacing so the text is easy to read and feels like the brand.",
       },
       {
         name: "Color",
         detail:
-          "Building palettes and contrast systems that hold up across light and dark, states and accessibility thresholds — color with a job to do.",
+          "Palettes that work in light and dark, with enough contrast to stay accessible.",
       },
       {
         name: "Composition",
         detail:
-          "Grid, hierarchy and spacing — arranging elements so the eye always knows where to go next, on any screen size.",
+          "Grid, hierarchy, and spacing. Where things sit on the screen and why.",
       },
       {
         name: "UI style guide",
         detail:
-          "Documenting components, tokens and rules into a living style guide, so teams can ship consistent screens without guessing.",
+          "A written record of the design: components, colors, and rules the whole team can follow.",
       },
     ],
   },
   {
-    title: "UX design",
-    count: "(05)",
+    title: "Engineering",
+    count: "(04)",
     skills: [
       {
-        name: "UX research",
+        name: "Full-stack web",
         detail:
-          "Interviews, surveys and field studies to understand real user behavior before a single pixel is drawn.",
+          "Websites and web apps built end to end, frontend and backend. Mostly Next.js and React.",
       },
       {
-        name: "Usability testing",
+        name: "Mobile apps",
         detail:
-          "Watching real people use the product, spotting friction early and turning findings into concrete improvements.",
+          "Apps for iOS and Android that feel native and share most of their code.",
       },
       {
-        name: "Quantitative research",
+        name: "APIs & integrations",
         detail:
-          "Analytics, funnels and A/B tests that back design decisions with numbers instead of hunches.",
+          "Building the APIs your product needs, and connecting it to services like payments, email, or your CRM.",
       },
       {
-        name: "Wireframing",
+        name: "Real-time systems",
         detail:
-          "Fast, low-fidelity structures for exploring flows and layouts before committing to visual design.",
+          "Features that update live: chat, notifications, and state shared between users.",
+      },
+    ],
+  },
+  {
+    title: "AI & Agents",
+    count: "(04)",
+    skills: [
+      {
+        name: "AI agents",
+        detail:
+          "Agents trained on your business that answer questions, handle requests, and know when to bring in a human.",
       },
       {
-        name: "Prototyping",
+        name: "Digital FTEs",
         detail:
-          "Clickable, high-fidelity prototypes that let stakeholders and users feel the product before a line of code is written.",
+          "An agent with a job description. Support, intake, operations — it does the same tasks a full-time employee would, every day.",
+      },
+      {
+        name: "AI-enabled websites",
+        detail:
+          "Websites that use AI where it actually helps: smarter search, content that adapts, forms that understand what people typed.",
+      },
+      {
+        name: "Agentic apps",
+        detail:
+          "Apps where the agent does most of the work and the person stays in control of the decisions.",
       },
     ],
   },

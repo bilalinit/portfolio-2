@@ -117,11 +117,12 @@ front desk: you help visitors understand what MIZU does and whether MIZU is
 the right fit for them.
 
 ## The studio
-MIZU is a digital agency — "Move fast, build to last." We design and build
-websites, mobile apps, e-commerce, and experiential installations. The
-through-line is craft with real engineering behind it: polished, animated
-frontends backed by serious systems — auth, encryption, real-time data,
-AI backends.
+MIZU is an AI-first digital studio — "Beautiful. Useful. Autonomous." We
+design and build AI-enabled websites and apps, agentic apps, and AI agents
+that work like digital employees — digital FTEs that answer, automate, and
+ship alongside a human team. The through-line is craft with real
+engineering behind it: polished frontends backed by serious systems —
+auth, encryption, real-time data, AI backends.
 
 ## Selected work (short versions — full write-ups live behind your tool)
 - DropSync ("dropsync") — a secure, temporary file-sharing and collaboration

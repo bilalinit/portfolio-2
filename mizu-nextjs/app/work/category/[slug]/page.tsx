@@ -24,7 +24,7 @@ export async function generateMetadata({
   if (!cat) return {};
   return {
     title: `${cat.label} work — MIZU`,
-    description: `${cat.count} ${cat.label.toLowerCase()} projects by MIZU — move fast, build to last.`,
+    description: `${cat.count} ${cat.label.toLowerCase()} projects by MIZU — Beautiful. Useful. Autonomous.`,
   };
 }
 

@@ -110,14 +110,15 @@ export default function Hero() {
           <p
             className={`${riseIn} [animation-delay:0.32s] mt-[clamp(36px,5vw,94px)] max-w-[360px] text-[14px] leading-[1.42] tracking-[-0.005em] text-[#191510] max-[860px]:order-3 max-[860px]:mt-5`}
           >
-            Some say move fast, break things. MIZU is a digital agency that believes
-            we&rsquo;ve broken enough things already.
+            Design that holds. Code that runs. AI-enabled agents that do
+            the work. We build AI-enabled websites, apps, and agents that
+            carry real weight in your business.
           </p>
 
           <h1
             className={`${riseIn} [animation-delay:0.45s] mt-auto pt-8 text-[clamp(28px,3.2vw,64px)] font-medium tracking-[-0.035em] leading-[1.02] text-ink max-[860px]:order-2 max-[860px]:mt-24 max-[860px]:pt-0 max-[860px]:text-[clamp(34px,8.4vw,56px)]`}
           >
-            Move fast, build to last.
+            Beautiful. Useful. Autonomous.
           </h1>
         </div>
       </div>

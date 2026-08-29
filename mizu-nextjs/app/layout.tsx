@@ -23,8 +23,9 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "MIZU — Move fast, build to last.",
-  description: "MIZU is a digital agency. Move fast, build to last.",
+  title: "MIZU — Beautiful. Useful. Autonomous.",
+  description:
+    "MIZU builds AI-enabled websites, apps, and agents that carry real weight in your business.",
   icons: { icon: "/mizu-icon.svg" },
 };
 
