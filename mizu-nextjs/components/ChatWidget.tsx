@@ -1,7 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import Link from "next/link";
+import { createPortal } from "react-dom";
 import { DotsIcon } from "@/components/icons";
+import { THUMB_SRC } from "@/components/ProjectThumb";
+import { allWork, type WorkItem } from "@/data/projects";
 import DotSphere, { type SphereMode } from "@/components/DotSphere";
 import {
   AGENT_URL,
@@ -93,6 +103,98 @@ const now = () =>
     .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     .toLowerCase();
 
+/* ===== project mentions → case-study links =====
+   Nami answers in plain text, so the widget wraps project names in
+   links to their /work/[slug] pages at render time — no markup ever
+   rides the stream. Aliases derive from allWork (the data file stays
+   the single source of truth): each name, its space-collapsed form,
+   and any explicit `aliases` (e.g. the title the agent's knowledge
+   base uses), matched case-insensitively with word boundaries, so
+   "DropSync", "Dropsync" and "GameCam" all link. Runs on the revealed
+   substring during streaming too, so a mention turns clickable the
+   moment its last letter drips in. Beige text marks the mention; on
+   mouse hover the word brightens while a preview pill rises above it
+   (see the mention hover preview block in ChatWidget). */
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const PROJECT_LINKS = new Map<string, WorkItem>();
+for (const w of allWork) {
+  for (const name of [w.name, w.name.replace(/\s+/g, ""), ...(w.aliases ?? [])]) {
+    PROJECT_LINKS.set(name.toLowerCase(), w);
+  }
+}
+const PROJECT_LINK_RE = new RegExp(
+  `\\b(${[...PROJECT_LINKS.keys()].map(escapeRe).join("|")})\\b`,
+  "gi",
+);
+
+interface MentionHandlers {
+  show: (item: WorkItem, rect: DOMRect) => void;
+  /* leaving the word doesn't hide instantly — the pointer may be travelling
+     to the card's GitHub button, so the hide is scheduled with a grace */
+  leave: () => void;
+}
+
+function withProjectLinks(text: string, mention?: MentionHandlers): ReactNode {
+  PROJECT_LINK_RE.lastIndex = 0;
+  const parts: ReactNode[] = [];
+  let last = 0;
+  for (
+    let m = PROJECT_LINK_RE.exec(text);
+    m !== null;
+    m = PROJECT_LINK_RE.exec(text)
+  ) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    const mentioned = m[0];
+    const item = PROJECT_LINKS.get(mentioned.toLowerCase());
+    parts.push(
+      item ? (
+        <Link
+          key={parts.length}
+          href={`/work/${item.slug}`}
+          onPointerEnter={(e) => {
+            /* hover-driven UI is mouse-only (touch taps fire compat mouse
+               events — an unguarded enter here would flash the card) */
+            if (e.pointerType === "mouse" && mention) {
+              mention.show(item, e.currentTarget.getBoundingClientRect());
+            }
+          }}
+          onPointerLeave={(e) => {
+            if (e.pointerType === "mouse" && mention) mention.leave();
+          }}
+          onFocus={(e) => {
+            if (mention) mention.show(item, e.currentTarget.getBoundingClientRect());
+          }}
+          onBlur={() => {
+            if (mention) mention.leave();
+          }}
+          className="text-beige transition-colors duration-200 hover:text-white"
+        >
+          {mentioned}
+        </Link>
+      ) : (
+        mentioned
+      ),
+    );
+    last = m.index + mentioned.length;
+  }
+  if (parts.length === 0) return text;
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
+
+/* mention preview card geometry (viewport-fixed, portaled to <body>) */
+type MentionPreview = {
+  name: string;
+  thumb: string;
+  github: string | null;
+  liveUrl: string | null;
+  x: number; /* card left, viewport px */
+  y: number; /* card top, viewport px */
+};
+const MENTION_PILL_W = 188;
+const MENTION_PILL_H = 38; /* art 24 + py 7×2 */
+const MENTION_GAP = 10;
+
 /* ===== smooth streaming reveal =====
    Nami's answer streams in as token deltas; this hook buffers the full text
    and reveals it on a steady tick — a small fixed step plus ~1/50 of the
@@ -103,6 +205,12 @@ function useSmoothStream() {
   const [revealed, setRevealed] = useState("");
   const [hasText, setHasText] = useState(false);
   const [isDone, setIsDone] = useState(false);
+  /* every reveal completion bumps this, even when isDone is already true —
+     the settled-commit effect below needs a render to fire on, and when the
+     reveal caught up before the authoritative final arrived (instant reveal
+     does it on the first delta; a stalled stream can too), setFull's updates
+     are all no-ops against identical state */
+  const [doneTick, setDoneTick] = useState(0);
   const fullRef = useRef("");
   const lenRef = useRef(0);
   const timerRef = useRef<number | null>(null);
@@ -114,17 +222,22 @@ function useSmoothStream() {
     }
   }, []);
 
+  const markDone = useCallback(() => {
+    setIsDone(true);
+    setDoneTick((t) => t + 1);
+  }, []);
+
   const tick = useCallback(() => {
     const full = fullRef.current;
     if (lenRef.current >= full.length) {
       stop();
-      setIsDone(true);
+      markDone();
       return;
     }
     const step = Math.max(1, Math.ceil((full.length - lenRef.current) / 50));
     lenRef.current = Math.min(full.length, lenRef.current + step);
     setRevealed(full.slice(0, lenRef.current));
-  }, [stop]);
+  }, [stop, markDone]);
 
   const start = useCallback(() => {
     if (timerRef.current !== null) return;
@@ -139,11 +252,11 @@ function useSmoothStream() {
     ) {
       lenRef.current = fullRef.current.length;
       setRevealed(fullRef.current);
-      setIsDone(true);
+      markDone();
       return true;
     }
     return false;
-  }, []);
+  }, [markDone]);
 
   const append = useCallback(
     (chunk: string) => {
@@ -181,7 +294,7 @@ function useSmoothStream() {
 
   useEffect(() => stop, [stop]);
 
-  return { revealed, hasText, isDone, append, setFull, reset };
+  return { revealed, hasText, isDone, doneTick, append, setFull, reset };
 }
 
 /* ===== morph geometry ===== */
@@ -453,7 +566,10 @@ export default function ChatWidget() {
   }, [messages, thinking, smooth.revealed]);
 
   /* commit the finished reply only once the reveal has dripped out fully —
-     swapping earlier would replace the visible streaming bubble mid-typing */
+     swapping earlier would replace the visible streaming bubble mid-typing.
+     Fires on doneTick (not revealed): when the reveal is already caught up,
+     setFull changes no state, and only the completion counter guarantees the
+     render this effect needs — otherwise thinking sticks forever */
   useEffect(() => {
     if (settledRef.current === null || !smooth.isDone) return;
     const text = settledRef.current;
@@ -462,7 +578,74 @@ export default function ChatWidget() {
     setThinking(false);
     setActivity(null);
     smooth.reset();
-  }, [smooth.isDone]);
+  }, [smooth.isDone, smooth.doneTick]);
+
+  /* ===== mention hover preview =====
+     hovering a project mention raises a small card above the word — art,
+     name, and (when the project has a repo) a GitHub button beside the
+     bracket-arrow pin — portaled to <body> so the panel's overflow-hidden
+     clip layers can never cut it off. Mouse-only (AGENTS.md hover rule);
+     keyboard focus on the mention raises it too. Because the GitHub button
+     lives ON the card, leaving the word only SCHEDULES the hide — moving
+     onto the card (or focusing it) cancels the timer, so the trip across
+     the 10px gap never dismisses it. Show/hide are pure class flips (the
+     motion lives in .mention-pill in globals.css: keyframe pop-in on
+     `.on`, transition fade-out off it) — no rAF to schedule. */
+  const [mention, setMention] = useState<MentionPreview | null>(null);
+  const [mentionShown, setMentionShown] = useState(false);
+  const mentionHideRef = useRef<number | null>(null);
+
+  const clearMentionHide = useCallback(() => {
+    if (mentionHideRef.current !== null) {
+      clearTimeout(mentionHideRef.current);
+      mentionHideRef.current = null;
+    }
+  }, []);
+
+  const showMention = useCallback(
+    (item: WorkItem, rect: DOMRect) => {
+      clearMentionHide();
+      /* clamp to the 16px viewport gutters; sit above the word, flipping
+         below it when the panel hugs the viewport top */
+      const x = Math.min(
+        Math.max(rect.left + rect.width / 2 - MENTION_PILL_W / 2, 16),
+        Math.max(16, window.innerWidth - MENTION_PILL_W - 16),
+      );
+      const y =
+        rect.top - MENTION_PILL_H - MENTION_GAP >= 8
+          ? rect.top - MENTION_PILL_H - MENTION_GAP
+          : rect.bottom + MENTION_GAP;
+      setMention({
+        name: item.name,
+        thumb: THUMB_SRC[item.thumb],
+        github: item.github ?? null,
+        liveUrl: item.liveUrl ?? null,
+        x,
+        y,
+      });
+      setMentionShown(true);
+    },
+    [clearMentionHide],
+  );
+
+  const leaveMention = useCallback(() => {
+    clearMentionHide();
+    mentionHideRef.current = window.setTimeout(() => {
+      mentionHideRef.current = null;
+      setMentionShown(false);
+    }, 120);
+  }, [clearMentionHide]);
+
+  const hideMention = useCallback(() => {
+    clearMentionHide();
+    setMentionShown(false);
+  }, [clearMentionHide]);
+
+  /* every close path drops the card — content stays for the next open */
+  useEffect(() => {
+    if (stage !== "open") hideMention();
+  }, [stage, hideMention]);
+  const mentionApi = { show: showMention, leave: leaveMention };
 
   const send = async (raw: string) => {
     const text = raw.trim();
@@ -713,6 +896,7 @@ export default function ChatWidget() {
                 role="log"
                 aria-live="polite"
                 aria-label="Conversation"
+                onScroll={hideMention}
                 className="chat-scroll flex-1 overflow-y-auto overscroll-contain px-6 pb-2 pt-3"
               >
                 {messages.map((m, i) => (
@@ -728,7 +912,7 @@ export default function ChatWidget() {
                         m.from === "user" ? "text-white/60" : "text-white/85"
                       }`}
                     >
-                      {m.text}
+                      {withProjectLinks(m.text, mentionApi)}
                     </p>
                   </div>
                 ))}
@@ -771,7 +955,7 @@ export default function ChatWidget() {
                       </span>
                     </p>
                     <p className="mt-0.5 min-h-6 text-[15px] leading-[1.5] text-white/85 [overflow-wrap:anywhere]">
-                      {smooth.revealed}
+                      {withProjectLinks(smooth.revealed, mentionApi)}
                     </p>
                   </div>
                 )}
@@ -919,6 +1103,117 @@ export default function ChatWidget() {
           </button>
         </div>
       </div>
+
+      {/* mention hover preview — createPortal mounts it on <body>, so the
+          panel's clip layers can never cut it off. The card takes the
+          pointer (and keeps itself up while focused) so its GitHub button
+          is clickable; entering it cancels the leave grace, leaving it
+          hides. Keyboard: hidden cards are visibility:hidden, so the
+          button is only focusable while the card is up. Its pointer/click
+          events stop here — the widget's close-on-outside-click listener
+          lives on document, and a portaled card counts as "outside" to
+          it, which would collapse the panel on every button press. */}
+      {typeof document !== "undefined" &&
+        mention !== null &&
+        createPortal(
+          <div
+            className="mention-anchor pointer-events-auto fixed z-[450]"
+            style={{ left: mention.x, top: mention.y, width: MENTION_PILL_W }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            onPointerEnter={(e) => {
+              if (e.pointerType === "mouse") clearMentionHide();
+            }}
+            onPointerLeave={(e) => {
+              if (e.pointerType === "mouse") hideMention();
+            }}
+          >
+            <div
+              className={`mention-pill flex items-center gap-[5px] rounded-[12px] bg-[#1c1c1c] py-[7px] pl-[7px] pr-[7px] ring-1 ring-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.45)] ${
+                mentionShown ? "on" : ""
+              }`}
+            >
+              <img
+                src={mention.thumb}
+                alt=""
+                className="h-6 w-6 shrink-0 rounded-[6px] object-cover ring-1 ring-white/15"
+              />
+              <p className="min-w-0 flex-1 truncate text-[11px] font-medium leading-tight text-white">
+                {mention.name}
+              </p>
+              {mention.github !== null && (
+                <a
+                  href={mention.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${mention.name} on GitHub`}
+                  className="-mx-[3px] flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-white/60 transition-colors duration-200 hover:text-white"
+                  onFocus={clearMentionHide}
+                  onBlur={hideMention}
+                >
+                  <svg
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    className="h-3 w-3"
+                    aria-hidden="true"
+                  >
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
+                  </svg>
+                </a>
+              )}
+              {/* bracket-arrow pin — the site's label motif saying "opens";
+                  with a liveUrl it's a real link to the deployed site */}
+              {mention.liveUrl !== null ? (
+                <a
+                  href={mention.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Open ${mention.name}`}
+                  className="-mx-[3px] flex shrink-0 items-center gap-px rounded-[6px] px-[3px] py-2 text-beige/80 transition-colors duration-200 hover:text-white"
+                  onFocus={clearMentionHide}
+                  onBlur={hideMention}
+                >
+                  <span className="text-[10px] leading-none">[</span>
+                  <svg
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.4}
+                    className="h-[7px] w-[7px]"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2.2 7.8 7.8 2.2M7.8 2.2H3.6M7.8 2.2v4.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span className="text-[10px] leading-none">]</span>
+                </a>
+              ) : (
+                <span className="flex shrink-0 items-center gap-px text-beige/80">
+                  <span className="text-[10px] leading-none">[</span>
+                  <svg
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.4}
+                    className="h-[7px] w-[7px]"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2.2 7.8 7.8 2.2M7.8 2.2H3.6M7.8 2.2v4.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span className="text-[10px] leading-none">]</span>
+                </span>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

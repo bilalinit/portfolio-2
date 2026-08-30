@@ -1,15 +1,22 @@
 import type { ThumbKind } from "@/data/projects";
 
-/* Card artwork for the featured-project rows and the /work grid — one
-   real asset per ThumbKind. Logo cards are pre-composed 3:4 PNGs
-   (wordmark centered on the logo's own background color) so they fill
-   the card with a seamless object-cover fit. To add a project: drop a
-   composed card PNG in public/, add the ThumbKind here + in projects.ts. */
+/* Card artwork for the featured-project rows, the /work grid and the
+   chat's mention preview — one real asset per ThumbKind. Logo cards are
+   pre-composed 3:4 SVGs (vector wordmark centered on the logo's own
+   background color) so they fill a card with a seamless object-cover
+   fit and stay crisp at every render size. To add a project: drop a
+   composed card SVG in public/, add the ThumbKind here + in
+   projects.ts. */
+export const THUMB_SRC: Record<ThumbKind, string> = {
+  dropsync: "/dropsync-card.svg",
+  gamecam: "/gamecam-card.svg",
+};
+
+const THUMB_ALT: Record<ThumbKind, string> = {
+  dropsync: "DropSync logo",
+  gamecam: "Game cam logo",
+};
+
 export default function ProjectThumb({ kind }: { kind: ThumbKind }) {
-  switch (kind) {
-    case "dropsync":
-      return <img src="/dropsync-card.png" alt="DropSync logo" />;
-    case "gamecam":
-      return <img src="/gamecam-card.png" alt="Game cam logo" />;
-  }
+  return <img src={THUMB_SRC[kind]} alt={THUMB_ALT[kind]} />;
 }

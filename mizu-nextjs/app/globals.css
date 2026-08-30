@@ -265,6 +265,59 @@
   }
 }
 
+/* mention hover preview card — portaled to <body>, outside .chat-morph.
+   The hidden pose lives on the base class; `.on` pops the card in via
+   keyframes (re-adding the class re-runs them — no mount-time frame
+   gymnastics) and removing it lets the base transition play the fade-out.
+   visibility flips at the END of the hide (0.2s delay) but instantly on
+   show, so the GitHub button inside is only reachable while visible. */
+.mention-pill {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px) scale(0.97);
+  transition:
+    opacity 0.16s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
+    visibility 0s linear 0.2s;
+}
+.mention-pill.on {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 0.16s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
+    visibility 0s;
+  animation: mentionIn 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+@keyframes mentionIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* the anchor hops between mentions with a short glide */
+.mention-anchor {
+  transition:
+    left 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
+    top 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* the preview portals to <body>, outside .chat-morph's reduced-motion
+   kill switch — it needs its own (show/hide go instant) */
+@media (prefers-reduced-motion: reduce) {
+  .mention-pill,
+  .mention-anchor {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
 /* Nami's activity label while she works ("Thinking…", "Reading up on our
    work…") — a gradient sweeping through the letters. Under reduced motion
    the label must fall back to SOLID text: color:transparent with no

@@ -30,10 +30,19 @@ export interface WorkItem {
   blurb: string;
   /** short uppercase tag shown where the menu used to show project codes */
   tag: string;
+  /** other names for this project that should link to it — e.g. the title
+      used in the Nami agent's knowledge base when it differs from `name` */
+  aliases?: string[];
   /** case-study overview, one paragraph per entry */
   overview: string[];
   /* real case-study media; falls back to the shared showreel */
   media?: { src: string; alt: string };
+  /** public repo — when set, the chat's mention preview gains a GitHub
+      button linking here; projects without one simply don't show it */
+  github?: string;
+  /** deployed site (or wherever the project can be tried) — makes the
+      mention preview's bracket-arrow pin clickable, linking here */
+  liveUrl?: string;
 }
 
 export interface WorkCategory {
@@ -58,6 +67,8 @@ export const allWork: WorkItem[] = [
     thumb: "dropsync",
     blurb: "Encrypted, ephemeral file sharing with workspaces and live calls",
     tag: "Live app",
+    github: "https://github.com/AhmedSaeed4/dropsync",
+    liveUrl: "https://drag-drop-app.vercel.app/",
     overview: [
       "DropSync is a secure, temporary file-sharing and collaboration app we designed and built end to end. Drop files, text notes, voice memos and drawings into an encrypted space, then pick them up on any other device — or work together in shared workspaces. Everything in it is ephemeral by design: every drop carries an expiry you choose, from an hour to a full day, and when it's gone, it's gone.",
       "Privacy is the product, not a feature. Text, files and drawings are encrypted in your browser with AES-256 before they ever leave your device, and they're only decrypted on the devices meant to see them — the server passes along ciphertext it can't read. Workspaces share a single encryption key that travels by six-character invite code, so bringing someone into a team's space is as simple as typing it in.",
@@ -77,6 +88,7 @@ export const allWork: WorkItem[] = [
     thumb: "gamecam",
     blurb: "Game-style camera control recorded as clean, editable keyframes",
     tag: "Desktop",
+    aliases: ["Camera Navigator CHAIN"],
     overview: [
       "Game cam is an After Effects plugin we built that puts game-style camera control into motion design. Press WASD to fly through a 3D scene, drag the mouse to look around, and the flight is recorded as real keyframes on the timeline — ready to retime, offset and polish like any other animation. First-person camera moves become as intuitive as playing a game.",
       "Under the hood it's a genuine real-time system: a C++ plugin runs inside After Effects at the application's refresh rate and talks to a control panel over a shared-memory channel, so movement and mouse-look land with sub-microsecond latency instead of the lag of the scripting route. While you fly, the viewport drops to draft resolution to keep frame rates high, then restores the moment you stop.",
