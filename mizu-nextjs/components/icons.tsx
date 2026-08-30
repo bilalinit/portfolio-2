@@ -43,13 +43,21 @@ export function DotsIcon({
   bloomBase = 0,
 }: IconProps & { bloom?: boolean; bloomBase?: number }) {
   const dots: { x: number; y: number }[] = [{ x: 0, y: 0 }];
+  /* round to 10 decimals: trig results differ in the last ulp between
+     the Node server and the browser, which tripped React hydration */
   for (let i = 0; i < 6; i++) {
     const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
-    dots.push({ x: Math.cos(a) * 7, y: Math.sin(a) * 7 });
+    dots.push({
+      x: Number((Math.cos(a) * 7).toFixed(10)),
+      y: Number((Math.sin(a) * 7).toFixed(10)),
+    });
   }
   for (let i = 0; i < 12; i++) {
     const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
-    dots.push({ x: Math.cos(a) * 14, y: Math.sin(a) * 14 });
+    dots.push({
+      x: Number((Math.cos(a) * 14).toFixed(10)),
+      y: Number((Math.sin(a) * 14).toFixed(10)),
+    });
   }
   return (
     <svg

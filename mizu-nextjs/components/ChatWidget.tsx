@@ -187,6 +187,8 @@ function useSmoothStream() {
 /* ===== morph geometry ===== */
 const PILL_H = 56; /* h-14 — the strip's height at pill/circle */
 const STRIP_H_OPEN = 72; /* hosting the live input restores the original 24/20 row rhythm */
+const COMPOSER_MAX_H = 70; /* textarea grows to 3 lines (16px × 1.45), then scrolls */
+const STRIP_MAX_H = 98; /* strip ceiling once the composer is capped */
 const RADIUS_PILL = PILL_H / 2;
 const RADIUS_PANEL = 24; /* rounded-[24px] */
 const PANEL_W = "min(400px, calc(100vw - 32px))"; /* 16px gutters */
@@ -220,6 +222,9 @@ export default function ChatWidget() {
   const [view, setView] = useState<View>("greet");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
+  /* strip height: 72 at rest, grows with the composer as long questions
+     stack (the face's bottom padding follows, then the measured panel) */
+  const [stripH, setStripH] = useState(STRIP_H_OPEN);
   const [thinking, setThinking] = useState(false);
   /* desktop-fine-pointer only — touch taps fire compat mouse events,
      and hover is a mouse-only effect (AGENTS.md rule #1) */
@@ -268,7 +273,7 @@ export default function ChatWidget() {
 
   const measureRef = useRef<HTMLSpanElement>(null);
   const panelFaceRef = useRef<HTMLElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
   const later = useCallback((fn: () => void, ms: number) => {
@@ -308,8 +313,51 @@ export default function ChatWidget() {
     return () => ro.disconnect();
   }, []);
 
+  /* the composer hugs its content up to the cap (then scrolls internally);
+     measured ONLY at open — mid-morph stages have fake-narrow slots (the
+     circle is 56px wide), which wrap the text, pump this box up and drag
+     the strip height up and down behind it (the sphere/text jitter) */
+  useEffect(() => {
+    const el = composerRef.current;
+    if (!el) return;
+    if (stage !== "open") return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, COMPOSER_MAX_H)}px`;
+  }, [input, stage]);
+
+  /* strip follows the composer's box, which cascades: strip height →
+     face padding → measured panel height → the morphing container */
+  useEffect(() => {
+    const el = composerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      setStripH((prev) => {
+        const next = Math.min(STRIP_MAX_H, Math.max(STRIP_H_OPEN, el.offsetHeight + 28));
+        return prev === next ? prev : next;
+      });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  /* deterministic panel re-measure — the RO above can silently stop
+     delivering across morph stages, so anything that can change the
+     face's height re-reads it after commit (composer growth, view
+     switches, new messages, streaming ticks) */
+  useEffect(() => {
+    const el = panelFaceRef.current;
+    if (!el) return;
+    const h = el.offsetHeight;
+    setPanelH((prev) => (prev === h ? prev : h));
+  }, [stripH, input, view, stage, messages.length, thinking, smooth.revealed, seq]);
+
   const reducedMotion = () =>
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* desktop-fine-pointer only — used for hover-type behaviors and the
+     Enter-to-send shortcut (touch keyboards get the send button) */
+  const finePointer = () =>
+    window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
   /* pill → circle → bar → open (overlapped legs; reduced motion skips
      straight to the end state, transitions being disabled anyway) */
@@ -392,8 +440,8 @@ export default function ChatWidget() {
      keyboards don't jump up on their own */
   useEffect(() => {
     if (stage !== "open") return;
-    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-      inputRef.current?.focus();
+    if (finePointer()) {
+      composerRef.current?.focus();
     }
   }, [stage, view]);
 
@@ -518,7 +566,7 @@ export default function ChatWidget() {
   return (
     <div
       ref={rootRef}
-      className={`chat-morph fixed bottom-4 left-4 z-[440] ${
+      className={`chat-morph fixed bottom-4 left-4 z-[440] max-w-[calc(100vw-32px)] ${
         stage === "open" ? "open" : ""
       } ${stage === "pill" ? "idle cursor-pointer" : ""}`}
       style={geom}
@@ -535,8 +583,17 @@ export default function ChatWidget() {
       />
 
       {/* clip layer: rounds and crops everything while the box morphs —
-          this edge is what wipes the prompts in and out */}
-      <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
+          this edge is what wipes the prompts in and out. Pinned to
+          scrollTop 0: focus/scroll-into-view must never shift the panel
+          inside its own frame (overflow:hidden boxes still scroll) */}
+      <div
+        className="absolute inset-0 overflow-hidden rounded-[inherit]"
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          if (el.scrollTop !== 0) el.scrollTop = 0;
+          if (el.scrollLeft !== 0) el.scrollLeft = 0;
+        }}
+      >
         {/* ===== panel face (header + body; the strip is the input row) ===== */}
         <section
           ref={panelFaceRef}
@@ -544,10 +601,14 @@ export default function ChatWidget() {
           aria-label={`Chat with ${ASSISTANT_NAME}, MIZU's AI assistant`}
           aria-hidden={stage !== "open"}
           className={`face-panel pointer-events-none absolute left-0 top-0 flex max-h-[calc(100dvh-32px)] w-[min(400px,calc(100vw-32px))] flex-col overflow-hidden text-white ${
-            stage === "bar" || stage === "open" ? "pb-[72px]" : "pb-14"
+            stage === "bar" || stage === "open" ? "" : "pb-14"
           } ${
             stage === "open" ? "opacity-100" : "opacity-0"
           }`}
+          style={{
+            /* room for the strip, which grows with the composer */
+            paddingBottom: stage === "bar" || stage === "open" ? stripH : undefined,
+          }}
         >
           {/* keyed wrapper: re-cascades the content on every open (and on
               view switches, which remount children as before) */}
@@ -652,7 +713,7 @@ export default function ChatWidget() {
                 role="log"
                 aria-live="polite"
                 aria-label="Conversation"
-                className="flex-1 overflow-y-auto overscroll-contain px-6 pb-2 pt-3"
+                className="chat-scroll flex-1 overflow-y-auto overscroll-contain px-6 pb-2 pt-3"
               >
                 {messages.map((m, i) => (
                   <div key={i} className="mb-4">
@@ -663,7 +724,7 @@ export default function ChatWidget() {
                       <span className="text-white/40">{m.time}</span>
                     </p>
                     <p
-                      className={`mt-0.5 text-[15px] leading-[1.5] ${
+                      className={`mt-0.5 text-[15px] leading-[1.5] [overflow-wrap:anywhere] ${
                         m.from === "user" ? "text-white/60" : "text-white/85"
                       }`}
                     >
@@ -709,7 +770,7 @@ export default function ChatWidget() {
                         {pendingTimeRef.current}
                       </span>
                     </p>
-                    <p className="mt-0.5 min-h-6 text-[15px] leading-[1.5] text-white/85">
+                    <p className="mt-0.5 min-h-6 text-[15px] leading-[1.5] text-white/85 [overflow-wrap:anywhere]">
                       {smooth.revealed}
                     </p>
                   </div>
@@ -758,8 +819,13 @@ export default function ChatWidget() {
             if (e.pointerType === "mouse") setSphereHover(false);
           }}
           className={`absolute bottom-0 left-0 flex w-full items-center gap-3 px-6 text-white [transition:height_.4s_cubic-bezier(.65,0,.35,1)] ${
-            stage === "pill" || stage === "circle" ? "h-14" : "h-[72px]"
+            stage === "pill" || stage === "circle" ? "h-14" : ""
           }`}
+          style={
+            stage === "pill" || stage === "circle"
+              ? undefined
+              : { height: stripH }
+          }
         >
           {/* THE mark — a real 3D dot sphere: drifts at rest, perks up
               under the mouse, agitates with white sparkles while Nami
@@ -778,15 +844,21 @@ export default function ChatWidget() {
             >
               Let&rsquo;s work together
             </span>
-            <input
-              ref={inputRef}
-              type="text"
+            <textarea
+              ref={composerRef}
+              rows={1}
               value={input}
               tabIndex={showInput ? 0 : -1}
               aria-hidden={!showInput}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") send(input);
+                /* hardware Enter sends (Shift+Enter stacks a line); touch
+                   keyboards keep Enter for newlines — mobile sends with the
+                   button beside the input */
+                if (e.key === "Enter" && !e.shiftKey && finePointer()) {
+                  e.preventDefault();
+                  send(input);
+                }
               }}
               placeholder={
                 cooldownLeft > 0
@@ -794,11 +866,13 @@ export default function ChatWidget() {
                   : "Ask me anything..."
               }
               aria-label="Ask me anything"
-              className="absolute inset-0 h-full w-full bg-transparent text-[16px] text-white outline-none placeholder:text-white/40 [transition:transform_.4s_cubic-bezier(.65,0,.35,1)]"
+              className="chat-scroll absolute left-0 right-0 top-1/2 h-[23px] resize-none bg-transparent text-[16px] leading-[1.45] text-white outline-none placeholder:text-white/40 [transition:transform_.4s_cubic-bezier(.65,0,.35,1)]"
               style={{
                 /* same duration + curve as the geometry legs, so the
                    slide never slips relative to the moving wall */
-                transform: showInput ? "translateX(0)" : `translateX(${parkX}px)`,
+                transform: showInput
+                  ? "translateY(-50%)"
+                  : `translate(${parkX}px, -50%)`,
               }}
             />
 
@@ -812,6 +886,37 @@ export default function ChatWidget() {
               Let&rsquo;s work together
             </span>
           </div>
+
+          {/* send — touch keyboards offer no send action, so the button
+              exists exactly there (fine-pointer devices send with Enter);
+              styled like the panel's round icon buttons */}
+          <button
+            type="button"
+            aria-label="Send message"
+            tabIndex={showInput ? 0 : -1}
+            aria-hidden={!showInput}
+            disabled={thinking || cooldownLeft > 0 || !input.trim()}
+            onClick={() => send(input)}
+            className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/80 transition-[background-color,color,opacity] duration-200 enabled:hover:bg-white/20 enabled:hover:text-white ${
+              !showInput
+                ? "pointer-events-none opacity-0"
+                : thinking || cooldownLeft > 0 || !input.trim()
+                  ? "opacity-40"
+                  : "opacity-100"
+            } [@media(hover:hover)_and_(pointer:fine)]:hidden`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              className="h-5 w-5"
+              aria-hidden="true"
+            >
+              <path d="M12 19V5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>

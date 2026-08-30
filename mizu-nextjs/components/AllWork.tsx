@@ -120,7 +120,7 @@ export default function AllWork({ items = allWork, activeCategory }: AllWorkProp
               className="el group block no-underline outline-none focus-visible:ring-1 focus-visible:ring-white/40"
               style={d(Math.min(i * 55, 400))}
             >
-              <div className="aspect-[3/4] overflow-hidden bg-[#1c1c1c] [&>svg]:block [&>svg]:h-full [&>svg]:w-full [&>svg]:transition-transform [&>svg]:duration-700 [&>svg]:ease-[cubic-bezier(0.22,0.61,0.36,1)] [&:hover>svg]:scale-[1.04]">
+              <div className="aspect-[3/4] overflow-hidden bg-[#1c1c1c] [&>svg]:block [&>svg]:h-full [&>svg]:w-full [&>svg]:transition-transform [&>svg]:duration-700 [&>svg]:ease-[cubic-bezier(0.22,0.61,0.36,1)] [&:hover>svg]:scale-[1.04] [&>img]:block [&>img]:h-full [&>img]:w-full [&>img]:object-cover [&>img]:transition-transform [&>img]:duration-700 [&>img]:ease-[cubic-bezier(0.22,0.61,0.36,1)] [&:hover>img]:scale-[1.04]">
                 <ProjectThumb kind={item.thumb} />
               </div>
               <p className="relative mx-auto mt-[clamp(14px,1.6vw,22px)] w-fit text-[13px] leading-[1.4] text-white after:absolute after:left-0 after:-bottom-[3px] after:h-px after:w-full after:bg-current after:origin-right after:scale-x-0 after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:after:origin-left group-hover:after:scale-x-100 group-focus-visible:after:scale-x-100 group-focus-visible:after:origin-left">

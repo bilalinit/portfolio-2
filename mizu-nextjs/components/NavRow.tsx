@@ -56,18 +56,27 @@ export default function NavRow({
             if (e.pointerType === "mouse") onWorkMouseLeave();
           }}
         >
-          <span>
-            {menuOpen && (
-              <span aria-hidden="true" className="mr-[0.15em]">
-                [
-              </span>
-            )}
+          <span className="relative inline-block">
+            {/* brackets live outside the label (absolute) and fade in —
+                rendering them inline on open widened the trigger and
+                shoved the rest of the nav sideways */}
+            <span
+              aria-hidden="true"
+              className={`absolute right-full top-0 mr-[0.15em] pointer-events-none transition-opacity duration-300 ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
+                menuOpen ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              [
+            </span>
             Work
-            {menuOpen && (
-              <span aria-hidden="true" className="ml-[0.15em]">
-                ]
-              </span>
-            )}
+            <span
+              aria-hidden="true"
+              className={`absolute left-full top-0 ml-[0.15em] pointer-events-none transition-opacity duration-300 ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
+                menuOpen ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              ]
+            </span>
           </span>
         </a>
 

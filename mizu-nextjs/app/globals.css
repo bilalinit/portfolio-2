@@ -16,6 +16,10 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* hard no-side-scroll rail for phones: `clip` (not `hidden`) never
+       turns html into a scroll container, so overflowing content or
+       font-boosted text can never open a horizontal pan on any device */
+    overflow-x: clip;
   }
 
   body {
@@ -24,7 +28,7 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   ::selection {
@@ -189,6 +193,15 @@
 }
 .chat-morph.open .face-panel {
   transition: opacity 0.32s ease 0.14s;
+}
+
+/* chat scrollers (message log, composer) hide their scrollbars — the
+   content scrolls, the chat stays chrome-free */
+.chat-scroll {
+  scrollbar-width: none; /* Firefox */
+}
+.chat-scroll::-webkit-scrollbar {
+  display: none; /* WebKit/Chromium */
 }
 
 /* content cascade on open — delays ride just behind the box as it

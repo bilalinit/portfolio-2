@@ -1,28 +1,23 @@
-export type ThumbKind =
-  | "dime"
-  | "sopfeu"
-  | "halo"
-  | "noir"
-  | "sunburst"
-  | "eye"
-  | "stairs"
-  | "grid"
-  | "arcs";
+/* ============================================================================
+   Work content — the single source of truth for every project surface.
+   Add or edit an entry here and the /work grid, the navbar work menu
+   (featured rows + category counts + "see all" total), the category
+   filter pages and the /work/[slug] case studies all update together.
+   ========================================================================== */
+
+/* thumb art kinds — one per real asset in ProjectThumb.tsx */
+export type ThumbKind = "dropsync" | "gamecam";
 
 export type WorkCategoryLabel = "Website" | "Mobile App" | "Experiential" | "E-commerce";
 
-export interface FeaturedProject {
-  name: string;
-  description: string;
-  code: string;
-  thumb: ThumbKind;
-}
-
-export interface WorkCategory {
-  label: string;
-  count: number;
-  slug: string; /* for /work/category/[slug] */
-}
+/* the four work-menu filters. Slugs drive /work/category/[slug]; counts
+   are derived from allWork below, never hand-maintained. */
+const categoryDefs: { label: WorkCategoryLabel; slug: string }[] = [
+  { label: "Website", slug: "website" },
+  { label: "Mobile App", slug: "mobile-app" },
+  { label: "Experiential", slug: "experiential" },
+  { label: "E-commerce", slug: "e-commerce" },
+];
 
 /* one card on the /work grid — and one /work/[slug] case study */
 export interface WorkItem {
@@ -31,207 +26,93 @@ export interface WorkItem {
   category: WorkCategoryLabel;
   year: string;
   thumb: ThumbKind;
-  overview: string;
+  /** one-liner for the navbar menu's featured rows */
+  blurb: string;
+  /** short uppercase tag shown where the menu used to show project codes */
+  tag: string;
+  /** case-study overview, one paragraph per entry */
+  overview: string[];
+  /* real case-study media; falls back to the shared showreel */
+  media?: { src: string; alt: string };
 }
 
-/* work drop-down categories (counts render as superscripts) */
-export const workCategories: WorkCategory[] = [
-  { label: "Website", count: 7, slug: "website" },
-  { label: "Mobile App", count: 4, slug: "mobile-app" },
-  { label: "Experiential", count: 4, slug: "experiential" },
-  { label: "E-commerce", count: 3, slug: "e-commerce" },
-];
+export interface WorkCategory {
+  label: WorkCategoryLabel;
+  slug: string; /* for /work/category/[slug] */
+  count: number; /* derived — do not edit by hand */
+}
 
-/* total shown in the "See all work [n]" button — derived from the categories */
-export const totalWork = workCategories.reduce((sum, cat) => sum + cat.count, 0);
+/* featured projects, in navbar-menu order — slugs point into allWork */
+export const featuredSlugs = ["dropsync", "game-cam"];
 
-export const featuredProjects: FeaturedProject[] = [
-  {
-    name: "Dime",
-    description: "Modernizing an iconic streetwear brand",
-    code: "PDM-1025",
-    thumb: "dime",
-  },
-  {
-    name: "Sopfeu",
-    description: "Harnessing real-time data to create the ultimate prevention tool",
-    code: "PSF-0325",
-    thumb: "sopfeu",
-  },
-  {
-    name: "Halo Dental",
-    description: "Building trust to propel a new player in dentistry",
-    code: "PHD-0524",
-    thumb: "halo",
-  },
-];
+/* ============================================================================
+   The projects. Real work only — no placeholders.
+   ========================================================================== */
 
-/* the /work grid — counts mirror workCategories (7 + 4 + 4 + 3) */
 export const allWork: WorkItem[] = [
-  /* websites (7) */
   {
-    slug: "dime",
-    name: "Dime",
+    slug: "dropsync",
+    name: "DropSync",
     category: "Website",
-    year: "2025",
-    thumb: "dime",
-    overview:
-      "A full rebuild for Montreal's iconic streetwear label — a modular e-commerce experience with a lookbook engine, drop calendars and a checkout that turns hype into orders.",
+    year: "2026",
+    thumb: "dropsync",
+    blurb: "Encrypted, ephemeral file sharing with workspaces and live calls",
+    tag: "Live app",
+    overview: [
+      "DropSync is a secure, temporary file-sharing and collaboration app we designed and built end to end. Drop files, text notes, voice memos and drawings into an encrypted space, then pick them up on any other device — or work together in shared workspaces. Everything in it is ephemeral by design: every drop carries an expiry you choose, from an hour to a full day, and when it's gone, it's gone.",
+      "Privacy is the product, not a feature. Text, files and drawings are encrypted in your browser with AES-256 before they ever leave your device, and they're only decrypted on the devices meant to see them — the server passes along ciphertext it can't read. Workspaces share a single encryption key that travels by six-character invite code, so bringing someone into a team's space is as simple as typing it in.",
+      "Collaboration runs deep: an encrypted group chat with quote-replies, @mentions and read receipts; live calls for up to four people with screen sharing; reminders, locked and pinned drops; drag-and-drop organization with categories, bulk moves and a 30-second undo on every delete. Two layouts and three themes keep it feeling like yours, and everything syncs across devices in real time.",
+      "We built the AI inside it too. DropSync's assistant can search your drops, create and organize them on request, and answer questions about how the app works — with password-protected drops walled off behind a three-layer defense, and every request verified server-side so the model only ever acts as you.",
+    ],
+    media: {
+      src: "/dropsync-interface-screenshot.png",
+      alt: "DropSync — the drops workspace with the AI assistant open",
+    },
   },
   {
-    slug: "sopfeu",
-    name: "Sopfeu",
-    category: "Website",
-    year: "2025",
-    thumb: "sopfeu",
-    overview:
-      "A public prevention tool that turns real-time wildfire data into clear, actionable maps — built to stay fast and legible under load, when an entire province is watching.",
-  },
-  {
-    slug: "halo-dental",
-    name: "Halo Dental",
-    category: "Website",
-    year: "2024",
-    thumb: "halo",
-    overview:
-      "Brand and website for a new player in dentistry — a warm, trust-first design system that makes booking a visit feel as considered as the care itself.",
-  },
-  {
-    slug: "atelier-nord",
-    name: "Atelier Nord",
-    category: "Website",
-    year: "2024",
-    thumb: "noir",
-    overview:
-      "Portfolio and commission platform for a Scandinavian furniture atelier — quiet layouts, generous whitespace and typography that lets the craft speak.",
-  },
-  {
-    slug: "field-notes",
-    name: "Field Notes",
-    category: "Website",
-    year: "2024",
-    thumb: "grid",
-    overview:
-      "An editorial platform for long-form reporting — a reading experience with typographic rigor, an archive that invites wandering and nothing that interrupts it.",
-  },
-  {
-    slug: "mono-studio",
-    name: "Mono Studio",
-    category: "Website",
-    year: "2023",
-    thumb: "eye",
-    overview:
-      "Identity and site for a one-chair photography studio — a monochrome grid, film-strip transitions and a booking flow reduced to three taps.",
-  },
-  {
-    slug: "cascade",
-    name: "Cascade",
-    category: "Website",
-    year: "2023",
-    thumb: "arcs",
-    overview:
-      "Product site for a workflow tool — interactive demos, a changelog run as content, and a pricing page that answers questions before they're asked.",
-  },
-  /* mobile apps (4) */
-  {
-    slug: "loop",
-    name: "Loop",
-    category: "Mobile App",
-    year: "2025",
-    thumb: "sunburst",
-    overview:
-      "A habit-tracking app designed around gentle repetition — one-thumb navigation, streaks that forgive a missed day, and data viz that motivates rather than shames.",
-  },
-  {
-    slug: "trailhead",
-    name: "Trailhead",
-    category: "Mobile App",
-    year: "2024",
-    thumb: "stairs",
-    overview:
-      "Route planning for hikers — offline maps, elevation previews and a community layer, wrapped in an interface that stays readable in direct sunlight.",
-  },
-  {
-    slug: "pulse",
-    name: "Pulse",
-    category: "Mobile App",
-    year: "2024",
-    thumb: "noir",
-    overview:
-      "A sleep and recovery companion — calm dark-mode visuals, haptic wind-downs and morning reports that translate sensor noise into one clear number.",
-  },
-  {
-    slug: "kiosk",
-    name: "Kiosk",
-    category: "Mobile App",
-    year: "2023",
-    thumb: "grid",
-    overview:
-      "Order-ahead for independent cafés — a two-panel flow that gets a regular their usual in under ten seconds, with loyalty quietly built in.",
-  },
-  /* experiential (4) */
-  {
-    slug: "vantage",
-    name: "Vantage",
+    slug: "game-cam",
+    name: "Game cam",
     category: "Experiential",
-    year: "2025",
-    thumb: "eye",
-    overview:
-      "A projection-mapped installation for a fintech summit — real-time market data rendered as a slow, tidal wall of light.",
-  },
-  {
-    slug: "afterimage",
-    name: "Afterimage",
-    category: "Experiential",
-    year: "2024",
-    thumb: "arcs",
-    overview:
-      "An interactive light corridor for a photography festival — visitors' silhouettes linger on the walls as phosphorescent trails.",
-  },
-  {
-    slug: "null-point",
-    name: "Null Point",
-    category: "Experiential",
-    year: "2024",
-    thumb: "sopfeu",
-    overview:
-      "A sensory-deprivation brand experience — an anechoic pop-up where the design work is everything you can't see.",
-  },
-  {
-    slug: "semaphore",
-    name: "Semaphore",
-    category: "Experiential",
-    year: "2023",
-    thumb: "sunburst",
-    overview:
-      "Wayfinding and interactive totems for a transit hub — a signage system that breathes with the flow of passengers through the day.",
-  },
-  /* e-commerce (3) */
-  {
-    slug: "standard-issue",
-    name: "Standard Issue",
-    category: "E-commerce",
-    year: "2025",
-    thumb: "noir",
-    overview:
-      "E-commerce for a workwear label that sells permanence — repair guides, provenance pages and a product grid built to outlast trends.",
-  },
-  {
-    slug: "marche",
-    name: "Marché",
-    category: "E-commerce",
-    year: "2024",
-    thumb: "halo",
-    overview:
-      "A neighbourhood grocer online — seasonal crates, producer profiles and a weekly restock rhythm that turned delivery into ritual.",
-  },
-  {
-    slug: "general-goods",
-    name: "General Goods",
-    category: "E-commerce",
-    year: "2023",
-    thumb: "stairs",
-    overview:
-      "A general store for design objects — a deliberately eclectic catalogue with an editorial voice and a checkout that stays out of the way.",
+    year: "2026",
+    thumb: "gamecam",
+    blurb: "Game-style camera control recorded as clean, editable keyframes",
+    tag: "Desktop",
+    overview: [
+      "Game cam is an After Effects plugin we built that puts game-style camera control into motion design. Press WASD to fly through a 3D scene, drag the mouse to look around, and the flight is recorded as real keyframes on the timeline — ready to retime, offset and polish like any other animation. First-person camera moves become as intuitive as playing a game.",
+      "Under the hood it's a genuine real-time system: a C++ plugin runs inside After Effects at the application's refresh rate and talks to a control panel over a shared-memory channel, so movement and mouse-look land with sub-microsecond latency instead of the lag of the scripting route. While you fly, the viewport drops to draft resolution to keep frame rates high, then restores the moment you stop.",
+      "The output is deliberately clean. Camera moves are written to a parented chain of YAW and PITCH layers, so every motion stays independently editable — change speeds, retime keyframes, or chain a new move on top without breaking what came before. Whole flight segments undo in a single step, and auto-key mode records continuously while you steer.",
+    ],
   },
 ];
+
+/* ============================================================================
+   Everything below is derived — categories, totals and featured rows all
+   read from allWork above, so counts can never drift out of sync.
+   ========================================================================== */
+
+export const workCategories: WorkCategory[] = categoryDefs.map((def) => ({
+  ...def,
+  count: allWork.filter((work) => work.category === def.label).length,
+}));
+
+/* total shown in the "See all work [n]" button */
+export const totalWork = allWork.length;
+
+export interface FeaturedProject {
+  slug: string;
+  name: string;
+  blurb: string;
+  tag: string;
+  thumb: ThumbKind;
+}
+
+export const featuredProjects: FeaturedProject[] = featuredSlugs
+  .map((slug) => allWork.find((work) => work.slug === slug))
+  .filter((work): work is WorkItem => work !== undefined)
+  .map((work) => ({
+    slug: work.slug,
+    name: work.name,
+    blurb: work.blurb,
+    tag: work.tag,
+    thumb: work.thumb,
+  }));
