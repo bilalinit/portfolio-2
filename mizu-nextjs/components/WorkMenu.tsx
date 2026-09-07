@@ -33,7 +33,10 @@ type WorkMenuProps = {
    panel grows; caps keep the largest sizes sane on extreme displays.
    Mobile (≤860px): full-screen sheet that slides in from the LEFT,
    tap-driven from the mobile menu; "[+] MAIN MENU" goes back, "CLOSE [×]"
-   closes everything. */
+   closes everything. The sheet is mounted by MenuLayer in the root layout:
+   its links navigate WITHOUT closing anything — when the route commits,
+   MenuLayer closes the menus, so the slide-away always uncovers the page
+   you asked for (never home, never a late blink). */
 type Phase = "closed" | "open" | "closing";
 
 const itemIn = "animate-[wmIn_0.55s_cubic-bezier(0.22,0.61,0.36,1)_forwards]";
@@ -139,7 +142,7 @@ export default function WorkMenu({
         onPointerLeave={(e) => {
           if (e.pointerType === "mouse") onMenuMouseLeave?.();
         }}
-        className={`@container fixed top-0 right-0 z-[540] w-[max(calc(50vw+24px),750px)] max-h-[100dvh] overflow-y-auto overflow-x-clip overscroll-contain ${
+        className={`@container fixed top-0 right-0 z-[540] w-[max(calc(50vw+24px),750px)] max-h-[100dvh] overflow-y-auto overflow-x-clip overscroll-contain max-[860px]:bg-white ${
           open
             ? "visible [transform:translateY(0)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s] max-[860px]:inset-0 max-[860px]:w-full max-[860px]:[transform:translateX(0)]"
             : "invisible [transform:translateY(-103%)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s_linear_.65s] max-[860px]:inset-0 max-[860px]:w-full max-[860px]:[transform:translateX(-103%)]"
@@ -173,8 +176,7 @@ export default function WorkMenu({
               <Link
                 key={cat.label}
                 href={`/work/category/${cat.slug}`}
-                className={`${catLink} ${item(delays[i], phase)}`}
-                onClick={onCloseAll}
+                className={`${catLink} ${item(delays[i], phase)} active:opacity-60`}
               >
                 {cat.label}
                 <sup className="text-[0.45em] leading-[0] relative -top-[0.8em] ml-1">
@@ -206,8 +208,7 @@ export default function WorkMenu({
                 <Link
                   key={project.slug}
                   href={`/work/${project.slug}`}
-                  onClick={onCloseAll}
-                  className={`grid grid-cols-[clamp(112px,15.6cqw,200px)_1fr_1.35fr_auto] gap-[clamp(20px,2.8cqw,40px)] items-center py-[clamp(12px,1.7cqw,26px)] border-b border-[#ddd7ca] no-underline text-ink transition-[background-color] duration-[250ms] hover:bg-[#f4f0e7] min-[861px]:max-[1024px]:grid-cols-[88px_1fr_70px] max-[860px]:grid-cols-[130px_1fr_auto] max-[860px]:grid-rows-[auto_1fr] max-[860px]:gap-x-4 max-[860px]:gap-y-1 ${item(delays[Math.min(i + 2, delays.length - 1)], phase)}`}
+                  className={`grid grid-cols-[clamp(112px,15.6cqw,200px)_1fr_1.35fr_auto] gap-[clamp(20px,2.8cqw,40px)] items-center py-[clamp(12px,1.7cqw,26px)] border-b border-[#ddd7ca] no-underline text-ink transition-[background-color] duration-[250ms] hover:bg-[#f4f0e7] active:bg-[#eee8da] min-[861px]:max-[1024px]:grid-cols-[88px_1fr_70px] max-[860px]:grid-cols-[130px_1fr_auto] max-[860px]:grid-rows-[auto_1fr] max-[860px]:gap-x-4 max-[860px]:gap-y-1 ${item(delays[Math.min(i + 2, delays.length - 1)], phase)}`}
                 >
                   <span
                     aria-hidden="true"
@@ -225,8 +226,7 @@ export default function WorkMenu({
 
           <Link
             href="/work"
-            onClick={onCloseAll}
-            className={`flex items-center justify-center h-[clamp(40px,5.3cqw,68px)] mt-3 border border-ink text-ink no-underline text-[clamp(11.5px,1.7cqw,24px)] font-medium tracking-[0.05em] uppercase transition-colors duration-300 hover:bg-ink hover:text-white ${item(delays[4], phase)}`}
+            className={`flex items-center justify-center h-[clamp(40px,5.3cqw,68px)] mt-3 border border-ink text-ink no-underline text-[clamp(11.5px,1.7cqw,24px)] font-medium tracking-[0.05em] uppercase transition-colors duration-300 hover:bg-ink hover:text-white active:bg-ink/90 active:text-white ${item(delays[4], phase)}`}
           >
             See all work [{totalWork}]
           </Link>

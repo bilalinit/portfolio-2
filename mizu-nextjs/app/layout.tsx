@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Anton, Caveat, Inter } from "next/font/google";
+import MenuLayer from "@/components/MenuLayer";
 import "./globals.css";
 
 const anton = Anton({
@@ -37,7 +38,9 @@ export default function RootLayout({
       lang="en"
       className={`${anton.variable} ${inter.variable} ${caveat.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <MenuLayer>{children}</MenuLayer>
+      </body>
     </html>
   );
 }

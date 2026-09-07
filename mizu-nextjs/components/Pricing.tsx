@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { briefSteps, CONTACT_EMAIL, customPlan, recurringPlans } from "@/data/pricing";
 
 /* Pricing section — ported from price.html (original gray palette) with
    the exact animation
@@ -9,60 +10,34 @@ import { useEffect, useRef, useState } from "react";
    - panels: opacity 0.4s + elastic transform 0.6s cross-fade
    - form steps: staggered stepIn (50ms steps)
    - pricing cards: staggered cardIn (80ms steps)
-   - form steps dim to 40% until focused */
+   - form steps dim to 40% until focused or filled
+
+   The section is functional: the Single tab is a four-question brief that
+   assembles itself into a pre-filled email draft (mailto) as the visitor
+   picks options — we read the email and answer with a real number. The
+   Recurring cards open plan-specific drafts the same way. */
 
 type Tab = "single" | "recurring";
 
-const projectSteps = [
-  {
-    label: "Project Type",
-    options: ["Select project type*", "Web Development", "Web Design", "Branding", "E-commerce"],
-  },
-  {
-    label: "Project Size",
-    options: ["Select project size*", "Small (1-2 weeks)", "Medium (2-4 weeks)", "Large (1-3 months)", "Enterprise (3+ months)"],
-  },
-  {
-    label: "Project Creativity",
-    options: ["Select project creativity*", "Standard", "High-end", "Award-winning"],
-  },
-  {
-    label: "Project Timeline",
-    options: ["Select project timeline*", "ASAP", "1-2 months", "3-6 months", "Flexible"],
-  },
-];
+const MAILTO_SUFFIX = "(Sent from the pricing section on mizu.studio)";
 
-const plans = [
-  {
-    name: "Standard",
-    price: "€4,999",
-    desc: "Great for small agencies with a lighter flow of projects.",
-    features: [
-      "Shared capacity",
-      "One project at a time",
-      "One expert-level developer",
-      "Unlimited requests",
-      "Dedicated communication channel",
-    ],
-  },
-  {
-    name: "Extended",
-    price: "€9,999",
-    desc: "Great for agencies handling multiple projects at once.",
-    features: [
-      "Dedicated capacity",
-      "Up to two concurrent projects",
-      "Two expert-level developers",
-      "Unlimited requests",
-      "Dedicated communication channel",
-    ],
-  },
-];
+function mailtoUrl(subject: string, body: string) {
+  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+/* the house CTA of this section — same pill the recurring cards use */
+const ctaClass =
+  "w-full rounded-[10px] bg-[#1a1a1a] py-3.5 text-center text-[13px] font-semibold uppercase tracking-[0.04em] text-white [transition:transform_.2s_ease,opacity_.2s_ease] hover:-translate-y-px hover:opacity-90";
 
 export default function Pricing() {
   const [tab, setTab] = useState<Tab>("single");
   /* focused form step (the reference starts with step 1 lit) */
   const [activeStep, setActiveStep] = useState(0);
+
+  /* the brief — four required picks + one optional notes line */
+  const [picks, setPicks] = useState<string[]>(["", "", "", ""]);
+  const [notes, setNotes] = useState("");
+  const ready = picks.every(Boolean);
 
   /* the demo page had this section above the fold, so its entrance
      played on load; here it sits below the skills section, so the first
@@ -110,6 +85,30 @@ export default function Pricing() {
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
   }, [tab, revealed]);
+
+  const setPick = (i: number, value: string) => {
+    setPicks((prev) => prev.map((p, j) => (j === i ? value : p)));
+  };
+
+  /* the assembled draft */
+  const briefBody = useMemo(() => {
+    const lines = [
+      "Hi MIZU,",
+      "",
+      "I'd like a quote for a project:",
+      "",
+      `- Project type: ${picks[0] || "—"}`,
+      `- Scope: ${picks[1] || "—"}`,
+      `- Finish level: ${picks[2] || "—"}`,
+      `- Start: ${picks[3] || "—"}`,
+    ];
+    if (notes) lines.push(`- Notes: ${notes}`);
+    lines.push("", MAILTO_SUFFIX);
+    return lines.join("\n");
+  }, [picks, notes]);
+
+  const briefSubject = `Quote request — ${picks[0] || "project"}, ${picks[1] || "scope"}`;
+  const briefHref = mailtoUrl(briefSubject, briefBody);
 
   const singleActive = revealed && tab === "single";
   const recurringActive = revealed && tab === "recurring";
@@ -172,7 +171,7 @@ export default function Pricing() {
 
           {/* panels */}
           <div className="relative" style={{ minHeight: minH }}>
-            {/* single project */}
+            {/* single project — the brief */}
             <div
               ref={singleRef}
               aria-hidden={!singleActive}
@@ -189,11 +188,11 @@ export default function Pricing() {
                   </p>
                 </div>
 
-                {projectSteps.map((step, i) => (
+                {briefSteps.map((step, i) => (
                   <div
                     key={step.label}
                     className={`pr-step mb-6 opacity-40 transition-opacity duration-300 ${
-                      activeStep === i ? "opacity-100" : ""
+                      activeStep === i || picks[i] ? "opacity-100" : ""
                     }`}
                   >
                     <div className="mb-3 flex items-center justify-between">
@@ -207,14 +206,58 @@ export default function Pricing() {
                     <select
                       className="pr-select"
                       aria-label={step.label}
+                      value={picks[i]}
                       onFocus={() => setActiveStep(i)}
+                      onChange={(e) => setPick(i, e.target.value)}
                     >
+                      <option value="">{step.placeholder}</option>
                       {step.options.map((option) => (
                         <option key={option}>{option}</option>
                       ))}
                     </select>
                   </div>
                 ))}
+
+                {/* optional notes */}
+                <div
+                  className={`pr-step mb-8 opacity-40 transition-opacity duration-300 ${
+                    activeStep === 4 || notes ? "opacity-100" : ""
+                  }`}
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f0f0f0] text-[12px] font-semibold">
+                      5
+                    </div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#aaaaaa]">
+                      Anything else — optional
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    className="pr-input"
+                    aria-label="Anything else we should know (optional)"
+                    placeholder="Anything else we should know? (optional)"
+                    maxLength={300}
+                    value={notes}
+                    onFocus={() => setActiveStep(4)}
+                    onChange={(e) => setNotes(e.target.value)}
+                  />
+                </div>
+
+                {/* single CTA — opens the pre-filled email draft */}
+                {ready ? (
+                  <a href={briefHref} className={`${ctaClass} block`}>
+                    Get a quote
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className={`${ctaClass} cursor-not-allowed opacity-40`}
+                  >
+                    Get a quote
+                  </button>
+                )}
               </div>
             </div>
 
@@ -235,7 +278,7 @@ export default function Pricing() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 min-[901px]:grid-cols-2">
-                {plans.map((plan) => (
+                {recurringPlans.map((plan) => (
                   <div
                     key={plan.name}
                     className="pr-card flex flex-col rounded-[24px] bg-white p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
@@ -262,15 +305,61 @@ export default function Pricing() {
                         </li>
                       ))}
                     </ul>
-                    <button
-                      type="button"
-                      className="mt-6 w-full rounded-[10px] bg-[#1a1a1a] py-3.5 text-[13px] font-semibold uppercase tracking-[0.04em] text-white [transition:transform_.2s_ease,opacity_.2s_ease] hover:-translate-y-px hover:opacity-90"
+                    <a
+                      href={mailtoUrl(
+                        plan.subject,
+                        [
+                          "Hi MIZU,",
+                          "",
+                          plan.bodyIntro,
+                          "",
+                          ...plan.features.map((f) => `- ${f}`),
+                          "",
+                          MAILTO_SUFFIX,
+                        ].join("\n")
+                      )}
+                      className="mt-6 w-full rounded-[10px] bg-[#1a1a1a] py-3.5 text-center text-[13px] font-semibold uppercase tracking-[0.04em] text-white no-underline [transition:transform_.2s_ease,opacity_.2s_ease] hover:-translate-y-px hover:opacity-90"
                     >
-                      Start a conversation
-                    </button>
+                      {plan.cta}
+                    </a>
                   </div>
                 ))}
+
+                {/* custom engagement — wide strip below the two plans */}
+                <div className="pr-card flex flex-col rounded-[24px] bg-white p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)] min-[901px]:col-span-2 min-[901px]:flex-row min-[901px]:items-center min-[901px]:justify-between min-[901px]:gap-8 min-[901px]:px-10">
+                  <div className="max-[900px]:mb-5">
+                    <div className="mb-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#666666]">
+                      {customPlan.name}
+                    </div>
+                    <p className="max-w-[560px] text-[14px] leading-[1.55] text-[#1a1a1a]">
+                      {customPlan.desc}
+                    </p>
+                  </div>
+                  <a
+                    href={mailtoUrl(
+                      customPlan.subject,
+                      [
+                        "Hi MIZU,",
+                        "",
+                        customPlan.bodyIntro,
+                        "",
+                        "- What we need built:",
+                        "- Roughly how much of your time:",
+                        "- For how long:",
+                        "",
+                        MAILTO_SUFFIX,
+                      ].join("\n")
+                    )}
+                    className="w-full shrink-0 rounded-[10px] border border-[#1a1a1a]/25 py-3.5 px-6 text-center text-[13px] font-semibold uppercase tracking-[0.04em] text-[#1a1a1a] no-underline [transition:background-color_.2s_ease] hover:bg-[#e8e8e8] min-[901px]:w-auto"
+                  >
+                    {customPlan.cta}
+                  </a>
+                </div>
               </div>
+
+              <p className="mt-4 px-2 text-center text-[12px] text-[#666666]">
+                Pause or cancel monthly · Roll unused days · No lock-in
+              </p>
             </div>
           </div>
         </div>

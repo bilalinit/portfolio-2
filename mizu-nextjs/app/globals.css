@@ -395,6 +395,10 @@
 .pr-panel.active .pr-step:nth-child(5) {
   animation-delay: 0.2s;
 }
+/* the optional notes step joins the same 50ms steps */
+.pr-panel.active .pr-step:nth-child(6) {
+  animation-delay: 0.25s;
+}
 
 /* staggered entrance for pricing cards */
 .pr-panel.active .pr-card {
@@ -407,6 +411,10 @@
 }
 .pr-panel.active .pr-card:nth-child(2) {
   animation-delay: 0.16s;
+}
+/* custom-engagement strip joins the same 80ms steps */
+.pr-panel.active .pr-card:nth-child(3) {
+  animation-delay: 0.24s;
 }
 
 @keyframes prStepIn {
@@ -438,6 +446,27 @@
   background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 16px center;
+}
+
+/* one-line text field matching .pr-select, minus the dropdown chevron */
+.pr-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+  background-color: #f0f0f0;
+  font-family: inherit;
+  font-size: 15px;
+  color: #1a1a1a;
+  cursor: text;
+  appearance: none;
+}
+.pr-input::placeholder {
+  color: #999999;
+}
+.pr-input:focus {
+  outline: none;
+  border-color: #cccccc;
 }
 
 @media (prefers-reduced-motion: reduce) {

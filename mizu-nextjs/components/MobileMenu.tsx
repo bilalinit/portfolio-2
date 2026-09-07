@@ -35,19 +35,27 @@ const topButton =
 
 /* Mobile main menu: white sheet that slides down from the top with the
    primary links; the page below is dimmed. WORK hands over to the
-   WorkMenu panel, which slides in from the left above this sheet.
+   WorkMenu panel, which slides in from the left above this sheet (the
+   sheet stays mounted underneath so "[+] Main menu" can hand back).
    Desktop hides the whole thing (min-[861px]:hidden). */
 export default function MobileMenu({ open, onClose, onOpenWork }: MobileMenuProps) {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  /* tap anywhere outside the sheet closes it */
+  /* tap anywhere outside the sheet closes it — except taps inside the work
+     panel: it sits above this sheet, and its own controls ("[+] Main menu",
+     "Close [×]") bubble here; closing the sheet on their click would yank
+     the floor out from under the hand-back */
   useEffect(() => {
     if (!open) return;
 
     const onDocClick = (e: MouseEvent) => {
       const root = rootRef.current;
       if (!root) return;
-      if (!root.contains(e.target as Node)) onClose();
+      const target = e.target as Node;
+      if (root.contains(target)) return;
+      const workPanel = document.getElementById("work-menu");
+      if (workPanel?.contains(target)) return;
+      onClose();
     };
 
     document.addEventListener("click", onDocClick);
