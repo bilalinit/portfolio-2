@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
 import { Anton, Caveat, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import MenuLayer from "@/components/MenuLayer";
 import "./globals.css";
+
+/* Helvetica Bold — hero wordmark ("Mizu"); a user-supplied file, so it
+   loads locally rather than from Google Fonts */
+const helvetica = localFont({
+  src: "./fonts/Helvetica-Bold.ttf",
+  variable: "--font-helvetica",
+  display: "swap",
+});
 
 const anton = Anton({
   weight: "400",
@@ -36,7 +45,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${anton.variable} ${inter.variable} ${caveat.variable}`}
+      className={`${anton.variable} ${inter.variable} ${caveat.variable} ${helvetica.variable}`}
     >
       <body>
         <MenuLayer>{children}</MenuLayer>

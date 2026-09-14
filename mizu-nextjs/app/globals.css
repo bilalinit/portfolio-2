@@ -10,6 +10,7 @@
   --font-sans: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-anton), "Arial Black", sans-serif;
   --font-hand: var(--font-caveat), "Segoe Script", cursive;
+  --font-brand: var(--font-helvetica), "Helvetica Neue", Arial, sans-serif;
 }
 
 /* ============ BASE ============ */
@@ -59,15 +60,26 @@
   }
 }
 
-@keyframes logoIn {
+/* hero lockup entrance — opacity only: the AE-rendered icon must never
+   transform, or it would move out from under the intro video's landing
+   region (measured from this element) */
+@keyframes brandIn {
   from {
     opacity: 0;
-    transform: translateY(60px) scaleY(1.07);
   }
   to {
     opacity: 1;
-    transform: scaleY(1.07);
   }
+}
+
+/* ============ INTRO SPLASH ============
+   While IntroSplash holds the homepage under its beige cover
+   (html[data-intro-pending], set only when the splash actually plays),
+   the staggered load-ins wait on their first frame; the attribute is
+   removed the moment the video ends, so they rise as the cover fades.
+   Reduced-motion never sets the attribute — the splash is skipped. */
+html[data-intro-pending] .intro-rise {
+  animation-play-state: paused;
 }
 
 @keyframes wmIn {

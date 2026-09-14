@@ -25,10 +25,10 @@ type WorkMenuProps = {
    - "closed"  → dormant, items hidden
    Reopening mid-fade cancels the exit and replays the entrance.
    Desktop: drops down from the top-right, opens on hover of the WORK
-   trigger (the parent owns the open/close timers). The trigger sits at
-   ~50vw (right hero half), so the panel width is max(50vw + 24px, 750px)
-   — its left edge lands just left of the trigger at EVERY desktop width
-   (laptop → ultrawide). The root is a size container (`@container`) and
+   trigger (the parent owns the open/close timers). The trigger sits in
+   the top-right nav (≥ ~55vw on desktop), so the panel width
+   max(50vw + 24px, 750px) keeps its left edge left of the trigger at
+   EVERY desktop width. The root is a size container (`@container`) and
    internal type/gaps/thumbs use cqw clamps, so proportions hold as the
    panel grows; caps keep the largest sizes sane on extreme displays.
    Mobile (≤860px): full-screen sheet that slides in from the LEFT,
