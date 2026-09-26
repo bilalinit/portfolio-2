@@ -31,9 +31,9 @@ export default function Hero() {
         Menu <span aria-hidden="true" className="ml-1">[=]</span>
       </button>
 
-      {/* primary nav — right-aligned so the WORK trigger stays in the
-          panel's drop zone */}
-      <div className={`intro-rise flex justify-end ${riseIn} [animation-delay:0.18s]`}>
+      {/* Keep this wrapper untransformed so NavRow's z-index stays above
+          the sliding Work panel. */}
+      <div className="flex justify-end">
         <NavRow
           className="w-fit"
           menuOpen={menus.workOpen}
@@ -43,11 +43,8 @@ export default function Hero() {
         />
       </div>
 
-      {/* wordmark: the AE-rendered lockup (intro animation's final frame)
-          as a permanent icon. IntroSplash aligns its video to this exact
-          element, so the entrance animates straight into this image —
-          brandIn is opacity-only because any transform here would move
-          the element out from under the video's landing region. */}
+      {/* wordmark lockup: "Mizu" in Helvetica Bold + "Studio" as a small
+          tracked uppercase counterpoint on the same baseline */}
       <div className="mt-[clamp(40px,9vh,104px)]">
         <a
           href="#"
@@ -62,29 +59,24 @@ export default function Hero() {
           }}
           className="inline-block no-underline select-none animate-[brandIn_0.9s_cubic-bezier(0.22,0.61,0.36,1)_both] [animation-delay:0.05s] max-[860px]:relative max-[860px]:z-[530]"
         >
-          <img
-            id="hero-lockup"
-            src="/mizu-lockup.png"
-            alt=""
-            width={608}
-            height={128}
-            draggable={false}
-            /* no upper clamp: the intro video pins to this element's live
-               rect, so the width must keep tracking the viewport or the
-               animation drifts off-center past 1920px (slight upscale on
-               big monitors — the video softens identically there) */
-            className="block h-auto w-[max(280px,31.67vw)] max-[860px]:w-[min(66vw,320px)]"
-          />
+          <span className="flex items-baseline gap-3 max-[860px]:gap-2">
+            <span className="font-brand text-[clamp(68px,10.5vw,160px)] leading-none tracking-[-0.03em] text-ink max-[860px]:text-[clamp(56px,18vw,110px)]">
+              Mizu
+            </span>
+            <span className="text-[clamp(12px,1.1vw,17px)] font-medium uppercase tracking-[0.42em] text-ink max-[860px]:text-[11px]">
+              Studio
+            </span>
+          </span>
         </a>
 
         <h1
-          className={`intro-rise ${riseIn} [animation-delay:0.32s] mt-7 max-w-[760px] text-[clamp(26px,3.4vw,46px)] font-normal leading-[1.1] tracking-[-0.02em] text-ink`}
+          className={`${riseIn} [animation-delay:0.32s] mt-7 max-w-[760px] text-[clamp(26px,3.4vw,46px)] font-normal leading-[1.1] tracking-[-0.02em] text-ink`}
         >
           Beautiful. Useful. Autonomous.
         </h1>
 
         <p
-          className={`intro-rise ${riseIn} [animation-delay:0.45s] mt-5 max-w-[420px] text-[14px] leading-[1.5] tracking-[-0.005em] text-[#191510]/70`}
+          className={`${riseIn} [animation-delay:0.45s] mt-5 max-w-[420px] text-[14px] leading-[1.5] tracking-[-0.005em] text-[#191510]/70`}
         >
           Design that holds. Code that runs. AI-enabled agents that do
           the work. We build AI-enabled websites, apps, and agents that
