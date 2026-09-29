@@ -17,13 +17,13 @@ For agent rules, hard-won bug rules, and design system details see [AGENTS.md](A
 | Case studies `/work/[slug]` | ✅ Done (real projects only, static-generated; per-project media or shared showreel) |
 | Category views `/work/category/[slug]` | ✅ Done |
 | Chat widget "Nami" | 🔶 In progress — UI + morph + DotSphere modes + streaming + rate limiting + input guardrail + project-mention links done; end-to-end tested with the real key; deployment pending |
-| About / Services / Careers pages | ⬜ Not started — nav links are `#` placeholders |
-| Footer social links | ⬜ Placeholder `#` |
+| About / Services / Careers pages | ⬜ Not started — nav links are `#` placeholders. Careers link removed from nav + footer + mobile menu (2026-09-30) rather than left as a dead `#` |
+| Footer social links | ✅ X + GitHub live; Instagram still a `#` placeholder |
 | Real project media | ✅ For the two live entries — all placeholder projects purged; grid is real-content only |
 | Python agent backend (`backend/`) | 🔶 Built + tested end-to-end — FastAPI + Agents SDK on Gemini (uv), key in `backend/.env`, input guardrail (jailbreak/misuse/abuse + authority-claim pretexts) verified live; deployment (HF Spaces) later |
 
-**Branches:** `dev` working · `main` stable · `backup` archive · `chat-agent` holds the day's work as `b0025fc` · `chat-agent-guardrails` current
-**Latest commit:** `fce1066` Nami guardrail, mention links + hover card, vector card art, Game cam rename (on `chat-agent-guardrails`)
+**Branches:** `dev` working · `main` stable · `backup` archive · `chat-agent` holds the day's work as `b0025fc` · `chat-agent-guardrails` · `hero-redesign` (rolled back) · `hero-redesign-2` current, pushed to origin 2026-09-30
+**Latest commit:** `697a73c` Redesign hero masthead, work dropdown, and chat affordances (on `hero-redesign-2`, pushed to `origin/hero-redesign-2` — not merged to `main` yet; see the entry below)
 **Uncommitted on `chat-agent-guardrails` (working-tree only):** the mobile nav rework — menu layer moved to the root layout (`MenuLayer.tsx` + context; panels survive route changes), links navigate without closing (MenuLayer closes on route commit → slide-away reveals the destination, no home flash/blink), prefetch of all menu targets on open, solid white mobile sheet, mobile-menu outside-click exempts the work panel (fixes "[+] Main menu" back button) · real-device scroll lock while the mobile sheet is open (position:fixed freeze at the exact offset — `overflow:hidden` alone loses to iOS momentum scrolling — with offset restore on close, skipped when a menu link navigated so the new page keeps its own scroll) · hydration fix (`leading-[0]` typo from the `active:` edit) + dev-server restart for a stale server-render graph · pricing section made functional (brief-builder single tab → mailto draft, recurring CTAs wired + custom-flow card, `data/pricing.ts`) · PROGRESS.md itself
 
 ---
@@ -43,29 +43,30 @@ For agent rules, hard-won bug rules, and design system details see [AGENTS.md](A
 | Component | Role |
 |---|---|
 | `Cursor.tsx` | Custom cursor (rAF lerp dot, `mix-blend-difference` on the transformed wrapper); grows over `a, button`; only on fine-pointer ≥1025px |
-| `Hero.tsx` | Beige hero, giant "Mizu" wordmark; owns work-menu hover (mouse-guarded, grace timers) + mobile menu state + body scroll lock |
-| `NavRow.tsx` | Desktop nav: About/Services/Careers (`#` placeholders), `[Work]` trigger, Contact, accessibility |
-| `WorkMenu.tsx` | WORK dropdown — closed/open/closing phases, backdrop, category links, featured project tabs, "See all work [n]" |
+| `Hero.tsx` | Editorial masthead (2026-09-30 redesign): mark + wordmark, stacked nav columns split by a hairline, two destination tiles, `EN` label; the wordmark set enormous in Inter Tight 280 spanning its column. Owns work-menu hover (mouse-guarded, grace timers) + mobile menu state + body scroll lock |
+| `NavRow.tsx` | ⚠️ **Orphaned** — superseded by the Hero masthead; no imports remain. Still on disk, safe to delete |
+| `WorkMenu.tsx` | WORK dropdown — closed/open/closing phases, backdrop, category links, featured project rows, "See all work [n]". Width `clamp(460px,44vw,720px)`; project rows break on a **container** query, not a viewport one |
 | `MobileMenu.tsx` | Mobile ≤860px sheet sliding from top; Work hands off to WorkMenu |
 | `Showcase.tsx` | Dark wrapper around SkillSets |
 | `skills/SkillSets.tsx` | "Design skill sets" accordion; IntersectionObserver reveals with `--d` stagger |
 | `AllWork.tsx` | Portrait-card grid (2/3/4 cols); doubles as filtered category view |
 | `Pricing.tsx` | 1:1 port of `price.html` — elastic tab indicator, cross-fading form/plan panels |
-| `Footer.tsx` | Rounded cream card: statement, link columns, Contact us, legal row |
-| `ProjectThumb.tsx` | SVG placeholder art per project (dime, sopfeu, halo, noir, …) |
-| `ChatWidget.tsx` | "Nami" assistant pill — persistent strip `[dots icon | prompt slot]`; morph pill → circle → bar → panel with overlapped legs; greet/chat/contact views; `sendToAgent()` stub |
+| `Footer.tsx` | Rounded cream card: statement, link columns, Contact us, Privacy Policy only. External links (X, GitHub) open in a new tab with `rel="noopener noreferrer"`, derived from the href |
+| `ProjectThumb.tsx` | Card art per project — real images only (`dropsync`, `gamecam`); the placeholder SVG art was purged 2026-08-30 |
+| `ChatWidget.tsx` | "Nami" assistant pill — persistent strip `[dots icon | prompt slot]`; morph pill → circle → bar → panel with overlapped legs; greet/chat/contact views; SSE streaming to the backend; project mentions link to `/work/[slug]` with a hover preview card |
 | `DotSphere.tsx` | 3D dot-sphere mark: fibonacci lattice, rAF loop, 5 eased modes (rest/hover/open/thinking/morph), squash-stretch, white sparkles, spring "inhale" on morph |
-| `icons.tsx` | Inline SVGs — FolderIcon, AccessibilityIcon, DotsIcon (with bloom animation) |
+| `icons.tsx` | Inline SVGs — FolderIcon, AccessibilityIcon, DotsIcon (with bloom animation), MizuMark (three-stroke asterisk) |
 
 ### Data (`mizu-nextjs/data/`)
 
-- `projects.ts` — `workCategories` (Website 7 / Mobile App 4 / Experiential 4 / E-commerce 3), `featuredProjects` (Dime, Sopfeu, Halo Dental), `allWork` (17 items with slug/year/overview)
+- `projects.ts` — `workCategories` + `featuredProjects` derived from `allWork` (DropSync / Game cam). Per-project `github` + `liveUrl` drive the chat mention card's two icon links
+- `pricing.ts` — pricing copy/brief steps, **and `CONTACT_EMAIL`**, the single source for every mail surface in the site
 - `skills.ts` — skills intro + UI (06) / UX (05) skill groups with detail copy
 
 ### Design system (`app/globals.css`)
 
-- **Tokens** (`@theme`): `beige #c9c1b1` · `ink #131009` · `dark #1a120b` · `coal #121212`
-- **Fonts:** `font-display` (Anton), Inter, Caveat accents
+- **Tokens** (`@theme`): `beige #e5e3de` (was `#c9c1b1` — retuned 2026-09-30, see below) · `ink #131009` · `dark #1a120b` · `coal #121212`
+- **Fonts:** `font-display` (Anton), Inter, Caveat accents, `font-mark` (Inter Tight — hero wordmark only)
 - **Motifs:** bracket labels `[Work]`, folder-tab clip corners, underline-draw hovers, scroll-reveals (`.sk`, `.aw` + `--d`), `cursor: none` behind the same media query as Cursor
 - **Easing:** standard `cubic-bezier(0.22,0.61,0.36,1)` · pricing elastic `cubic-bezier(0.34,1.56,0.64,1)` · chat morph `.65,0,.35,1`
 - **Reduced motion:** every animated system has a fallback (skills, all-work, pricing, chat widget, DotSphere)
@@ -73,6 +74,21 @@ For agent rules, hard-won bug rules, and design system details see [AGENTS.md](A
 ---
 
 ## Feature log
+
+### ✅ Hero masthead rebuild + dropdown/chat/footer pass (697a73c, 2026-09-30, branch `hero-redesign-2`)
+Pushed to `origin/hero-redesign-2`, **not merged to `main`** — the branch exists so this can be reverted wholesale. Supersedes the `hero-redesign` work described further down (that one was rolled back).
+- **Hero rebuilt to a new reference** (supplied as a screenshot, *not* `mizu.html` — an earlier pass wrongly assumed the prototype was the source and tuned type to its numbers): masthead strip of mark + wordmark / stacked nav columns split by a hairline / two destination tiles + `EN` hard right, a rule under the whole strip, then the wordmark set enormous below it with the brand statement and a small note in a right-hand column. Wordmark is **Inter Tight 280** (`--font-mark`), not Anton — at that size Anton reads brutalist, and the reference is a light grotesque on a lot of air. Sizing note: the wordmark's `cqw` size and the `1.5fr` grid column are **a matched pair** — an earlier attempt shrank the type to 33cqw while leaving the column at 2.05fr, which just moved the empty space *inside* the cell (14% dead slack) rather than closing the gap. Wordmark is `select-none` (at 41cqw a stray drag painted a selection block over a third of the screen) but its `sr-only` copy is `select-text`, so the brand name stays copyable.
+- **Palette: beige retired.** `--color-beige` retuned `#c9c1b1 → #e5e3de` (near-neutral off-white) because the tan read as dusty/overused. The token was **kept** (not renamed) so the ~15 existing `bg-beige` / `text-beige` call sites still resolve; renaming it is a deliberate follow-up, not an oversight. The neutral destination tile moved to `#c6c3bb` — the old `#d8d8d8` was only 1.11:1 against the new ground and had no visible edge. Favicon updated to match. **Collateral damage worth knowing:** the retune also changed every `text-beige` *inside the dark chat panel*, which is what made the project mention invisible (below).
+- **Work dropdown width `max(50vw+24px, 750px)` → `clamp(460px, 44vw, 720px)`.** The old value had a 750px floor that pinned it on laptops and **no ceiling**, so a 33% wider screen bought a 31% wider panel (~50% of viewport at both 1440 and 1920). Capping in absolute px means it takes a steadily smaller *share* past ~1640px. The 460px floor is load-bearing: the WORK trigger sits in the nav's right cluster, and anything narrower would leave the trigger outside the panel and break the hover hand-off. **Project rows moved from viewport media queries to a container query** (`@max-[600px]:`) — the panel no longer tracks the viewport, so the old `min-[861px]:max-[1024px]` band no longer described it; below 600px of *panel* the blurb hides and the thumb shrinks.
+- **Work-menu type: small + medium weight, not large + light.** Two wrong passes — `4.4cqw/32px` at weight 350 read as thin and oversized, `19px/1.5vw` at 500 read too quiet. Settled on `clamp(17px,1.35vw,22px)` at **weight 500**: **weight carries the hierarchy, not size**. The categories are in `vw` while the panel padding is in `cqw` — that split is intentional (the padding must track the panel or 56px of top inset eats a fifth of a 460px panel; the type deliberately does not).
+- **Chat: three fixes.**
+  1. *Invisible mention* — project names were `text-beige`, which **is** the page ground token, so the retune above dropped it to **1.11:1** against the `white/85` body text. Now neutral `#8a8a8a` + a persistent underline, so link-ness never depends on colour alone. Note the direction: the chat panel is `bg-black`, so a *darker* grey would sink into it, not stand out — measured 6.1:1 vs panel, 2.5:1 vs body.
+  2. *Dead Game Cam arrow* — the preview card's arrow is only a real link when the project has a `liveUrl`, and `game-cam` had none, so it rendered a dimmed `<span>` identical to DropSync's live one. Added `liveUrl` to the data (fixes it everywhere the field is read) **and** changed the no-URL branch to render *no arrow at all* rather than a dead one.
+  3. *Pill body did nothing* — the card's art + name now link to `/work/[slug]`, as a **sibling** of the GitHub/arrow links, never their parent: anchors cannot nest, and wrapping them would have collapsed three targets into one ambiguous click.
+- **Footer/nav trimmed:** removed Process, Press kit, Careers, News, YouTube, LinkedIn, the Data Processing Addendum, and the `Inc` from the copyright (both are legal claims, not placeholders). X + GitHub filled in. Careers also removed from the mobile menu.
+- **Contact email centralised** on `CONTACT_EMAIL` in `data/pricing.ts` (`mizuedit3@gmail.com`, was `hello@mizu.studio`). The pricing draft already used the constant but Footer and ChatWidget **hardcoded the string**, which is exactly how an address change half-applies — all three now import it. The backend prompt has its own copy (Python can't import the TS module); both must be changed together. Historical changelog lines elsewhere in this file still read `hello@mizu.studio` — left alone deliberately, they record what was true on their dates.
+- **Dev-environment gotcha (cost real time):** this machine's LAN IP moves between DHCP leases — it has been `.40` and `.45` within one session. `NEXT_PUBLIC_AGENT_URL` (mizu-nextjs/.env.local) and `ALLOWED_ORIGINS` (backend/.env) must be updated **together** or the chat fails CORS. Both are gitignored, so a fresh clone has no agent URL. Next's dev log warns that `allowedDevOrigins` will be required in a future major to keep serving `/_next/*` over a non-localhost origin.
+- Verified: `npx tsc --noEmit` green; page 200 with all new values in the markup; agent round-trip confirmed live (`POST /api/agent` → 200); CORS preflight returns the LAN origin; changes confirmed present in the *compiled client bundle* (not just source), since `NEXT_PUBLIC_*` is inlined at build time.
 
 ### ✅ Landing port (3f09622)
 Hero, cursor, nav, work menu, mobile menu ported from `mizu.html` to Next.js 15 + Tailwind v4.
@@ -139,11 +155,14 @@ Home-page copy rewritten off the ripped reference text. New brand line: **"Beaut
 
 ## Known gaps / TODO
 
-1. About, Services, Careers pages (nav + footer links currently `#`)
+1. About, Services pages (nav + footer links currently `#`)
 2. Real portrait for Nami (greet view uses DotsIcon bloom on near-black block)
 3. More real projects — Mobile App + E-commerce categories sit at [0] until content arrives; add entries in `data/projects.ts` and every surface updates
-4. Footer social links (`#`)
-5. README.md is stale (mentions CSS Modules; app uses Tailwind v4 utilities)
+4. Instagram footer link is still a `#` placeholder
+5. `NavRow.tsx` is orphaned (superseded by the Hero masthead) — delete it
+6. Rename the `beige` token to match what it now is (`#e5e3de`); ~15 call sites, deliberately left as one follow-up rather than folded into the colour change
+7. `allowedDevOrigins` for Next dev, if you keep testing over the LAN
+8. README.md is stale (mentions CSS Modules; app uses Tailwind v4 utilities)
 
 ---
 
@@ -154,3 +173,6 @@ Home-page copy rewritten off the ripped reference text. New brand line: **"Beaut
 - Dev server can wedge — kill via `Get-NetTCPConnection -LocalPort 3000` PID, restart
 - Root-level `*.png` / `*.html` are design references, committed alongside related work
 - Only act on explicit instruction: no commits/pushes/merges unless asked
+- **Never trust a screenshot's provenance.** Reference images arrive without stating their source; inferring that one was `mizu.html` and tuning type to its numbers wasted a pass. Read the spec off the image itself.
+- **Verify rendered output, not just source.** `NEXT_PUBLIC_*` is inlined at build time, so a `.env` edit needs a dev-server restart, and an HTML-only check can miss changes that live in a client chunk — grep the *served bundle*.
+- Colour claims deserve a number. A surprising number of "this looks wrong" reports here were a contrast measurement (1.11:1 on the mention, 1.25:1 on the old tile) rather than taste.
