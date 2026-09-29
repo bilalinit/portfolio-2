@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Anton, Caveat, Inter } from "next/font/google";
+import { Anton, Caveat, Inter, Inter_Tight } from "next/font/google";
 import localFont from "next/font/local";
 import MenuLayer from "@/components/MenuLayer";
 import "./globals.css";
@@ -25,6 +25,16 @@ const inter = Inter({
   display: "swap",
 });
 
+/* hero wordmark ("Mizu") — the display cut of Inter, set very light and very
+   large. Inter Tight keeps the same skeletons as the body face but tracks
+   tighter, so a four-letter wordmark can fill a whole column edge to edge
+   without wrapping. Variable (100–900), so the weight is a class away. */
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  variable: "--font-inter-tight",
+  display: "swap",
+});
+
 /* handwritten accent — bylines + "(Overview)" label on /work/[slug] */
 const caveat = Caveat({
   subsets: ["latin"],
@@ -45,7 +55,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${anton.variable} ${inter.variable} ${caveat.variable} ${helvetica.variable}`}
+      className={`${anton.variable} ${inter.variable} ${interTight.variable} ${caveat.variable} ${helvetica.variable}`}
     >
       <body>
         <MenuLayer>{children}</MenuLayer>

@@ -2,7 +2,16 @@
 
 /* ============ DESIGN TOKENS ============ */
 @theme {
-  --color-beige: #c9c1b1;
+  /* Page ground. Was #c9c1b1 — a warm, fairly saturated tan that read as
+     "beige" everywhere it appeared and made the whole site feel dusty.
+     Retuned to a near-neutral off-white so the ink has a clean field and the
+     palette's one warm accent (the hero Contact tile) carries the warmth on
+     its own. The token is still called `beige` so the 15 existing
+     `bg-beige` / `text-beige` call sites keep working — rename it in a
+     dedicated pass rather than folding a 15-site refactor into a look
+     change. On dark grounds (coal) it reads as a soft white, which is what
+     the chat and work-menu text always wanted anyway. */
+  --color-beige: #e5e3de;
   --color-ink: #131009;
   --color-dark: #1a120b;
   --color-coal: #121212;
@@ -11,6 +20,8 @@
   --font-display: var(--font-anton), "Arial Black", sans-serif;
   --font-hand: var(--font-caveat), "Segoe Script", cursive;
   --font-brand: var(--font-helvetica), "Helvetica Neue", Arial, sans-serif;
+  --font-mark: var(--font-inter-tight), var(--font-inter), "Helvetica Neue",
+    Arial, sans-serif;
 }
 
 /* ============ BASE ============ */
@@ -123,6 +134,25 @@
     opacity: 1 !important;
     transform: none !important;
   }
+
+  /* the hero's load-in reveal (statement + note) is decoration — the copy
+     has to be readable the moment it paints */
+  .rise {
+    animation: none !important;
+  }
+
+  /* the masthead tiles' ink bloom + arrow slide. Under reduced motion the
+     tile still needs a clear hover/focus state, so the bloom resolves to
+     fully opaque immediately rather than disappearing — otherwise the label
+     would stay dark on a dark tile and vanish. */
+  .tile-wipe,
+  .tile-arrow {
+    transition: none !important;
+  }
+  .tile:hover .tile-wipe,
+  .tile:focus-visible .tile-wipe {
+    opacity: 1 !important;
+  }
 }
 
 /* ============ ALL-WORK GRID ENTRANCE (rise) ============
@@ -157,6 +187,61 @@
   .pp .rise {
     animation: none !important;
   }
+}
+
+/* ============ MASTHEAD TILE BLOOM ============
+   The ink that floods a masthead tile on hover. Masked with a radial
+   gradient rather than drawn as a rectangle, so the ink feathers out of
+   the tile's corner and dissolves before it reaches the opposite edges —
+   no hard leading edge anywhere. The gradient runs solid ink at the corner
+   and falls to fully transparent at 100%, sized past the tile so the falloff
+   is gentle rather than a visible ring.
+
+   Lives here rather than as Tailwind classes because the mask is too long
+   to inline, and because -webkit-mask has to stay paired with mask for
+   Safari. The corner is chosen by a data attribute set in Hero.tsx. */
+.tile-wipe {
+  background: var(--color-ink);
+  opacity: 0;
+  transition: opacity 0.52s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: opacity;
+}
+
+.tile-wipe[data-corner="bottom-left"] {
+  --bloom-x: 0%;
+  --bloom-y: 100%;
+}
+.tile-wipe[data-corner="top-right"] {
+  --bloom-x: 100%;
+  --bloom-y: 0%;
+}
+
+.tile-wipe[data-corner] {
+  -webkit-mask-image: radial-gradient(
+    circle at var(--bloom-x) var(--bloom-y),
+    #000 0%,
+    #000 18%,
+    rgba(0, 0, 0, 0.72) 46%,
+    rgba(0, 0, 0, 0.34) 68%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    circle at var(--bloom-x) var(--bloom-y),
+    #000 0%,
+    #000 18%,
+    rgba(0, 0, 0, 0.72) 46%,
+    rgba(0, 0, 0, 0.34) 68%,
+    transparent 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* the bloom arrives on hover AND on keyboard focus, matching the label's
+   colour inversion so the two never disagree about which state we're in */
+.tile:hover .tile-wipe,
+.tile:focus-visible .tile-wipe {
+  opacity: 1;
 }
 
 /* ============ CHAT WIDGET (pill ⇄ panel morph) ============

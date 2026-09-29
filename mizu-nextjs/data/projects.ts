@@ -89,6 +89,11 @@ export const allWork: WorkItem[] = [
     blurb: "Game-style camera control recorded as clean, editable keyframes",
     tag: "Desktop",
     aliases: ["Camera Navigator CHAIN"],
+    /* Without this the chat's mention-preview pin rendered as an inert
+       <span> — it looked like the DropSync arrow but went nowhere, because
+       the arrow is a real link only when liveUrl is set. The deployed build
+       is the trial download, so this is the URL it should open. */
+    liveUrl: "https://game-cam-six.vercel.app/",
     overview: [
       "Game cam is an After Effects plugin we built that puts game-style camera control into motion design. Press WASD to fly through a 3D scene, drag the mouse to look around, and the flight is recorded as real keyframes on the timeline — ready to retime, offset and polish like any other animation. First-person camera moves become as intuitive as playing a game.",
       "Under the hood it's a genuine real-time system: a C++ plugin runs inside After Effects at the application's refresh rate and talks to a control panel over a shared-memory channel, so movement and mouse-look land with sub-microsecond latency instead of the lag of the scripting route. While you fly, the viewport drops to draft resolution to keep frame rates high, then restores the moment you stop.",

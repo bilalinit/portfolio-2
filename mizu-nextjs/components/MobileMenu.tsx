@@ -66,7 +66,6 @@ export default function MobileMenu({ open, onClose, onOpenWork }: MobileMenuProp
     { label: "Work", action: onOpenWork },
     { label: "About", href: "#" },
     { label: "Services", href: "#" },
-    { label: "Careers", href: "#" },
     { label: "Contact", href: "#" },
   ];
 

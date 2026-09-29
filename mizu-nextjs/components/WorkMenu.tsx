@@ -25,12 +25,19 @@ type WorkMenuProps = {
    - "closed"  → dormant, items hidden
    Reopening mid-fade cancels the exit and replays the entrance.
    Desktop: drops down from the top-right, opens on hover of the WORK
-   trigger (the parent owns the open/close timers). The trigger sits in
-   the top-right nav (≥ ~55vw on desktop), so the panel width
-   max(50vw + 24px, 750px) keeps its left edge left of the trigger at
-   EVERY desktop width. The root is a size container (`@container`) and
-   internal type/gaps/thumbs use cqw clamps, so proportions hold as the
-   panel grows; caps keep the largest sizes sane on extreme displays.
+   trigger (the parent owns the open/close timers). The width is
+   clamp(460px, 44vw, 720px): it used to be max(50vw + 24px, 750px),
+   which pinned the panel at ~50% of the viewport on BOTH a 1440 laptop
+   and a 1920 monitor — 750px on one, 984px on the other, so a 33% wider
+   screen bought a 31% wider panel and nothing felt more generous. The
+   clamp caps the panel in absolute px, so past ~1640px the panel takes a
+   steadily smaller SHARE of the screen (44% → 36% at 1920 → 28% at
+   2560) while the type and thumbs inside stop growing. The 460px floor
+   matters: the trigger is anchored in the nav's right cluster, so
+   anything much narrower would leave the trigger outside the panel and
+   break the hover hand-off. The root is a size container (`@container`)
+   and internal type/gaps/thumbs use cqw clamps, so proportions hold as
+   the panel resizes.
    Mobile (≤860px): full-screen sheet that slides in from the LEFT,
    tap-driven from the mobile menu; "[+] MAIN MENU" goes back, "CLOSE [×]"
    closes everything. The sheet is mounted by MenuLayer in the root layout:
@@ -57,17 +64,37 @@ const item = (delay: string, phase: Phase) =>
       ? `opacity-0 ${itemOut}`
       : "opacity-0";
 
-/* underline-on-hover for the category links; sized in cqw (relative to
-   the panel container) so they scale with the panel, not the viewport
-   (mobile override below) */
+/* Category links — Website / Mobile App / Experiential / E-commerce.
+
+   Sized SMALL and set MEDIUM, on purpose. Two earlier passes pushed these
+   both the wrong ways and both looked worse:
+     - 4.4cqw/32px at weight 350: far too large, and so thin the words read
+       as an accident rather than a choice.
+     - 19px/1.5vw at weight 500: too quiet to lead the panel.
+   The fix is not a size between those two, it's to stop using size to carry
+   the hierarchy at all. At ~20px the categories are barely larger than the
+   row labels; WEIGHT (500) plus the tight tracking is what separates them,
+   which keeps the panel compact and stops the category block from shouting
+   over the projects it's meant to filter.
+
+   vw, not cqw: these are set off the viewport deliberately, so the category
+   block holds a steady relationship to the screen rather than growing with
+   the panel. Note this contradicts the container-units argument below — it
+   is a choice, not an oversight, and the weight is doing the work. */
 const catLink =
-  "relative w-fit text-[clamp(19px,3cqw,44px)] font-medium tracking-[-0.02em] text-ink no-underline " +
+  "relative w-fit text-[clamp(17px,1.35vw,22px)] font-medium tracking-[-0.02em] text-ink no-underline " +
   "after:content-[''] after:absolute after:left-0 after:-bottom-[3px] after:w-full after:h-px after:bg-current " +
   "after:scale-x-0 after:origin-right after:transition-transform after:duration-[350ms] after:ease-[cubic-bezier(0.4,0,0.2,1)] " +
   "hover:after:scale-x-100 hover:after:origin-left max-[860px]:text-[24px]";
 
-/* micro label text — scales with the panel */
-const rowText = "text-[clamp(11.5px,1.7cqw,24px)] font-medium tracking-[0.03em] uppercase leading-[1.4]";
+/* Micro labels — project name, blurb, code. These are the panel's quietest
+   element by design: small, wide-tracked uppercase caps that sit under the
+   categories without competing. 11px flat (not a clamp, not container units —
+   scaling these with the panel is what produced the "screenshot of a bigger
+   menu" feel) and slightly opened up at .05em so they stay legible at that
+   size without getting bolder. */
+const rowText =
+  "text-[11px] font-medium tracking-[0.05em] uppercase leading-[1.4]";
 
 const topButton =
   "text-[12px] font-medium uppercase tracking-[0.05em] text-ink transition-colors duration-200 hover:text-ink/60";
@@ -142,14 +169,18 @@ export default function WorkMenu({
         onPointerLeave={(e) => {
           if (e.pointerType === "mouse") onMenuMouseLeave?.();
         }}
-        className={`@container fixed top-0 right-0 z-[540] w-[max(calc(50vw+24px),750px)] max-h-[100dvh] overflow-y-auto overflow-x-clip overscroll-contain max-[860px]:bg-white ${
+        className={`@container fixed top-0 right-0 z-[540] w-[clamp(460px,44vw,720px)] max-h-[100dvh] overflow-y-auto overflow-x-clip overscroll-contain max-[860px]:bg-white ${
           open
             ? "visible [transform:translateY(0)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s] max-[860px]:inset-0 max-[860px]:w-full max-[860px]:[transform:translateX(0)]"
             : "invisible [transform:translateY(-103%)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s_linear_.65s] max-[860px]:inset-0 max-[860px]:w-full max-[860px]:[transform:translateX(-103%)]"
         }`}
       >
-        {/* beige category area */}
-        <div className="relative bg-beige pt-[clamp(70px,9.3cqw,120px)] px-[clamp(30px,4.2cqw,72px)] pb-5 max-[860px]:px-5 max-[860px]:pt-14 max-[860px]:pb-4">
+        {/* Category area. The top inset is what clears the nav strip, so it
+            stays generous; the side padding is deliberately tight, because
+            the category block is a compact two-column cluster now and the
+            earlier roomy 34px gutters made it read as a separate section
+            competing with the project list. */}
+        <div className="relative bg-beige pt-[clamp(34px,6cqw,56px)] px-[clamp(18px,3.4cqw,28px)] pb-4 max-[860px]:px-5 max-[860px]:pt-14 max-[860px]:pb-4">
           {/* mobile-only: close everything */}
           <button
             type="button"
@@ -169,7 +200,7 @@ export default function WorkMenu({
           </button>
 
           <nav
-            className="grid grid-cols-[auto_auto] justify-start gap-x-[clamp(44px,6cqw,110px)] gap-y-1.5 max-[860px]:gap-x-8 max-[860px]:gap-y-2"
+            className="grid grid-cols-[auto_auto] justify-start gap-x-[clamp(28px,5cqw,64px)] gap-y-0.5 max-[860px]:gap-x-8 max-[860px]:gap-y-2"
             aria-label="Work categories"
           >
             {workCategories.map((cat, i) => (
@@ -179,7 +210,10 @@ export default function WorkMenu({
                 className={`${catLink} ${item(delays[i], phase)} active:opacity-60`}
               >
                 {cat.label}
-                <sup className="text-[0.45em] leading-[0] relative -top-[0.8em] ml-1">
+                {/* the count rides high and reads as a quiet annotation on the
+                    word, not a footnote — .5em, lifted, and dimmed so it
+                    never competes with the category itself */}
+                <sup className="text-[0.5em] font-normal leading-[0] relative -top-[0.85em] ml-1 text-ink/55">
                   {cat.count}
                 </sup>
               </Link>
@@ -190,7 +224,7 @@ export default function WorkMenu({
         {/* folder tab */}
         <div className="bg-white flex">
           <div
-            className={`inline-flex items-center gap-2 h-[clamp(34px,4.5cqw,58px)] pl-3.5 pr-8 bg-beige [clip-path:polygon(0_0,100%_0,calc(100%_-_15px)_100%,0_100%)] text-[clamp(11.5px,1.7cqw,24px)] font-medium tracking-[0.05em] uppercase text-ink ${item(delays[1], phase)}`}
+            className={`inline-flex items-center gap-2 h-[34px] pl-3.5 pr-8 bg-beige [clip-path:polygon(0_0,100%_0,calc(100%_-_15px)_100%,0_100%)] text-[11.5px] font-medium tracking-[0.08em] uppercase text-ink ${item(delays[1], phase)}`}
           >
             <FolderIcon className="w-3.5 h-3.5 shrink-0" />
             <span>Featured projects</span>
@@ -208,16 +242,16 @@ export default function WorkMenu({
                 <Link
                   key={project.slug}
                   href={`/work/${project.slug}`}
-                  className={`grid grid-cols-[clamp(112px,15.6cqw,200px)_1fr_1.35fr_auto] gap-[clamp(20px,2.8cqw,40px)] items-center py-[clamp(12px,1.7cqw,26px)] border-b border-[#ddd7ca] no-underline text-ink transition-[background-color] duration-[250ms] hover:bg-[#f4f0e7] active:bg-[#eee8da] min-[861px]:max-[1024px]:grid-cols-[88px_1fr_70px] max-[860px]:grid-cols-[130px_1fr_auto] max-[860px]:grid-rows-[auto_1fr] max-[860px]:gap-x-4 max-[860px]:gap-y-1 ${item(delays[Math.min(i + 2, delays.length - 1)], phase)}`}
+                  className={`grid grid-cols-[clamp(112px,15.6cqw,200px)_1fr_1.35fr_auto] gap-[clamp(20px,2.8cqw,40px)] items-center py-[clamp(12px,1.7cqw,26px)] border-b border-[#ddd7ca] no-underline text-ink transition-[background-color] duration-[250ms] hover:bg-[#f4f0e7] active:bg-[#eee8da] @max-[600px]:grid-cols-[clamp(88px,17cqw,132px)_1fr_auto] @max-[600px]:gap-[clamp(12px,2cqw,20px)] max-[860px]:grid-cols-[130px_1fr_auto] max-[860px]:grid-rows-[auto_1fr] max-[860px]:gap-x-4 max-[860px]:gap-y-1 ${item(delays[Math.min(i + 2, delays.length - 1)], phase)}`}
                 >
                   <span
                     aria-hidden="true"
-                    className="w-[clamp(112px,15.6cqw,200px)] h-[clamp(94px,13cqw,166px)] overflow-hidden min-[861px]:max-[1024px]:w-[88px] min-[861px]:max-[1024px]:h-[74px] max-[860px]:row-span-2 max-[860px]:w-[130px] max-[860px]:h-[150px] [&>svg]:block [&>svg]:w-full [&>svg]:h-full [&>img]:block [&>img]:w-full [&>img]:h-full [&>img]:object-cover"
+                    className="w-[clamp(112px,15.6cqw,200px)] h-[clamp(94px,13cqw,166px)] overflow-hidden @max-[600px]:w-[clamp(88px,17cqw,132px)] @max-[600px]:h-[clamp(74px,13cqw,110px)] max-[860px]:row-span-2 max-[860px]:w-[130px] max-[860px]:h-[150px] [&>svg]:block [&>svg]:w-full [&>svg]:h-full [&>img]:block [&>img]:w-full [&>img]:h-full [&>img]:object-cover"
                   >
                     <ProjectThumb kind={project.thumb} />
                   </span>
                   <span className={`${rowText} max-[860px]:col-start-2`}>{project.name}</span>
-                  <span className={`${rowText} min-[861px]:max-[1024px]:hidden max-[860px]:col-start-2`}>{project.blurb}</span>
+                  <span className={`${rowText} @max-[600px]:hidden max-[860px]:col-start-2`}>{project.blurb}</span>
                   <span className={`${rowText} text-right max-[860px]:col-start-3 max-[860px]:row-start-2 max-[860px]:self-end`}>{project.tag}</span>
                 </Link>
               );
@@ -226,7 +260,7 @@ export default function WorkMenu({
 
           <Link
             href="/work"
-            className={`flex items-center justify-center h-[clamp(40px,5.3cqw,68px)] mt-3 border border-ink text-ink no-underline text-[clamp(11.5px,1.7cqw,24px)] font-medium tracking-[0.05em] uppercase transition-colors duration-300 hover:bg-ink hover:text-white active:bg-ink/90 active:text-white ${item(delays[4], phase)}`}
+            className={`flex items-center justify-center h-[40px] mt-3 border border-ink text-ink no-underline text-[11.5px] font-medium tracking-[0.08em] uppercase transition-colors duration-300 hover:bg-ink hover:text-white active:bg-ink/90 active:text-white ${item(delays[4], phase)}`}
           >
             See all work [{totalWork}]
           </Link>

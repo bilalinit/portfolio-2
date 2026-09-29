@@ -4,7 +4,13 @@
    (we read it and answer with a real number) instead of a dead form or a
    fake instant price. */
 
-export const CONTACT_EMAIL = "hello@mizu.studio";
+/* THE contact address for the whole site. Every surface that shows or sends
+   mail reads this — the pricing brief's mailto draft, the footer link, and
+   the chat widget's contact view + error copy. Change it here and nowhere
+   else; the components import it precisely so a new address can never be
+   missed in one of them. (The backend's Nami prompt has its own copy of the
+   address — see backend/main.py, update both together.) */
+export const CONTACT_EMAIL = "mizuedit3@gmail.com";
 
 export type BriefStep = {
   label: string;

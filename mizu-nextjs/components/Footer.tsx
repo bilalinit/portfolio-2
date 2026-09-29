@@ -1,10 +1,11 @@
 import { ReactNode } from "react";
+import { CONTACT_EMAIL } from "@/data/pricing";
 
 /* Footer — light-gray card with rounded top corners, inset from the page edges:
    statement heading on the left, three link columns, an underlined
    "Contact us", and a muted legal row along the bottom. */
 
-type FooterLink = { label: string; href: string; arrow?: boolean };
+type FooterLink = { label: string; href: string };
 
 const columns: { title: string; links: FooterLink[] }[] = [
   {
@@ -12,25 +13,22 @@ const columns: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "Work", href: "/work" },
       { label: "Services", href: "#" },
-      { label: "Process", href: "#" },
-      { label: "Press kit", href: "#", arrow: true },
     ],
   },
   {
     title: "About",
-    links: [
-      { label: "About", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "News", href: "#" },
-    ],
+    links: [{ label: "About", href: "#" }],
   },
   {
+    /* Instagram is a deliberate placeholder (href "#") until there's a real
+       account to point at. X and GitHub are live. Anything external opens in
+       a new tab — the render below adds target/rel from the href, so a new
+       external link needs no other change here. */
     title: "Social",
     links: [
       { label: "Instagram", href: "#" },
-      { label: "LinkedIn", href: "#" },
-      { label: "X (Twitter)", href: "#" },
-      { label: "YouTube", href: "#" },
+      { label: "X (Twitter)", href: "https://x.com/AhmedSaeed27238" },
+      { label: "GitHub", href: "https://github.com/AhmedSaeed4" },
     ],
   },
 ];
@@ -51,16 +49,17 @@ function LinkColumn({ title, links }: { title: string; links: FooterLink[] }) {
       <ul className="mt-[clamp(28px,3vw,48px)] flex flex-col items-start gap-[clamp(20px,2.6vw,38px)]">
         {links.map((link) => (
           <li key={link.label}>
-            <a href={link.href} className={linkCls}>
+            <a
+              href={link.href}
+              className={linkCls}
+              /* external destinations open in a new tab; rel guards against
+                 reverse-tabnabbing via window.opener. A new external link
+                 needs nothing else — the href is what marks it external. */
+              {...(link.href.startsWith("http")
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : null)}
+            >
               {link.label}
-              {link.arrow && (
-                <span
-                  aria-hidden="true"
-                  className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1"
-                >
-                  &rarr;
-                </span>
-              )}
             </a>
           </li>
         ))}
@@ -98,7 +97,7 @@ export default function Footer() {
               {/* Contact us lives under the first column, like the reference */}
               {col.title === "Explore" && (
                 <a
-                  href="mailto:hello@mizu.studio"
+                  href={`mailto:${CONTACT_EMAIL}`}
                   className="mt-[clamp(56px,7vw,128px)] inline-block text-[clamp(15px,1.15vw,18px)] text-[#1a1a1a] underline decoration-1 underline-offset-[6px] transition-colors duration-300 hover:text-[#8f8f8f]"
                 >
                   Contact us
@@ -108,23 +107,20 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* legal row */}
+        {/* Legal row — Privacy Policy only. The Data Processing Addendum was
+            removed deliberately: publishing one is a compliance commitment,
+            not a placeholder. The copyright line carries no "Inc" for the
+            same reason — a corporate suffix is a legal claim. The grid still
+            declares four columns so the policy keeps its place under the
+            second column rather than sliding left. */}
         <div className="mt-[clamp(64px,9vw,150px)] grid gap-y-6 text-[clamp(14px,1.05vw,16px)] text-[#8f8f8f] min-[901px]:grid-cols-[1.35fr_1fr_1fr_1fr] min-[901px]:gap-x-12">
-          <p>&copy; 2026 MIZU Inc</p>
+          <p>&copy; 2026 MIZU</p>
           <div>
             <a
               href="#"
               className="w-fit transition-colors duration-300 hover:text-[#1a1a1a]"
             >
               Privacy Policy
-            </a>
-          </div>
-          <div>
-            <a
-              href="#"
-              className="w-fit transition-colors duration-300 hover:text-[#1a1a1a]"
-            >
-              Data Processing Addendum
             </a>
           </div>
         </div>

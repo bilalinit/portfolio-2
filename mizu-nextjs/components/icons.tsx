@@ -17,6 +17,26 @@ export function FolderIcon({ className }: IconProps) {
   );
 }
 
+/* MIZU's mark — three crossing strokes (a six-spoke asterisk). Water made
+   geometric; sits ahead of the wordmark in the nav lockup. */
+export function MizuMark({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.1}
+      strokeLinecap="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M12 2.6v18.8" />
+      <path d="M3.6 7.2 20.4 16.8" />
+      <path d="M20.4 7.2 3.6 16.8" />
+    </svg>
+  );
+}
+
 export function AccessibilityIcon({ className }: IconProps) {
   return (
     <svg

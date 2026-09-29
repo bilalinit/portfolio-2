@@ -12,6 +12,7 @@ import { createPortal } from "react-dom";
 import { DotsIcon } from "@/components/icons";
 import { THUMB_SRC } from "@/components/ProjectThumb";
 import { allWork, type WorkItem } from "@/data/projects";
+import { CONTACT_EMAIL } from "@/data/pricing";
 import DotSphere, { type SphereMode } from "@/components/DotSphere";
 import {
   AGENT_URL,
@@ -112,9 +113,11 @@ const now = () =>
    base uses), matched case-insensitively with word boundaries, so
    "DropSync", "Dropsync" and "GameCam" all link. Runs on the revealed
    substring during streaming too, so a mention turns clickable the
-   moment its last letter drips in. Beige text marks the mention; on
-   mouse hover the word brightens while a preview pill rises above it
-   (see the mention hover preview block in ChatWidget). */
+   moment its last letter drips in. The mention is styled as a real link —
+   accent colour plus a persistent underline, see the className below for why
+   it can't be the beige ground token — and on mouse hover the word brightens
+   while a preview pill rises above it (see the mention hover preview block in
+   ChatWidget). */
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const PROJECT_LINKS = new Map<string, WorkItem>();
 for (const w of allWork) {
@@ -167,7 +170,15 @@ function withProjectLinks(text: string, mention?: MentionHandlers): ReactNode {
           onBlur={() => {
             if (mention) mention.leave();
           }}
-          className="text-beige transition-colors duration-200 hover:text-white"
+          /* Neutral grey, not an accent hue, and LIGHTER than the body text
+             rather than darker — the chat panel is bg-black, so "dark grey to
+             stand out from white text" would in fact sink into the
+             background. Measured on #000: this sits 5.8:1 against the panel
+             and 3.5:1 against the white/85 body text, so it separates from
+             both, while the persistent underline carries the link-ness on its
+             own (colour alone never has to do the work). Hover lifts it
+             toward white. */
+          className="text-[#8a8a8a] underline decoration-[#8a8a8a]/60 decoration-1 underline-offset-[3px] transition-colors duration-200 hover:text-[#d4d4d4] hover:decoration-[#d4d4d4]"
         >
           {mentioned}
         </Link>
@@ -185,6 +196,10 @@ function withProjectLinks(text: string, mention?: MentionHandlers): ReactNode {
 /* mention preview card geometry (viewport-fixed, portaled to <body>) */
 type MentionPreview = {
   name: string;
+  /* the case-study route, so the card's own body is a link to it — the
+     pill is mostly empty space, and before this only its two icon buttons
+     did anything */
+  slug: string;
   thumb: string;
   github: string | null;
   liveUrl: string | null;
@@ -617,6 +632,7 @@ export default function ChatWidget() {
           : rect.bottom + MENTION_GAP;
       setMention({
         name: item.name,
+        slug: item.slug,
         thumb: THUMB_SRC[item.thumb],
         github: item.github ?? null,
         liveUrl: item.liveUrl ?? null,
@@ -696,7 +712,7 @@ export default function ChatWidget() {
       const notice =
         retryAfter !== null
           ? `I need a breather — you've reached the chat limit. Try again in ${formatRetry(retryAfter)}.`
-          : "Sorry — I couldn't reach my brain just now. Give it another go in a moment, or email hello@mizu.studio.";
+          : `Sorry — I couldn't reach my brain just now. Give it another go in a moment, or email ${CONTACT_EMAIL}.`;
       smooth.reset();
       settledRef.current = notice;
       smooth.setFull(notice);
@@ -966,10 +982,10 @@ export default function ChatWidget() {
               <div className="px-6 pb-6 pt-4">
                 <p className="text-[13px] text-white/50">Prefer a human?</p>
                 <a
-                  href="mailto:hello@mizu.studio"
+                  href={`mailto:${CONTACT_EMAIL}`}
                   className="relative mt-2 inline-block w-fit text-[19px] text-white no-underline after:absolute after:left-0 after:-bottom-[3px] after:h-px after:w-full after:bg-current after:origin-right after:scale-x-0 after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.4,0,0.2,1)] hover:after:origin-left hover:after:scale-x-100"
                 >
-                  hello@mizu.studio
+                  {CONTACT_EMAIL}
                 </a>
                 <p className="mt-3 text-[14px] leading-[1.5] text-white/60">
                   We reply within one business day.
@@ -1133,14 +1149,30 @@ export default function ChatWidget() {
                 mentionShown ? "on" : ""
               }`}
             >
-              <img
-                src={mention.thumb}
-                alt=""
-                className="h-6 w-6 shrink-0 rounded-[6px] object-cover ring-1 ring-white/15"
-              />
-              <p className="min-w-0 flex-1 truncate text-[11px] font-medium leading-tight text-white">
-                {mention.name}
-              </p>
+              {/* The card's body — art + name — is the link to the case
+                  study. It is a sibling of the two icon links, never their
+                  parent: anchors can't nest, and wrapping the buttons in
+                  this one would make the whole card one ambiguous target
+                  where the GitHub/arrow presses stopped being their own
+                  clicks. This is the click that was previously dead. */}
+              <Link
+                href={`/work/${mention.slug}`}
+                aria-label={`View the ${mention.name} case study`}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+                onFocus={clearMentionHide}
+                onBlur={hideMention}
+                className="flex min-w-0 flex-1 items-center gap-[5px] rounded-[6px] no-underline outline-none transition-opacity duration-200 hover:opacity-80 focus-visible:ring-1 focus-visible:ring-white/60"
+              >
+                <img
+                  src={mention.thumb}
+                  alt=""
+                  className="h-6 w-6 shrink-0 rounded-[6px] object-cover ring-1 ring-white/15"
+                />
+                <span className="min-w-0 flex-1 truncate text-[11px] font-medium leading-tight text-white">
+                  {mention.name}
+                </span>
+              </Link>
               {mention.github !== null && (
                 <a
                   href={mention.github}
@@ -1161,8 +1193,10 @@ export default function ChatWidget() {
                   </svg>
                 </a>
               )}
-              {/* bracket-arrow pin — the site's label motif saying "opens";
-                  with a liveUrl it's a real link to the deployed site */}
+              {/* bracket-arrow pin — the site's label motif saying "opens".
+                  Only rendered as a link when there IS a liveUrl; the else
+                  branch deliberately drops the arrow glyph entirely rather
+                  than showing a dead one. */}
               {mention.liveUrl !== null ? (
                 <a
                   href={mention.liveUrl}
@@ -1191,7 +1225,14 @@ export default function ChatWidget() {
                   <span className="text-[10px] leading-none">]</span>
                 </a>
               ) : (
-                <span className="flex shrink-0 items-center gap-px text-beige/80">
+                /* No liveUrl — so there is deliberately NO arrow. A dimmed
+                   arrow that goes nowhere is worse than no affordance: it
+                   advertises a link that isn't one. Projects that should have
+                   this get a `liveUrl` in data/projects.ts instead. */
+                <span
+                  className="flex shrink-0 items-center gap-px text-white/25"
+                  title={`No live demo for ${mention.name} yet`}
+                >
                   <span className="text-[10px] leading-none">[</span>
                   <svg
                     viewBox="0 0 10 10"
