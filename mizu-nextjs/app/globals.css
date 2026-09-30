@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@keyframes skill-type { 0%,20%,85%,100% { transform: translateX(0); } 45%,65% { transform: translateX(8px); } }
+@keyframes skill-turn { to { transform: rotate(360deg); } }
+@keyframes skill-window { 0%,100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-6px) rotate(0deg); } }
+@keyframes skill-signal { to { stroke-dashoffset: -318; } }
+
 @keyframes about-rise { from { opacity: 0; transform: translateY(35px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes about-type-shift { 0%,15%,85%,100% { transform: translateX(0); } 40%,65% { transform: translateX(8px); } }
 @keyframes about-playhead { 0%,15%,100% { left: 90px; } 65%,85% { left: 92%; } }

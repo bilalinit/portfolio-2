@@ -13,6 +13,17 @@ export interface SkillGroup {
 export const skillsIntro =
   "A product needs three things to work: design that makes sense, code that holds up, and more and more often AI that does part of the job. We cover all three.";
 
+export const skillsContent = {
+  label: "[03] Our capabilities",
+  title: "Skill sets",
+  note: "Three disciplines. One considered product.",
+  chapters: [
+    { statement: "Give it character.", summary: "A clear visual direction, from the first idea to the smallest detail.", visualLabel: "Composition / Type / Rhythm", symbol: "Aa" },
+    { statement: "Make it work.", summary: "Thoughtful interfaces backed by systems built for everyday use.", visualLabel: "Interface / Logic / Connection", symbol: "</>" },
+    { statement: "Let it do more.", summary: "Purposeful intelligence that turns a digital product into a useful collaborator.", visualLabel: "Understand / Decide / Act", symbol: "[=]" },
+  ],
+} as const;
+
 export const skillGroups: SkillGroup[] = [
   {
     title: "Design",
