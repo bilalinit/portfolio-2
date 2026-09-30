@@ -1,5 +1,5 @@
 .section { background: var(--color-coal); color: var(--color-beige); padding: clamp(55px,6vw,105px) clamp(20px,2.5vw,44px) 55px; --ease: cubic-bezier(.22,.61,.36,1); }
-.inner { max-width: 1760px; margin: auto; }
+.inner { width: 100%; }
 .micro { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; line-height: 1.5; color: #a4a19b; }
 .header { display: grid; grid-template-columns: 1.3fr 1fr; gap: 8vw; padding-bottom: 65px; align-items: end; }
 .header h2 { font-family: var(--font-inter-tight),sans-serif; font-size: clamp(65px,9vw,150px); font-weight: 450; letter-spacing: -.06em; line-height: 1; margin-top: 24px; display: flex; align-items: center; gap: 5vw; }
@@ -25,8 +25,8 @@
 @media (hover:hover) and (pointer:fine) { .skill button:hover { color: #fff; }.skill button:hover .toggle { color: #8d9aff; } }
 @media (min-width:1025px) {
   .chapter {
-    grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr);
-    column-gap: clamp(70px,9vw,160px);
+    grid-template-columns: clamp(260px,24vw,340px) minmax(0,1fr);
+    column-gap: clamp(32px,4vw,64px);
     row-gap: 24px;
     grid-template-rows: auto 1fr;
   }

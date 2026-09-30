@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { featuredProjects, totalWork, workCategories } from "@/data/projects";
+import { featuredProjects, totalWork, workCategories, workMenuCopy } from "@/data/projects";
 import ProjectThumb from "@/components/ProjectThumb";
 import { FolderIcon } from "@/components/icons";
+import styles from "./WorkMenu.module.css";
 
 type WorkMenuProps = {
   open: boolean;
@@ -109,6 +110,7 @@ export default function WorkMenu({
 }: WorkMenuProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [phase, setPhase] = useState<Phase>("closed");
+  const [previewIndex, setPreviewIndex] = useState(0);
 
   /* drive the phase machine from the open prop */
   const openRef = useRef(open);
@@ -162,6 +164,8 @@ export default function WorkMenu({
         ref={rootRef}
         id="work-menu"
         aria-hidden={!open}
+        data-open={open}
+        inert={!open}
         onPointerEnter={(e) => {
           /* the grace-period timers only matter for mouse hover */
           if (e.pointerType === "mouse") onMenuMouseEnter?.();
@@ -169,12 +173,40 @@ export default function WorkMenu({
         onPointerLeave={(e) => {
           if (e.pointerType === "mouse") onMenuMouseLeave?.();
         }}
-        className={`@container fixed top-0 right-0 z-[540] w-[clamp(460px,44vw,720px)] max-h-[100dvh] overflow-y-auto overflow-x-clip overscroll-contain max-[860px]:bg-white ${
+        className={`${styles.panel} @container fixed top-0 right-0 z-[540] w-[clamp(460px,44vw,720px)] max-h-[100dvh] overflow-y-auto overflow-x-clip overscroll-contain max-[860px]:bg-white ${
           open
             ? "visible [transform:translateY(0)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s] max-[860px]:inset-0 max-[860px]:w-full max-[860px]:[transform:translateX(0)]"
             : "invisible [transform:translateY(-103%)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s_linear_.65s] max-[860px]:inset-0 max-[860px]:w-full max-[860px]:[transform:translateX(-103%)]"
         }`}
       >
+        <div className={styles.desktop}>
+          <div className={styles.heading}>
+            <div><span className={styles.micro}>{workMenuCopy.label}</span><h2>{workMenuCopy.title}<sup>[{totalWork.toString().padStart(2, "0")}]</sup></h2></div>
+            <button type="button" onClick={onClose} className={styles.close}>{workMenuCopy.close} <span aria-hidden="true">[×]</span></button>
+          </div>
+          <nav className={styles.categories} aria-label="Desktop work categories">
+            {workCategories.map((category) => <Link key={category.slug} href={`/work/category/${category.slug}`}><span>{category.label}</span><span className={styles.count}>[{category.count.toString().padStart(2, "0")}]</span></Link>)}
+          </nav>
+          <div className={styles.featuredLabel}><FolderIcon className="w-3.5 h-3.5" /><span>{workMenuCopy.featured}</span></div>
+          <div className={styles.featured}>
+            <div className={styles.projectList}>
+              {featuredProjects.map((project, index) => <Link key={project.slug} href={`/work/${project.slug}`} data-active={previewIndex === index} onPointerEnter={(event) => { if (event.pointerType === "mouse") setPreviewIndex(index); }} onFocus={() => setPreviewIndex(index)}>
+                <span className={styles.projectNumber}>[0{index + 1}]</span>
+                <span className={styles.projectName}>{project.name}</span>
+                <span className={styles.projectBlurb}>{project.blurb}</span>
+                <span className={styles.projectTag}>{project.tag}</span>
+              </Link>)}
+            </div>
+            <div className={styles.preview} aria-hidden="true">
+              {featuredProjects.map((project, index) => <div key={project.slug} className={styles.previewLayer} data-active={previewIndex === index}>
+                <ProjectThumb kind={project.thumb} />
+                <span className={styles.previewCaption}><span>{project.name}</span><span>[0{index + 1}]</span></span>
+              </div>)}
+            </div>
+          </div>
+          <Link href="/work" className={styles.allWork}><span>{workMenuCopy.allWork}</span><span>[{totalWork.toString().padStart(2, "0")}]</span></Link>
+        </div>
+        <div className={styles.legacy}>
         {/* Category area. The top inset is what clears the nav strip, so it
             stays generous; the side padding is deliberately tight, because
             the category block is a compact two-column cluster now and the
@@ -264,6 +296,7 @@ export default function WorkMenu({
           >
             See all work [{totalWork}]
           </Link>
+        </div>
         </div>
       </div>
     </>

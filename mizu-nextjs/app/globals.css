@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@keyframes work-panel-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
 @keyframes skill-type { 0%,20%,85%,100% { transform: translateX(0); } 45%,65% { transform: translateX(8px); } }
 @keyframes skill-turn { to { transform: rotate(360deg); } }
 @keyframes skill-window { 0%,100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-6px) rotate(0deg); } }

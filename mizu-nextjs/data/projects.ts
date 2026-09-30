@@ -115,6 +115,15 @@ export const workCategories: WorkCategory[] = categoryDefs.map((def) => ({
 /* total shown in the "See all work [n]" button */
 export const totalWork = allWork.length;
 
+export const workMenuCopy = {
+  label: "[=] Explore",
+  title: "Work",
+  categories: "Browse by discipline",
+  featured: "Selected projects",
+  allWork: "View all work",
+  close: "Close",
+} as const;
+
 export interface FeaturedProject {
   slug: string;
   name: string;
