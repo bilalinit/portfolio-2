@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { AccessibilityIcon } from "@/components/icons";
 
 type MobileMenuProps = {
@@ -31,7 +32,7 @@ const menuLink =
   "hover:after:scale-x-100 hover:after:origin-left";
 
 const topButton =
-  "text-[12px] font-medium uppercase tracking-[0.05em] text-ink transition-colors duration-200 hover:text-ink/60";
+  "min-h-[44px] text-[12px] font-medium uppercase tracking-[0.05em] text-ink transition-colors duration-200 hover:text-ink/60";
 
 /* Mobile main menu: white sheet that slides down from the top with the
    primary links; the page below is dimmed. WORK hands over to the
@@ -40,6 +41,8 @@ const topButton =
    Desktop hides the whole thing (min-[861px]:hidden). */
 export default function MobileMenu({ open, onClose, onOpenWork }: MobileMenuProps) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
   /* tap anywhere outside the sheet closes it — except taps inside the work
      panel: it sits above this sheet, and its own controls ("[+] Main menu",
@@ -64,9 +67,9 @@ export default function MobileMenu({ open, onClose, onOpenWork }: MobileMenuProp
 
   const links = [
     { label: "Work", action: onOpenWork },
-    { label: "About", href: "#" },
+    { label: "About", href: "/about" },
     { label: "Services", href: "#" },
-    { label: "Contact", href: "#" },
+    { label: "Contact", href: "/#pricing" },
   ];
 
   return (
@@ -87,8 +90,8 @@ export default function MobileMenu({ open, onClose, onOpenWork }: MobileMenuProp
         aria-hidden={!open}
         className={
           open
-            ? "fixed top-0 left-0 z-[520] w-full min-[861px]:hidden visible bg-white [transform:translateY(0)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s]"
-            : "fixed top-0 left-0 z-[520] w-full min-[861px]:hidden invisible bg-white [transform:translateY(-103%)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s_linear_.65s]"
+            ? "fixed top-0 left-0 z-[520] w-full max-h-[100dvh] overflow-y-auto overscroll-contain min-[1025px]:hidden visible bg-white [transform:translateY(0)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s]"
+            : "fixed top-0 left-0 z-[520] w-full max-h-[100dvh] overflow-y-auto overscroll-contain min-[1025px]:hidden invisible bg-white [transform:translateY(-103%)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s_linear_.65s]"
         }
       >
         <div className="px-[18px] pt-[18px] pb-9">
@@ -113,6 +116,10 @@ export default function MobileMenu({ open, onClose, onOpenWork }: MobileMenuProp
                 onClick={(e) => {
                   e.preventDefault();
                   if (link.action) link.action();
+                  else if (link.href?.startsWith("/")) {
+                    router.push(link.href);
+                    if (link.href.split("#")[0] === pathname) onClose();
+                  }
                   else onClose();
                 }}
                 className={`${menuLink} ${item(delays[i + 1], open)}`}

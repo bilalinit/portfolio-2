@@ -11,7 +11,7 @@ type NavRowProps = {
 };
 
 const links = [
-  { label: "About", href: "#" },
+  { label: "About", href: "/about" },
   { label: "Services", href: "#" },
   { label: "Careers", href: "#" },
 ];

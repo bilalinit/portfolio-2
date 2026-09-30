@@ -43,7 +43,7 @@ type Tile = {
 const tiles: Tile[] = [
   {
     label: "Contact",
-    href: "#pricing",
+    href: "/#pricing",
     tone: "primary",
     corner: "bottom-left",
   },
@@ -98,7 +98,7 @@ const colHeading =
    Tiles and mid columns are desktop-only; below 1025px the strip collapses
    to the mark + wordmark and the mobile MENU trigger, and the tiles become a
    full-width row so Contact stays one tap away. */
-export default function Hero() {
+export default function Hero({ compact = false }: { compact?: boolean }) {
   /* menu state lives in MenuLayer (root layout) so the panels survive the
      route changes their own links trigger; this component only hosts the
      triggers (mobile MENU button, desktop WORK link) */
@@ -110,7 +110,7 @@ export default function Hero() {
       <div className="flex items-center justify-between gap-x-[clamp(16px,2vw,32px)]">
         {/* mark + wordmark */}
         <a
-          href="#"
+          href="/"
           aria-label="MIZU — home"
           onClick={(e) => {
             /* while the mobile menu is up the logo sits above the sheet;
@@ -120,7 +120,7 @@ export default function Hero() {
               menus.closeNav();
             }
           }}
-          className="no-underline inline-flex items-center gap-[0.42em] text-ink select-none max-[860px]:relative max-[860px]:z-[530]"
+          className="no-underline inline-flex min-h-[44px] items-center gap-[0.42em] text-ink select-none max-[1024px]:relative max-[1024px]:z-[530]"
         >
           <MizuMark className="h-[clamp(17px,1.45vw,22px)] w-[clamp(17px,1.45vw,22px)] shrink-0" />
           <span className="text-[clamp(17px,1.5vw,23px)] font-normal leading-none tracking-[-0.025em]">
@@ -144,12 +144,12 @@ export default function Hero() {
             <div className="flex flex-col gap-[clamp(12px,1.2vw,20px)]">
               <span className={colHeading}>About us</span>
               {aboutLinks.map((label) => (
-                <a key={label} href="#" className={plusLink}>
+                <Link key={label} href="/about" className={plusLink}>
                   <span aria-hidden="true" className="text-[1.15em] leading-none">
                     +
                   </span>
                   {label}
-                </a>
+                </Link>
               ))}
             </div>
 
@@ -279,7 +279,7 @@ export default function Hero() {
       />
 
       {/* ── wordmark + statement ─────────────────────────────────── */}
-      <div className="mt-[clamp(20px,2vw,34px)] grid grid-cols-1 items-start gap-y-[clamp(26px,3vw,48px)] min-[1025px]:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] min-[1025px]:gap-x-[clamp(28px,3.4vw,72px)]">
+      {!compact && <div className="mt-[clamp(20px,2vw,34px)] grid grid-cols-1 items-start gap-y-[clamp(26px,3vw,48px)] min-[1025px]:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] min-[1025px]:gap-x-[clamp(28px,3.4vw,72px)]">
         {/* giant wordmark. The cell is the query container and the h1 is
             sized in cqw against it, so the word always spans the column
             instead of resting on a guessed-at vw clamp. cqw resolves
@@ -335,10 +335,10 @@ export default function Hero() {
           >
             Working together
             <br />
-            since 2019
+            since 2023
           </p>
         </div>
-      </div>
+      </div>}
     </section>
   );
 }

@@ -17,7 +17,7 @@ const columns: { title: string; links: FooterLink[] }[] = [
   },
   {
     title: "About",
-    links: [{ label: "About", href: "#" }],
+    links: [{ label: "About", href: "/about" }],
   },
   {
     /* Instagram is a deliberate placeholder (href "#") until there's a real

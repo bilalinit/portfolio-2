@@ -94,6 +94,7 @@ export default function MenuLayer({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!workOpen && !navOpen) return;
     router.prefetch("/work");
+    router.prefetch("/about");
     for (const p of featuredProjects) router.prefetch(`/work/${p.slug}`);
     for (const c of workCategories) router.prefetch(`/work/category/${c.slug}`);
   }, [workOpen, navOpen, router]);
