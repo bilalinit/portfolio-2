@@ -39,7 +39,7 @@ type WorkMenuProps = {
    break the hover hand-off. The root is a size container (`@container`)
    and internal type/gaps/thumbs use cqw clamps, so proportions hold as
    the panel resizes.
-   Mobile (≤860px): full-screen sheet that slides in from the LEFT,
+   Mobile and tablet (≤1024px): full-screen sheet that slides in from the LEFT,
    tap-driven from the mobile menu; "[+] MAIN MENU" goes back, "CLOSE [×]"
    closes everything. The sheet is mounted by MenuLayer in the root layout:
    its links navigate WITHOUT closing anything — when the route commits,
@@ -86,7 +86,7 @@ const catLink =
   "relative w-fit text-[clamp(17px,1.35vw,22px)] font-medium tracking-[-0.02em] text-ink no-underline " +
   "after:content-[''] after:absolute after:left-0 after:-bottom-[3px] after:w-full after:h-px after:bg-current " +
   "after:scale-x-0 after:origin-right after:transition-transform after:duration-[350ms] after:ease-[cubic-bezier(0.4,0,0.2,1)] " +
-  "hover:after:scale-x-100 hover:after:origin-left max-[860px]:text-[24px]";
+  "hover:after:scale-x-100 hover:after:origin-left max-[1025px]:text-[24px]";
 
 /* Micro labels — project name, blurb, code. These are the panel's quietest
    element by design: small, wide-tracked uppercase caps that sit under the
@@ -173,10 +173,10 @@ export default function WorkMenu({
         onPointerLeave={(e) => {
           if (e.pointerType === "mouse") onMenuMouseLeave?.();
         }}
-        className={`${styles.panel} @container fixed top-0 right-0 z-[540] w-[clamp(460px,44vw,720px)] max-h-[100dvh] overflow-y-auto overflow-x-clip overscroll-contain max-[860px]:bg-white ${
+        className={`${styles.panel} @container fixed top-0 right-0 z-[540] w-[clamp(460px,44vw,720px)] max-h-[100dvh] overflow-y-auto overflow-x-clip overscroll-contain max-[1025px]:bg-white ${
           open
-            ? "visible [transform:translateY(0)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s] max-[860px]:inset-0 max-[860px]:w-full max-[860px]:[transform:translateX(0)]"
-            : "invisible [transform:translateY(-103%)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s_linear_.65s] max-[860px]:inset-0 max-[860px]:w-full max-[860px]:[transform:translateX(-103%)]"
+            ? "visible [transform:translateY(0)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s] max-[1025px]:inset-0 max-[1025px]:w-full max-[1025px]:[transform:translateX(0)]"
+            : "invisible [transform:translateY(-103%)] [transition:transform_.65s_cubic-bezier(.77,0,.18,1),visibility_0s_linear_.65s] max-[1025px]:inset-0 max-[1025px]:w-full max-[1025px]:[transform:translateX(-103%)]"
         }`}
       >
         <div className={styles.desktop}>
@@ -212,12 +212,12 @@ export default function WorkMenu({
             the category block is a compact two-column cluster now and the
             earlier roomy 34px gutters made it read as a separate section
             competing with the project list. */}
-        <div className="relative bg-beige pt-[clamp(34px,6cqw,56px)] px-[clamp(18px,3.4cqw,28px)] pb-4 max-[860px]:px-5 max-[860px]:pt-14 max-[860px]:pb-4">
+        <div className="relative bg-beige pt-[clamp(34px,6cqw,56px)] px-[clamp(18px,3.4cqw,28px)] pb-4 max-[1025px]:px-5 max-[1025px]:pt-14 max-[1025px]:pb-4">
           {/* mobile-only: close everything */}
           <button
             type="button"
             onClick={onCloseAll}
-            className={`absolute top-[16px] right-[18px] min-[861px]:hidden ${topButton} ${item(delays[0], phase)}`}
+            className={`absolute top-[16px] right-[18px] min-[1025px]:hidden ${topButton} ${item(delays[0], phase)}`}
           >
             Close <span aria-hidden="true" className="ml-1">[×]</span>
           </button>
@@ -226,13 +226,13 @@ export default function WorkMenu({
           <button
             type="button"
             onClick={onBack}
-            className={`min-[861px]:hidden mb-8 block max-[860px]:mt-[100px] ${topButton} ${item(delays[0], phase)}`}
+            className={`min-[1025px]:hidden mb-8 block max-[1025px]:mt-[100px] ${topButton} ${item(delays[0], phase)}`}
           >
             <span aria-hidden="true" className="mr-1">[+]</span> Main menu
           </button>
 
           <nav
-            className="grid grid-cols-[auto_auto] justify-start gap-x-[clamp(28px,5cqw,64px)] gap-y-0.5 max-[860px]:gap-x-8 max-[860px]:gap-y-2"
+            className="grid grid-cols-[auto_auto] justify-start gap-x-[clamp(28px,5cqw,64px)] gap-y-0.5 max-[1025px]:gap-x-8 max-[1025px]:gap-y-2"
             aria-label="Work categories"
           >
             {workCategories.map((cat, i) => (
@@ -267,24 +267,24 @@ export default function WorkMenu({
             (items rise from translateY(26px)) from extending this section's
             scrollable area; without it the "See all work" button's descent
             briefly overflows the panel and pops a scrollbar for ~0.5s */}
-        <div className="overflow-clip bg-white px-3.5 pb-3.5 max-[860px]:px-5 max-[860px]:pb-5">
+        <div className="overflow-clip bg-white px-3.5 pb-3.5 max-[1025px]:px-5 max-[1025px]:pb-5">
           <div className="border-t border-[#ddd7ca]">
             {featuredProjects.map((project, i) => {
               return (
                 <Link
                   key={project.slug}
                   href={`/work/${project.slug}`}
-                  className={`grid grid-cols-[clamp(112px,15.6cqw,200px)_1fr_1.35fr_auto] gap-[clamp(20px,2.8cqw,40px)] items-center py-[clamp(12px,1.7cqw,26px)] border-b border-[#ddd7ca] no-underline text-ink transition-[background-color] duration-[250ms] hover:bg-[#f4f0e7] active:bg-[#eee8da] @max-[600px]:grid-cols-[clamp(88px,17cqw,132px)_1fr_auto] @max-[600px]:gap-[clamp(12px,2cqw,20px)] max-[860px]:grid-cols-[130px_1fr_auto] max-[860px]:grid-rows-[auto_1fr] max-[860px]:gap-x-4 max-[860px]:gap-y-1 ${item(delays[Math.min(i + 2, delays.length - 1)], phase)}`}
+                  className={`grid grid-cols-[clamp(112px,15.6cqw,200px)_1fr_1.35fr_auto] gap-[clamp(20px,2.8cqw,40px)] items-center py-[clamp(12px,1.7cqw,26px)] border-b border-[#ddd7ca] no-underline text-ink transition-[background-color] duration-[250ms] hover:bg-[#f4f0e7] active:bg-[#eee8da] @max-[600px]:grid-cols-[clamp(88px,17cqw,132px)_1fr_auto] @max-[600px]:gap-[clamp(12px,2cqw,20px)] max-[1025px]:grid-cols-[130px_1fr_auto] max-[1025px]:grid-rows-[auto_1fr] max-[1025px]:gap-x-4 max-[1025px]:gap-y-1 ${item(delays[Math.min(i + 2, delays.length - 1)], phase)}`}
                 >
                   <span
                     aria-hidden="true"
-                    className="w-[clamp(112px,15.6cqw,200px)] h-[clamp(94px,13cqw,166px)] overflow-hidden @max-[600px]:w-[clamp(88px,17cqw,132px)] @max-[600px]:h-[clamp(74px,13cqw,110px)] max-[860px]:row-span-2 max-[860px]:w-[130px] max-[860px]:h-[150px] [&>svg]:block [&>svg]:w-full [&>svg]:h-full [&>img]:block [&>img]:w-full [&>img]:h-full [&>img]:object-cover"
+                    className="w-[clamp(112px,15.6cqw,200px)] h-[clamp(94px,13cqw,166px)] overflow-hidden @max-[600px]:w-[clamp(88px,17cqw,132px)] @max-[600px]:h-[clamp(74px,13cqw,110px)] max-[1025px]:row-span-2 max-[1025px]:w-[130px] max-[1025px]:h-[150px] [&>svg]:block [&>svg]:w-full [&>svg]:h-full [&>img]:block [&>img]:w-full [&>img]:h-full [&>img]:object-cover"
                   >
                     <ProjectThumb kind={project.thumb} />
                   </span>
-                  <span className={`${rowText} max-[860px]:col-start-2`}>{project.name}</span>
-                  <span className={`${rowText} @max-[600px]:hidden max-[860px]:col-start-2`}>{project.blurb}</span>
-                  <span className={`${rowText} text-right max-[860px]:col-start-3 max-[860px]:row-start-2 max-[860px]:self-end`}>{project.tag}</span>
+                  <span className={`${rowText} max-[1025px]:col-start-2`}>{project.name}</span>
+                  <span className={`${rowText} @max-[600px]:hidden max-[1025px]:col-start-2`}>{project.blurb}</span>
+                  <span className={`${rowText} text-right max-[1025px]:col-start-3 max-[1025px]:row-start-2 max-[1025px]:self-end`}>{project.tag}</span>
                 </Link>
               );
             })}
