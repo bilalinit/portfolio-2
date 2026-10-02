@@ -8,10 +8,7 @@ export const metadata: Metadata = {
     "All MIZU projects — websites, mobile apps, experiential and e-commerce work.",
 };
 
-/* /work — the "See all work" target from the work drop-down.
-   Deliberately shell-less: no hero wordmark and no footer — the back
-   link lives at the top of the dark grid section itself. The cursor
-   stays, since the site-wide cursor:none rule depends on it on desktop. */
+/* AllWork includes the compact masthead, project archive and shared footer. */
 export default function WorkPage() {
   return (
     <>

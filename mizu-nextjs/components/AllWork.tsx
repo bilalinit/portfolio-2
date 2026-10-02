@@ -1,138 +1,90 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { allWork, totalWork, workCategories } from "@/data/projects";
-import type { WorkItem } from "@/data/projects";
+import { usePathname } from "next/navigation";
+import { allWork, totalWork, workCategories, type WorkItem } from "@/data/projects";
+import { workPageCopy as copy, workPresentations } from "@/data/work";
+import { CONTACT_EMAIL } from "@/data/pricing";
+import Hero from "@/components/Hero";
+import Footer from "@/components/Footer";
 import ProjectThumb from "@/components/ProjectThumb";
+import styles from "./AllWork.module.css";
 
-/* "All work" grid — the /work page body, modeled on the reference grid
-   (allwork.png): dark canvas, portrait cards, centered title + meta
-   line under each. The page has no shell, so the back link lives here
-   at the top of the section. Each card links to its /work/[slug] case
-   study. With `items`/`activeCategory` it doubles as the filtered
-   category view (/work/category/[slug]): the chip swaps for the active
-   filter, linking back to the full grid. Entrance: rise — elements
-   drift up, staggered via the --d custom property (CSS in globals.css),
-   revealed when the section scrolls into view; everything appears
-   instantly under prefers-reduced-motion. */
+function ProjectArtwork({ item }: { item: WorkItem }) {
+  const presentation = workPresentations[item.slug];
+  if (!presentation) return <div className={styles.fallback}><ProjectThumb kind={item.thumb} /></div>;
+  return <div className={`${styles.artwork} ${item.thumb === "dropsync" ? styles.dropArt : styles.gameArt}`}>
+    <div className={styles.artTop}><span>{presentation.label}</span></div>
+    {item.thumb === "dropsync" ? <>
+      <div className={styles.dropBrand} aria-hidden="true"><span>◆</span> DropSync</div>
+      <div className={styles.browserWindow}><div className={styles.browserChrome} aria-hidden="true"><span>● ● ●</span><span>dropsync / workspace</span></div><img src={presentation.image} alt={presentation.alt} width={1857} height={970} fetchPriority="high" /></div>
+      <span className={styles.orbit} aria-hidden="true" />
+    </> : <>
+      <div className={styles.gameBrand} aria-hidden="true">Game <span>cam</span></div>
+      <div className={styles.scene} aria-hidden="true"><svg viewBox="0 0 500 400" fill="none"><g stroke="currentColor" strokeWidth="1"><path d="M0 300L500 300M0 330L500 330M0 370L500 370M250 190L0 400M250 190L80 400M250 190L180 400M250 190L320 400M250 190L420 400M250 190L500 400" opacity=".25" /><path d="M90 190L200 130L310 190L200 250Z M90 190V290L200 350L310 290V190M200 250V350" /><path d="M350 120L400 95L450 120L400 145ZM350 120V165L400 190L450 165V120M400 145V190" opacity=".5" /><path d="M40 275C80 110 210 70 355 150" stroke="#fa443b" strokeDasharray="4 7" /><circle cx="40" cy="275" r="5" fill="#fa443b" stroke="none" /><path d="M337 141L358 151L339 161" stroke="#fa443b" /></g></svg><span className={styles.axis}>Y ↑<br />↳ X</span></div>
+      <img className={styles.gameInterface} src={presentation.image} alt={presentation.alt} width={548} height={734} />
+    </>}
+    <div className={styles.artBottom}><span>{presentation.caption}</span><span>{item.year}</span></div>
+  </div>;
+}
 
-type AllWorkProps = {
-  items?: WorkItem[];
-  /** label of the active filter, e.g. "Website" — shows the clear chip */
-  activeCategory?: string;
-};
-
-export default function AllWork({ items = allWork, activeCategory }: AllWorkProps) {
-  const ref = useRef<HTMLElement>(null);
-  const [shown, setShown] = useState(false);
-
+export default function AllWork() {
+  const pathname = usePathname();
+  const activeCategory = workCategories.find((category) => pathname === `/work/category/${category.slug}`)?.label;
+  const items = activeCategory ? allWork.filter((item) => item.category === activeCategory) : allWork;
+  const root = useRef<HTMLElement>(null);
+  const filters = useRef<HTMLElement>(null);
+  const [indicator, setIndicator] = useState({ left: 0, top: 0, width: 0, ready: false });
+  useLayoutEffect(() => {
+    const nav = filters.current;
+    if (!nav) return;
+    const measure = () => {
+      const selected = nav.querySelector<HTMLElement>('[aria-current="page"]');
+      if (selected) setIndicator({ left: selected.offsetLeft, top: selected.offsetTop, width: selected.offsetWidth, ready: true });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(nav);
+    nav.querySelectorAll('a').forEach((link) => observer.observe(link));
+    return () => observer.disconnect();
+  }, [pathname]);
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    if (!("IntersectionObserver" in window)) {
-      setShown(true);
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setShown(true);
-            io.disconnect();
-          }
-        });
-      },
-      { threshold: 0.05 }
-    );
-
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  const d = (ms: number) => ({ "--d": `${ms}ms` }) as React.CSSProperties;
-
-  const [first, second, third, fourth] = workCategories;
-
-  return (
-    <section
-      ref={ref}
-      className={`aw bg-coal px-[clamp(20px,2.5vw,44px)] pt-[clamp(24px,3vw,44px)] pb-[clamp(80px,9vw,160px)] ${
-        shown ? "is-shown" : ""
-      }`}
-    >
-      <div className="mx-auto w-[min(1760px,100%)]">
-        {/* back to the landing page */}
-        <div className="el" style={d(0)}>
-          <Link
-            href="/"
-            className="inline-flex items-center py-2 text-[12px] font-medium uppercase tracking-[0.05em] text-white no-underline transition-colors duration-200 hover:text-white/60"
-          >
-            <span aria-hidden="true" className="mr-1">[+]</span> Back
-          </Link>
-        </div>
-
-        {/* ===== header ===== */}
-        <div className="el mt-[clamp(56px,6vw,116px)]" style={d(80)}>
-          <p className="text-[12px] uppercase tracking-[0.08em] text-white/40">
-            (Work)
-          </p>
-        </div>
-
-        <div className="el" style={d(160)}>
-          <h1 className="mt-6 text-[clamp(28px,3vw,46px)] font-normal leading-[1.05] tracking-[-0.02em] text-white">
-            Mizu Studio <span className="text-white/40">/ Work</span>
-          </h1>
-        </div>
-
-        <div className="el mt-5 flex flex-col items-start gap-1.5" style={d(240)}>
-          {activeCategory ? (
-            /* filtered view: the chip clears the filter */
-            <Link
-              href="/work"
-              className="inline-flex items-center bg-white/10 px-1.5 py-0.5 text-[12px] leading-[1.5] text-white/80 no-underline transition-colors duration-200 hover:bg-white/20"
-            >
-              [×] {activeCategory} [{items.length}] — show all
-            </Link>
-          ) : (
-            <>
-              <p className="bg-white/10 px-1.5 py-0.5 text-[12px] leading-[1.5] text-white/80">
-                [+] All work [{totalWork}]
-              </p>
-              <p className="text-[12px] leading-[1.5] text-white/40">
-                {first.label} [{first.count}] — {second.label} [{second.count}]
-              </p>
-              <p className="text-[12px] leading-[1.5] text-white/40">
-                {third.label} [{third.count}] — {fourth.label} [{fourth.count}]
-              </p>
-            </>
-          )}
-        </div>
-
-        {/* ===== card grid: 2 cols mobile, 3 tablet, 4 desktop ===== */}
-        <div className="mt-[clamp(48px,6vw,96px)] grid grid-cols-2 gap-x-[clamp(18px,2.5vw,40px)] gap-y-[clamp(44px,5.5vw,84px)] min-[861px]:grid-cols-3 min-[1025px]:grid-cols-4">
-          {items.map((item, i) => (
-            <Link
-              key={item.name}
-              href={`/work/${item.slug}`}
-              className="el group block no-underline outline-none focus-visible:ring-1 focus-visible:ring-white/40"
-              style={d(Math.min(i * 55, 400))}
-            >
-              <div className="aspect-[3/4] overflow-hidden bg-[#1c1c1c] [&>svg]:block [&>svg]:h-full [&>svg]:w-full [&>svg]:transition-transform [&>svg]:duration-700 [&>svg]:ease-[cubic-bezier(0.22,0.61,0.36,1)] [&:hover>svg]:scale-[1.04] [&>img]:block [&>img]:h-full [&>img]:w-full [&>img]:object-cover [&>img]:transition-transform [&>img]:duration-700 [&>img]:ease-[cubic-bezier(0.22,0.61,0.36,1)] [&:hover>img]:scale-[1.04]">
-                <ProjectThumb kind={item.thumb} />
-              </div>
-              <p className="relative mx-auto mt-[clamp(14px,1.6vw,22px)] w-fit text-[13px] leading-[1.4] text-white after:absolute after:left-0 after:-bottom-[3px] after:h-px after:w-full after:bg-current after:origin-right after:scale-x-0 after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:after:origin-left group-hover:after:scale-x-100 group-focus-visible:after:scale-x-100 group-focus-visible:after:origin-left">
-                {item.name}
-              </p>
-              <p className="mt-1 text-center text-[12.5px] leading-[1.4] text-white/40">
-                {item.category} — {item.year}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </div>
+    if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.setAttribute("data-visible", "true"); observer.unobserve(entry.target); } });
+    }, { threshold: .08 });
+    root.current?.querySelectorAll<HTMLElement>("[data-reveal]").forEach((element) => {
+      if (element.getBoundingClientRect().top > window.innerHeight) { element.setAttribute("data-pending", "true"); observer.observe(element); }
+    });
+    return () => observer.disconnect();
+  }, [activeCategory]);
+  return <><Hero compact /><main ref={root} className={styles.page}>
+    <header className={styles.opening}>
+      <div className={styles.intro}><h1>{copy.title}</h1><p>{copy.introduction}</p></div>
+    </header>
+    <section id="projects" aria-label={copy.projectsLabel}>
+      <div className={styles.toolbar}><nav ref={filters} aria-label={copy.filterLabel} className={styles.filters} data-ready={indicator.ready} onClickCapture={(event) => {
+        const link = (event.target as HTMLElement).closest('a');
+        if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+        event.preventDefault();
+        if (link.pathname !== pathname) window.history.pushState(null, '', link.pathname);
+      }}>
+        <span className={styles.filterIndicator} aria-hidden="true" style={{ width: indicator.width, transform: `translate(${indicator.left}px, ${indicator.top}px)` }} />
+        <Link href="/work" aria-current={!activeCategory ? "page" : undefined}>{copy.all}<sup>{String(totalWork).padStart(2, "0")}</sup></Link>
+        {workCategories.filter((category) => category.count > 0 || category.label === activeCategory).map((category) => <Link key={category.slug} href={`/work/category/${category.slug}`} aria-current={activeCategory === category.label ? "page" : undefined}>{category.label}<sup>{String(category.count).padStart(2, "0")}</sup></Link>)}
+      </nav><span className={styles.indexLabel}>{String(items.length).padStart(2, "0")} {copy.indexLabel}</span></div>
+      <div className={styles.projects}>{items.map((item) => <article key={item.slug} className={styles.project} data-reveal>
+        <Link href={`/work/${item.slug}`} className={styles.projectLink} aria-label={`${copy.view} — ${item.name}`}>
+          <div className={styles.projectTop}><span>[{String(allWork.findIndex((project) => project.slug === item.slug) + 1).padStart(2, "0")}]</span><span>{item.category} / {item.tag}</span></div>
+          <ProjectArtwork item={item} />
+          <div className={styles.projectHeading}><h2>{item.name}</h2><span className={styles.caseLink}>{copy.view}</span></div>
+          <p className={styles.description}>{item.blurb}</p>
+          <div className={styles.projectFoot}>{(workPresentations[item.slug]?.services || [item.category]).map((service) => <span className={styles.serviceTag} key={service}>{service}</span>)}</div>
+        </Link>
+      </article>)}</div>
+      {items.length === 0 && <div className={styles.empty}><p>{copy.empty}</p><Link href="/work">{copy.showAll}</Link></div>}
     </section>
-  );
+    <section className={styles.invitation} data-reveal><div><span className={styles.micro}>{copy.nextLabel}</span><h2>{copy.nextTitle}</h2></div><a href={`mailto:${CONTACT_EMAIL}`} className={styles.contact}>{copy.contact}</a></section>
+  </main><Footer /></>;
 }
