@@ -24,6 +24,7 @@ Current pages:
 - Dev server: `npm run dev` → http://localhost:3000
 - Type check: `npx tsc --noEmit` (must pass before saying "done")
 - Production build: `npm run build`
+- Nami backend: from `backend/`, run `uv run main.py` (it's a uv project — never the global Python, which lacks the `agents` deps) → http://localhost:8000
 
 ## Environment (Windows — PowerShell)
 

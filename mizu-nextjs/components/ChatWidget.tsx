@@ -1,7 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import Link from "next/link";
+import { createPortal } from "react-dom";
 import { DotsIcon } from "@/components/icons";
+import { THUMB_SRC } from "@/components/ProjectThumb";
+import { allWork, type WorkItem } from "@/data/projects";
+import { CONTACT_EMAIL } from "@/data/pricing";
 import DotSphere, { type SphereMode } from "@/components/DotSphere";
 import {
   AGENT_URL,
@@ -93,6 +104,112 @@ const now = () =>
     .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     .toLowerCase();
 
+/* ===== project mentions → case-study links =====
+   Nami answers in plain text, so the widget wraps project names in
+   links to their /work/[slug] pages at render time — no markup ever
+   rides the stream. Aliases derive from allWork (the data file stays
+   the single source of truth): each name, its space-collapsed form,
+   and any explicit `aliases` (e.g. the title the agent's knowledge
+   base uses), matched case-insensitively with word boundaries, so
+   "DropSync", "Dropsync" and "GameCam" all link. Runs on the revealed
+   substring during streaming too, so a mention turns clickable the
+   moment its last letter drips in. The mention is styled as a real link —
+   accent colour plus a persistent underline, see the className below for why
+   it can't be the beige ground token — and on mouse hover the word brightens
+   while a preview pill rises above it (see the mention hover preview block in
+   ChatWidget). */
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const PROJECT_LINKS = new Map<string, WorkItem>();
+for (const w of allWork) {
+  for (const name of [w.name, w.name.replace(/\s+/g, ""), ...(w.aliases ?? [])]) {
+    PROJECT_LINKS.set(name.toLowerCase(), w);
+  }
+}
+const PROJECT_LINK_RE = new RegExp(
+  `\\b(${[...PROJECT_LINKS.keys()].map(escapeRe).join("|")})\\b`,
+  "gi",
+);
+
+interface MentionHandlers {
+  show: (item: WorkItem, rect: DOMRect) => void;
+  /* leaving the word doesn't hide instantly — the pointer may be travelling
+     to the card's GitHub button, so the hide is scheduled with a grace */
+  leave: () => void;
+}
+
+function withProjectLinks(text: string, mention?: MentionHandlers): ReactNode {
+  PROJECT_LINK_RE.lastIndex = 0;
+  const parts: ReactNode[] = [];
+  let last = 0;
+  for (
+    let m = PROJECT_LINK_RE.exec(text);
+    m !== null;
+    m = PROJECT_LINK_RE.exec(text)
+  ) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    const mentioned = m[0];
+    const item = PROJECT_LINKS.get(mentioned.toLowerCase());
+    parts.push(
+      item ? (
+        <Link
+          key={parts.length}
+          href={`/work/${item.slug}`}
+          onPointerEnter={(e) => {
+            /* hover-driven UI is mouse-only (touch taps fire compat mouse
+               events — an unguarded enter here would flash the card) */
+            if (e.pointerType === "mouse" && mention) {
+              mention.show(item, e.currentTarget.getBoundingClientRect());
+            }
+          }}
+          onPointerLeave={(e) => {
+            if (e.pointerType === "mouse" && mention) mention.leave();
+          }}
+          onFocus={(e) => {
+            if (mention) mention.show(item, e.currentTarget.getBoundingClientRect());
+          }}
+          onBlur={() => {
+            if (mention) mention.leave();
+          }}
+          /* Neutral grey, not an accent hue, and LIGHTER than the body text
+             rather than darker — the chat panel is bg-black, so "dark grey to
+             stand out from white text" would in fact sink into the
+             background. Measured on #000: this sits 5.8:1 against the panel
+             and 3.5:1 against the white/85 body text, so it separates from
+             both, while the persistent underline carries the link-ness on its
+             own (colour alone never has to do the work). Hover lifts it
+             toward white. */
+          className="text-[#8a8a8a] underline decoration-[#8a8a8a]/60 decoration-1 underline-offset-[3px] transition-colors duration-200 hover:text-[#d4d4d4] hover:decoration-[#d4d4d4]"
+        >
+          {mentioned}
+        </Link>
+      ) : (
+        mentioned
+      ),
+    );
+    last = m.index + mentioned.length;
+  }
+  if (parts.length === 0) return text;
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
+
+/* mention preview card geometry (viewport-fixed, portaled to <body>) */
+type MentionPreview = {
+  name: string;
+  /* the case-study route, so the card's own body is a link to it — the
+     pill is mostly empty space, and before this only its two icon buttons
+     did anything */
+  slug: string;
+  thumb: string;
+  github: string | null;
+  liveUrl: string | null;
+  x: number; /* card left, viewport px */
+  y: number; /* card top, viewport px */
+};
+const MENTION_PILL_W = 188;
+const MENTION_PILL_H = 38; /* art 24 + py 7×2 */
+const MENTION_GAP = 10;
+
 /* ===== smooth streaming reveal =====
    Nami's answer streams in as token deltas; this hook buffers the full text
    and reveals it on a steady tick — a small fixed step plus ~1/50 of the
@@ -103,6 +220,12 @@ function useSmoothStream() {
   const [revealed, setRevealed] = useState("");
   const [hasText, setHasText] = useState(false);
   const [isDone, setIsDone] = useState(false);
+  /* every reveal completion bumps this, even when isDone is already true —
+     the settled-commit effect below needs a render to fire on, and when the
+     reveal caught up before the authoritative final arrived (instant reveal
+     does it on the first delta; a stalled stream can too), setFull's updates
+     are all no-ops against identical state */
+  const [doneTick, setDoneTick] = useState(0);
   const fullRef = useRef("");
   const lenRef = useRef(0);
   const timerRef = useRef<number | null>(null);
@@ -114,17 +237,22 @@ function useSmoothStream() {
     }
   }, []);
 
+  const markDone = useCallback(() => {
+    setIsDone(true);
+    setDoneTick((t) => t + 1);
+  }, []);
+
   const tick = useCallback(() => {
     const full = fullRef.current;
     if (lenRef.current >= full.length) {
       stop();
-      setIsDone(true);
+      markDone();
       return;
     }
     const step = Math.max(1, Math.ceil((full.length - lenRef.current) / 50));
     lenRef.current = Math.min(full.length, lenRef.current + step);
     setRevealed(full.slice(0, lenRef.current));
-  }, [stop]);
+  }, [stop, markDone]);
 
   const start = useCallback(() => {
     if (timerRef.current !== null) return;
@@ -139,11 +267,11 @@ function useSmoothStream() {
     ) {
       lenRef.current = fullRef.current.length;
       setRevealed(fullRef.current);
-      setIsDone(true);
+      markDone();
       return true;
     }
     return false;
-  }, []);
+  }, [markDone]);
 
   const append = useCallback(
     (chunk: string) => {
@@ -181,12 +309,14 @@ function useSmoothStream() {
 
   useEffect(() => stop, [stop]);
 
-  return { revealed, hasText, isDone, append, setFull, reset };
+  return { revealed, hasText, isDone, doneTick, append, setFull, reset };
 }
 
 /* ===== morph geometry ===== */
 const PILL_H = 56; /* h-14 — the strip's height at pill/circle */
 const STRIP_H_OPEN = 72; /* hosting the live input restores the original 24/20 row rhythm */
+const COMPOSER_MAX_H = 70; /* textarea grows to 3 lines (16px × 1.45), then scrolls */
+const STRIP_MAX_H = 98; /* strip ceiling once the composer is capped */
 const RADIUS_PILL = PILL_H / 2;
 const RADIUS_PANEL = 24; /* rounded-[24px] */
 const PANEL_W = "min(400px, calc(100vw - 32px))"; /* 16px gutters */
@@ -220,6 +350,9 @@ export default function ChatWidget() {
   const [view, setView] = useState<View>("greet");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
+  /* strip height: 72 at rest, grows with the composer as long questions
+     stack (the face's bottom padding follows, then the measured panel) */
+  const [stripH, setStripH] = useState(STRIP_H_OPEN);
   const [thinking, setThinking] = useState(false);
   /* desktop-fine-pointer only — touch taps fire compat mouse events,
      and hover is a mouse-only effect (AGENTS.md rule #1) */
@@ -268,7 +401,7 @@ export default function ChatWidget() {
 
   const measureRef = useRef<HTMLSpanElement>(null);
   const panelFaceRef = useRef<HTMLElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
   const later = useCallback((fn: () => void, ms: number) => {
@@ -308,8 +441,51 @@ export default function ChatWidget() {
     return () => ro.disconnect();
   }, []);
 
+  /* the composer hugs its content up to the cap (then scrolls internally);
+     measured ONLY at open — mid-morph stages have fake-narrow slots (the
+     circle is 56px wide), which wrap the text, pump this box up and drag
+     the strip height up and down behind it (the sphere/text jitter) */
+  useEffect(() => {
+    const el = composerRef.current;
+    if (!el) return;
+    if (stage !== "open") return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, COMPOSER_MAX_H)}px`;
+  }, [input, stage]);
+
+  /* strip follows the composer's box, which cascades: strip height →
+     face padding → measured panel height → the morphing container */
+  useEffect(() => {
+    const el = composerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      setStripH((prev) => {
+        const next = Math.min(STRIP_MAX_H, Math.max(STRIP_H_OPEN, el.offsetHeight + 28));
+        return prev === next ? prev : next;
+      });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  /* deterministic panel re-measure — the RO above can silently stop
+     delivering across morph stages, so anything that can change the
+     face's height re-reads it after commit (composer growth, view
+     switches, new messages, streaming ticks) */
+  useEffect(() => {
+    const el = panelFaceRef.current;
+    if (!el) return;
+    const h = el.offsetHeight;
+    setPanelH((prev) => (prev === h ? prev : h));
+  }, [stripH, input, view, stage, messages.length, thinking, smooth.revealed, seq]);
+
   const reducedMotion = () =>
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* desktop-fine-pointer only — used for hover-type behaviors and the
+     Enter-to-send shortcut (touch keyboards get the send button) */
+  const finePointer = () =>
+    window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
   /* pill → circle → bar → open (overlapped legs; reduced motion skips
      straight to the end state, transitions being disabled anyway) */
@@ -392,8 +568,8 @@ export default function ChatWidget() {
      keyboards don't jump up on their own */
   useEffect(() => {
     if (stage !== "open") return;
-    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-      inputRef.current?.focus();
+    if (finePointer()) {
+      composerRef.current?.focus();
     }
   }, [stage, view]);
 
@@ -405,7 +581,10 @@ export default function ChatWidget() {
   }, [messages, thinking, smooth.revealed]);
 
   /* commit the finished reply only once the reveal has dripped out fully —
-     swapping earlier would replace the visible streaming bubble mid-typing */
+     swapping earlier would replace the visible streaming bubble mid-typing.
+     Fires on doneTick (not revealed): when the reveal is already caught up,
+     setFull changes no state, and only the completion counter guarantees the
+     render this effect needs — otherwise thinking sticks forever */
   useEffect(() => {
     if (settledRef.current === null || !smooth.isDone) return;
     const text = settledRef.current;
@@ -414,7 +593,75 @@ export default function ChatWidget() {
     setThinking(false);
     setActivity(null);
     smooth.reset();
-  }, [smooth.isDone]);
+  }, [smooth.isDone, smooth.doneTick]);
+
+  /* ===== mention hover preview =====
+     hovering a project mention raises a small card above the word — art,
+     name, and (when the project has a repo) a GitHub button beside the
+     bracket-arrow pin — portaled to <body> so the panel's overflow-hidden
+     clip layers can never cut it off. Mouse-only (AGENTS.md hover rule);
+     keyboard focus on the mention raises it too. Because the GitHub button
+     lives ON the card, leaving the word only SCHEDULES the hide — moving
+     onto the card (or focusing it) cancels the timer, so the trip across
+     the 10px gap never dismisses it. Show/hide are pure class flips (the
+     motion lives in .mention-pill in globals.css: keyframe pop-in on
+     `.on`, transition fade-out off it) — no rAF to schedule. */
+  const [mention, setMention] = useState<MentionPreview | null>(null);
+  const [mentionShown, setMentionShown] = useState(false);
+  const mentionHideRef = useRef<number | null>(null);
+
+  const clearMentionHide = useCallback(() => {
+    if (mentionHideRef.current !== null) {
+      clearTimeout(mentionHideRef.current);
+      mentionHideRef.current = null;
+    }
+  }, []);
+
+  const showMention = useCallback(
+    (item: WorkItem, rect: DOMRect) => {
+      clearMentionHide();
+      /* clamp to the 16px viewport gutters; sit above the word, flipping
+         below it when the panel hugs the viewport top */
+      const x = Math.min(
+        Math.max(rect.left + rect.width / 2 - MENTION_PILL_W / 2, 16),
+        Math.max(16, window.innerWidth - MENTION_PILL_W - 16),
+      );
+      const y =
+        rect.top - MENTION_PILL_H - MENTION_GAP >= 8
+          ? rect.top - MENTION_PILL_H - MENTION_GAP
+          : rect.bottom + MENTION_GAP;
+      setMention({
+        name: item.name,
+        slug: item.slug,
+        thumb: THUMB_SRC[item.thumb],
+        github: item.github ?? null,
+        liveUrl: item.liveUrl ?? null,
+        x,
+        y,
+      });
+      setMentionShown(true);
+    },
+    [clearMentionHide],
+  );
+
+  const leaveMention = useCallback(() => {
+    clearMentionHide();
+    mentionHideRef.current = window.setTimeout(() => {
+      mentionHideRef.current = null;
+      setMentionShown(false);
+    }, 120);
+  }, [clearMentionHide]);
+
+  const hideMention = useCallback(() => {
+    clearMentionHide();
+    setMentionShown(false);
+  }, [clearMentionHide]);
+
+  /* every close path drops the card — content stays for the next open */
+  useEffect(() => {
+    if (stage !== "open") hideMention();
+  }, [stage, hideMention]);
+  const mentionApi = { show: showMention, leave: leaveMention };
 
   const send = async (raw: string) => {
     const text = raw.trim();
@@ -465,7 +712,7 @@ export default function ChatWidget() {
       const notice =
         retryAfter !== null
           ? `I need a breather — you've reached the chat limit. Try again in ${formatRetry(retryAfter)}.`
-          : "Sorry — I couldn't reach my brain just now. Give it another go in a moment, or email hello@mizu.studio.";
+          : `Sorry — I couldn't reach my brain just now. Give it another go in a moment, or email ${CONTACT_EMAIL}.`;
       smooth.reset();
       settledRef.current = notice;
       smooth.setFull(notice);
@@ -518,7 +765,7 @@ export default function ChatWidget() {
   return (
     <div
       ref={rootRef}
-      className={`chat-morph fixed bottom-4 left-4 z-[440] ${
+      className={`chat-morph fixed bottom-4 left-4 z-[440] max-w-[calc(100vw-32px)] ${
         stage === "open" ? "open" : ""
       } ${stage === "pill" ? "idle cursor-pointer" : ""}`}
       style={geom}
@@ -535,8 +782,17 @@ export default function ChatWidget() {
       />
 
       {/* clip layer: rounds and crops everything while the box morphs —
-          this edge is what wipes the prompts in and out */}
-      <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
+          this edge is what wipes the prompts in and out. Pinned to
+          scrollTop 0: focus/scroll-into-view must never shift the panel
+          inside its own frame (overflow:hidden boxes still scroll) */}
+      <div
+        className="absolute inset-0 overflow-hidden rounded-[inherit]"
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          if (el.scrollTop !== 0) el.scrollTop = 0;
+          if (el.scrollLeft !== 0) el.scrollLeft = 0;
+        }}
+      >
         {/* ===== panel face (header + body; the strip is the input row) ===== */}
         <section
           ref={panelFaceRef}
@@ -544,10 +800,14 @@ export default function ChatWidget() {
           aria-label={`Chat with ${ASSISTANT_NAME}, MIZU's AI assistant`}
           aria-hidden={stage !== "open"}
           className={`face-panel pointer-events-none absolute left-0 top-0 flex max-h-[calc(100dvh-32px)] w-[min(400px,calc(100vw-32px))] flex-col overflow-hidden text-white ${
-            stage === "bar" || stage === "open" ? "pb-[72px]" : "pb-14"
+            stage === "bar" || stage === "open" ? "" : "pb-14"
           } ${
             stage === "open" ? "opacity-100" : "opacity-0"
           }`}
+          style={{
+            /* room for the strip, which grows with the composer */
+            paddingBottom: stage === "bar" || stage === "open" ? stripH : undefined,
+          }}
         >
           {/* keyed wrapper: re-cascades the content on every open (and on
               view switches, which remount children as before) */}
@@ -652,7 +912,8 @@ export default function ChatWidget() {
                 role="log"
                 aria-live="polite"
                 aria-label="Conversation"
-                className="flex-1 overflow-y-auto overscroll-contain px-6 pb-2 pt-3"
+                onScroll={hideMention}
+                className="chat-scroll flex-1 overflow-y-auto overscroll-contain px-6 pb-2 pt-3"
               >
                 {messages.map((m, i) => (
                   <div key={i} className="mb-4">
@@ -663,11 +924,11 @@ export default function ChatWidget() {
                       <span className="text-white/40">{m.time}</span>
                     </p>
                     <p
-                      className={`mt-0.5 text-[15px] leading-[1.5] ${
+                      className={`mt-0.5 text-[15px] leading-[1.5] [overflow-wrap:anywhere] ${
                         m.from === "user" ? "text-white/60" : "text-white/85"
                       }`}
                     >
-                      {m.text}
+                      {withProjectLinks(m.text, mentionApi)}
                     </p>
                   </div>
                 ))}
@@ -709,8 +970,8 @@ export default function ChatWidget() {
                         {pendingTimeRef.current}
                       </span>
                     </p>
-                    <p className="mt-0.5 min-h-6 text-[15px] leading-[1.5] text-white/85">
-                      {smooth.revealed}
+                    <p className="mt-0.5 min-h-6 text-[15px] leading-[1.5] text-white/85 [overflow-wrap:anywhere]">
+                      {withProjectLinks(smooth.revealed, mentionApi)}
                     </p>
                   </div>
                 )}
@@ -721,10 +982,10 @@ export default function ChatWidget() {
               <div className="px-6 pb-6 pt-4">
                 <p className="text-[13px] text-white/50">Prefer a human?</p>
                 <a
-                  href="mailto:hello@mizu.studio"
+                  href={`mailto:${CONTACT_EMAIL}`}
                   className="relative mt-2 inline-block w-fit text-[19px] text-white no-underline after:absolute after:left-0 after:-bottom-[3px] after:h-px after:w-full after:bg-current after:origin-right after:scale-x-0 after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.4,0,0.2,1)] hover:after:origin-left hover:after:scale-x-100"
                 >
-                  hello@mizu.studio
+                  {CONTACT_EMAIL}
                 </a>
                 <p className="mt-3 text-[14px] leading-[1.5] text-white/60">
                   We reply within one business day.
@@ -758,8 +1019,13 @@ export default function ChatWidget() {
             if (e.pointerType === "mouse") setSphereHover(false);
           }}
           className={`absolute bottom-0 left-0 flex w-full items-center gap-3 px-6 text-white [transition:height_.4s_cubic-bezier(.65,0,.35,1)] ${
-            stage === "pill" || stage === "circle" ? "h-14" : "h-[72px]"
+            stage === "pill" || stage === "circle" ? "h-14" : ""
           }`}
+          style={
+            stage === "pill" || stage === "circle"
+              ? undefined
+              : { height: stripH }
+          }
         >
           {/* THE mark — a real 3D dot sphere: drifts at rest, perks up
               under the mouse, agitates with white sparkles while Nami
@@ -778,15 +1044,21 @@ export default function ChatWidget() {
             >
               Let&rsquo;s work together
             </span>
-            <input
-              ref={inputRef}
-              type="text"
+            <textarea
+              ref={composerRef}
+              rows={1}
               value={input}
               tabIndex={showInput ? 0 : -1}
               aria-hidden={!showInput}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") send(input);
+                /* hardware Enter sends (Shift+Enter stacks a line); touch
+                   keyboards keep Enter for newlines — mobile sends with the
+                   button beside the input */
+                if (e.key === "Enter" && !e.shiftKey && finePointer()) {
+                  e.preventDefault();
+                  send(input);
+                }
               }}
               placeholder={
                 cooldownLeft > 0
@@ -794,11 +1066,13 @@ export default function ChatWidget() {
                   : "Ask me anything..."
               }
               aria-label="Ask me anything"
-              className="absolute inset-0 h-full w-full bg-transparent text-[16px] text-white outline-none placeholder:text-white/40 [transition:transform_.4s_cubic-bezier(.65,0,.35,1)]"
+              className="chat-scroll absolute left-0 right-0 top-1/2 h-[23px] resize-none bg-transparent text-[16px] leading-[1.45] text-white outline-none placeholder:text-white/40 [transition:transform_.4s_cubic-bezier(.65,0,.35,1)]"
               style={{
                 /* same duration + curve as the geometry legs, so the
                    slide never slips relative to the moving wall */
-                transform: showInput ? "translateX(0)" : `translateX(${parkX}px)`,
+                transform: showInput
+                  ? "translateY(-50%)"
+                  : `translate(${parkX}px, -50%)`,
               }}
             />
 
@@ -812,8 +1086,175 @@ export default function ChatWidget() {
               Let&rsquo;s work together
             </span>
           </div>
+
+          {/* send — touch keyboards offer no send action, so the button
+              exists exactly there (fine-pointer devices send with Enter);
+              styled like the panel's round icon buttons */}
+          <button
+            type="button"
+            aria-label="Send message"
+            tabIndex={showInput ? 0 : -1}
+            aria-hidden={!showInput}
+            disabled={thinking || cooldownLeft > 0 || !input.trim()}
+            onClick={() => send(input)}
+            className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/80 transition-[background-color,color,opacity] duration-200 enabled:hover:bg-white/20 enabled:hover:text-white ${
+              !showInput
+                ? "pointer-events-none opacity-0"
+                : thinking || cooldownLeft > 0 || !input.trim()
+                  ? "opacity-40"
+                  : "opacity-100"
+            } [@media(hover:hover)_and_(pointer:fine)]:hidden`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              className="h-5 w-5"
+              aria-hidden="true"
+            >
+              <path d="M12 19V5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* mention hover preview — createPortal mounts it on <body>, so the
+          panel's clip layers can never cut it off. The card takes the
+          pointer (and keeps itself up while focused) so its GitHub button
+          is clickable; entering it cancels the leave grace, leaving it
+          hides. Keyboard: hidden cards are visibility:hidden, so the
+          button is only focusable while the card is up. Its pointer/click
+          events stop here — the widget's close-on-outside-click listener
+          lives on document, and a portaled card counts as "outside" to
+          it, which would collapse the panel on every button press. */}
+      {typeof document !== "undefined" &&
+        mention !== null &&
+        createPortal(
+          <div
+            className="mention-anchor pointer-events-auto fixed z-[450]"
+            style={{ left: mention.x, top: mention.y, width: MENTION_PILL_W }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            onPointerEnter={(e) => {
+              if (e.pointerType === "mouse") clearMentionHide();
+            }}
+            onPointerLeave={(e) => {
+              if (e.pointerType === "mouse") hideMention();
+            }}
+          >
+            <div
+              className={`mention-pill flex items-center gap-[5px] rounded-[12px] bg-[#1c1c1c] py-[7px] pl-[7px] pr-[7px] ring-1 ring-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.45)] ${
+                mentionShown ? "on" : ""
+              }`}
+            >
+              {/* The card's body — art + name — is the link to the case
+                  study. It is a sibling of the two icon links, never their
+                  parent: anchors can't nest, and wrapping the buttons in
+                  this one would make the whole card one ambiguous target
+                  where the GitHub/arrow presses stopped being their own
+                  clicks. This is the click that was previously dead. */}
+              <Link
+                href={`/work/${mention.slug}`}
+                aria-label={`View the ${mention.name} case study`}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+                onFocus={clearMentionHide}
+                onBlur={hideMention}
+                className="flex min-w-0 flex-1 items-center gap-[5px] rounded-[6px] no-underline outline-none transition-opacity duration-200 hover:opacity-80 focus-visible:ring-1 focus-visible:ring-white/60"
+              >
+                <img
+                  src={mention.thumb}
+                  alt=""
+                  className="h-6 w-6 shrink-0 rounded-[6px] object-cover ring-1 ring-white/15"
+                />
+                <span className="min-w-0 flex-1 truncate text-[11px] font-medium leading-tight text-white">
+                  {mention.name}
+                </span>
+              </Link>
+              {mention.github !== null && (
+                <a
+                  href={mention.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${mention.name} on GitHub`}
+                  className="-mx-[3px] flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-white/60 transition-colors duration-200 hover:text-white"
+                  onFocus={clearMentionHide}
+                  onBlur={hideMention}
+                >
+                  <svg
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    className="h-3 w-3"
+                    aria-hidden="true"
+                  >
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
+                  </svg>
+                </a>
+              )}
+              {/* bracket-arrow pin — the site's label motif saying "opens".
+                  Only rendered as a link when there IS a liveUrl; the else
+                  branch deliberately drops the arrow glyph entirely rather
+                  than showing a dead one. */}
+              {mention.liveUrl !== null ? (
+                <a
+                  href={mention.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Open ${mention.name}`}
+                  className="-mx-[3px] flex shrink-0 items-center gap-px rounded-[6px] px-[3px] py-2 text-beige/80 transition-colors duration-200 hover:text-white"
+                  onFocus={clearMentionHide}
+                  onBlur={hideMention}
+                >
+                  <span className="text-[10px] leading-none">[</span>
+                  <svg
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.4}
+                    className="h-[7px] w-[7px]"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2.2 7.8 7.8 2.2M7.8 2.2H3.6M7.8 2.2v4.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span className="text-[10px] leading-none">]</span>
+                </a>
+              ) : (
+                /* No liveUrl — so there is deliberately NO arrow. A dimmed
+                   arrow that goes nowhere is worse than no affordance: it
+                   advertises a link that isn't one. Projects that should have
+                   this get a `liveUrl` in data/projects.ts instead. */
+                <span
+                  className="flex shrink-0 items-center gap-px text-white/25"
+                  title={`No live demo for ${mention.name} yet`}
+                >
+                  <span className="text-[10px] leading-none">[</span>
+                  <svg
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.4}
+                    className="h-[7px] w-[7px]"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2.2 7.8 7.8 2.2M7.8 2.2H3.6M7.8 2.2v4.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span className="text-[10px] leading-none">]</span>
+                </span>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

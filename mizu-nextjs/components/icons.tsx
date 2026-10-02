@@ -17,6 +17,26 @@ export function FolderIcon({ className }: IconProps) {
   );
 }
 
+/* MIZU's mark — three crossing strokes (a six-spoke asterisk). Water made
+   geometric; sits ahead of the wordmark in the nav lockup. */
+export function MizuMark({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.1}
+      strokeLinecap="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M12 2.6v18.8" />
+      <path d="M3.6 7.2 20.4 16.8" />
+      <path d="M20.4 7.2 3.6 16.8" />
+    </svg>
+  );
+}
+
 export function AccessibilityIcon({ className }: IconProps) {
   return (
     <svg
@@ -43,13 +63,21 @@ export function DotsIcon({
   bloomBase = 0,
 }: IconProps & { bloom?: boolean; bloomBase?: number }) {
   const dots: { x: number; y: number }[] = [{ x: 0, y: 0 }];
+  /* round to 10 decimals: trig results differ in the last ulp between
+     the Node server and the browser, which tripped React hydration */
   for (let i = 0; i < 6; i++) {
     const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
-    dots.push({ x: Math.cos(a) * 7, y: Math.sin(a) * 7 });
+    dots.push({
+      x: Number((Math.cos(a) * 7).toFixed(10)),
+      y: Number((Math.sin(a) * 7).toFixed(10)),
+    });
   }
   for (let i = 0; i < 12; i++) {
     const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
-    dots.push({ x: Math.cos(a) * 14, y: Math.sin(a) * 14 });
+    dots.push({
+      x: Number((Math.cos(a) * 14).toFixed(10)),
+      y: Number((Math.sin(a) * 14).toFixed(10)),
+    });
   }
   return (
     <svg

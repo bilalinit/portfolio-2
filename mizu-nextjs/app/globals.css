@@ -1,8 +1,29 @@
 @import "tailwindcss";
 
+@keyframes work-panel-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+@keyframes skill-type { 0%,20%,85%,100% { transform: translateX(0); } 45%,65% { transform: translateX(8px); } }
+@keyframes skill-turn { to { transform: rotate(360deg); } }
+@keyframes skill-window { 0%,100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-6px) rotate(0deg); } }
+@keyframes skill-signal { to { stroke-dashoffset: -318; } }
+
+@keyframes about-rise { from { opacity: 0; transform: translateY(35px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes about-type-shift { 0%,15%,85%,100% { transform: translateX(0); } 40%,65% { transform: translateX(8px); } }
+@keyframes about-playhead { 0%,15%,100% { left: 90px; } 65%,85% { left: 92%; } }
+@keyframes about-spin { to { transform: rotate(360deg); } }
+
 /* ============ DESIGN TOKENS ============ */
 @theme {
-  --color-beige: #c9c1b1;
+  /* Page ground. Was #c9c1b1 — a warm, fairly saturated tan that read as
+     "beige" everywhere it appeared and made the whole site feel dusty.
+     Retuned to a near-neutral off-white so the ink has a clean field and the
+     palette's one warm accent (the hero Contact tile) carries the warmth on
+     its own. The token is still called `beige` so the 15 existing
+     `bg-beige` / `text-beige` call sites keep working — rename it in a
+     dedicated pass rather than folding a 15-site refactor into a look
+     change. On dark grounds (coal) it reads as a soft white, which is what
+     the chat and work-menu text always wanted anyway. */
+  --color-beige: #e5e3de;
   --color-ink: #131009;
   --color-dark: #1a120b;
   --color-coal: #121212;
@@ -10,12 +31,19 @@
   --font-sans: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-anton), "Arial Black", sans-serif;
   --font-hand: var(--font-caveat), "Segoe Script", cursive;
+  --font-brand: var(--font-helvetica), "Helvetica Neue", Arial, sans-serif;
+  --font-mark: var(--font-inter-tight), var(--font-inter), "Helvetica Neue",
+    Arial, sans-serif;
 }
 
 /* ============ BASE ============ */
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* hard no-side-scroll rail for phones: `clip` (not `hidden`) never
+       turns html into a scroll container, so overflowing content or
+       font-boosted text can never open a horizontal pan on any device */
+    overflow-x: clip;
   }
 
   body {
@@ -24,7 +52,7 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   ::selection {
@@ -55,14 +83,13 @@
   }
 }
 
-@keyframes logoIn {
+/* hero lockup entrance — simple fade */
+@keyframes brandIn {
   from {
     opacity: 0;
-    transform: translateY(60px) scaleY(1.07);
   }
   to {
     opacity: 1;
-    transform: scaleY(1.07);
   }
 }
 
@@ -114,10 +141,30 @@
 
 /* respect reduced-motion: everything simply appears */
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   .sk .el {
     transition: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  /* the hero's load-in reveal (statement + note) is decoration — the copy
+     has to be readable the moment it paints */
+  .rise {
+    animation: none !important;
+  }
+
+  /* the masthead tiles' ink bloom + arrow slide. Under reduced motion the
+     tile still needs a clear hover/focus state, so the bloom resolves to
+     fully opaque immediately rather than disappearing — otherwise the label
+     would stay dark on a dark tile and vanish. */
+  .tile-wipe,
+  .tile-arrow {
+    transition: none !important;
+  }
+  .tile:hover .tile-wipe,
+  .tile:focus-visible .tile-wipe {
+    opacity: 1 !important;
   }
 }
 
@@ -155,6 +202,61 @@
   }
 }
 
+/* ============ MASTHEAD TILE BLOOM ============
+   The ink that floods a masthead tile on hover. Masked with a radial
+   gradient rather than drawn as a rectangle, so the ink feathers out of
+   the tile's corner and dissolves before it reaches the opposite edges —
+   no hard leading edge anywhere. The gradient runs solid ink at the corner
+   and falls to fully transparent at 100%, sized past the tile so the falloff
+   is gentle rather than a visible ring.
+
+   Lives here rather than as Tailwind classes because the mask is too long
+   to inline, and because -webkit-mask has to stay paired with mask for
+   Safari. The corner is chosen by a data attribute set in Hero.tsx. */
+.tile-wipe {
+  background: var(--color-ink);
+  opacity: 0;
+  transition: opacity 0.52s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: opacity;
+}
+
+.tile-wipe[data-corner="bottom-left"] {
+  --bloom-x: 0%;
+  --bloom-y: 100%;
+}
+.tile-wipe[data-corner="top-right"] {
+  --bloom-x: 100%;
+  --bloom-y: 0%;
+}
+
+.tile-wipe[data-corner] {
+  -webkit-mask-image: radial-gradient(
+    circle at var(--bloom-x) var(--bloom-y),
+    #000 0%,
+    #000 18%,
+    rgba(0, 0, 0, 0.72) 46%,
+    rgba(0, 0, 0, 0.34) 68%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    circle at var(--bloom-x) var(--bloom-y),
+    #000 0%,
+    #000 18%,
+    rgba(0, 0, 0, 0.72) 46%,
+    rgba(0, 0, 0, 0.34) 68%,
+    transparent 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* the bloom arrives on hover AND on keyboard focus, matching the label's
+   colour inversion so the two never disagree about which state we're in */
+.tile:hover .tile-wipe,
+.tile:focus-visible .tile-wipe {
+  opacity: 1;
+}
+
 /* ============ CHAT WIDGET (pill ⇄ panel morph) ============
    Ported from animation_refrance_chat.html: ONE container morphs
    through pill → circle → bar → panel (close reverses). The geometry
@@ -189,6 +291,15 @@
 }
 .chat-morph.open .face-panel {
   transition: opacity 0.32s ease 0.14s;
+}
+
+/* chat scrollers (message log, composer) hide their scrollbars — the
+   content scrolls, the chat stays chrome-free */
+.chat-scroll {
+  scrollbar-width: none; /* Firefox */
+}
+.chat-scroll::-webkit-scrollbar {
+  display: none; /* WebKit/Chromium */
 }
 
 /* content cascade on open — delays ride just behind the box as it
@@ -249,6 +360,59 @@
   .chat-morph * {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* mention hover preview card — portaled to <body>, outside .chat-morph.
+   The hidden pose lives on the base class; `.on` pops the card in via
+   keyframes (re-adding the class re-runs them — no mount-time frame
+   gymnastics) and removing it lets the base transition play the fade-out.
+   visibility flips at the END of the hide (0.2s delay) but instantly on
+   show, so the GitHub button inside is only reachable while visible. */
+.mention-pill {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px) scale(0.97);
+  transition:
+    opacity 0.16s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
+    visibility 0s linear 0.2s;
+}
+.mention-pill.on {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 0.16s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
+    visibility 0s;
+  animation: mentionIn 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+@keyframes mentionIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* the anchor hops between mentions with a short glide */
+.mention-anchor {
+  transition:
+    left 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
+    top 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* the preview portals to <body>, outside .chat-morph's reduced-motion
+   kill switch — it needs its own (show/hide go instant) */
+@media (prefers-reduced-motion: reduce) {
+  .mention-pill,
+  .mention-anchor {
+    transition: none !important;
+    animation: none !important;
   }
 }
 
@@ -329,6 +493,10 @@
 .pr-panel.active .pr-step:nth-child(5) {
   animation-delay: 0.2s;
 }
+/* the optional notes step joins the same 50ms steps */
+.pr-panel.active .pr-step:nth-child(6) {
+  animation-delay: 0.25s;
+}
 
 /* staggered entrance for pricing cards */
 .pr-panel.active .pr-card {
@@ -341,6 +509,10 @@
 }
 .pr-panel.active .pr-card:nth-child(2) {
   animation-delay: 0.16s;
+}
+/* custom-engagement strip joins the same 80ms steps */
+.pr-panel.active .pr-card:nth-child(3) {
+  animation-delay: 0.24s;
 }
 
 @keyframes prStepIn {
@@ -372,6 +544,27 @@
   background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 16px center;
+}
+
+/* one-line text field matching .pr-select, minus the dropdown chevron */
+.pr-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+  background-color: #f0f0f0;
+  font-family: inherit;
+  font-size: 15px;
+  color: #1a1a1a;
+  cursor: text;
+  appearance: none;
+}
+.pr-input::placeholder {
+  color: #999999;
+}
+.pr-input:focus {
+  outline: none;
+  border-color: #cccccc;
 }
 
 @media (prefers-reduced-motion: reduce) {

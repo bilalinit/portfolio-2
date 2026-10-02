@@ -1,186 +1,84 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { skillGroups, skillsIntro } from "@/data/skills";
+import { skillGroups, skillsContent, skillsIntro } from "@/data/skills";
+import styles from "./SkillSets.module.css";
 
-/* "Design skill sets" section — B2 "Rows" layout.
-   Entrance: drift — the left column slides in from the left, the rows
-   from the right, staggered via the --d custom property (CSS in
-   globals.css). Elements stay hidden until the section scrolls into
-   view, and everything appears instantly under prefers-reduced-motion.
+function SkillVisual({ index }: { index: number }) {
+  return (
+    <div className={styles.visual} aria-hidden="true">
+      <div className={styles.visualLabel}><span>[0{index + 1}]</span><span>{skillsContent.chapters[index].visualLabel}</span></div>
+      {index === 0 && <div className={styles.designCanvas}>
+        <span className={styles.designType}>Aa</span>
+        <div className={styles.designGrid} />
+        <span className={styles.designMark}>✳</span>
+        <div className={styles.swatches}><i /><i /><i /><i /></div>
+      </div>}
+      {index === 1 && <div className={styles.browserFrame}>
+        <div className={styles.browserBar}><span /><span /><span /><i /></div>
+        <div className={styles.browserBody}><span className={styles.codeMark}>{skillsContent.chapters[index].symbol}</span><div className={styles.codeLines}><i /><i /><i /></div><div className={styles.interfaceGrid}><i /><i /><i /></div></div>
+        <div className={styles.browserLayer} />
+      </div>}
+      {index === 2 && <div className={styles.agentCanvas}>
+        <svg className={styles.connections} viewBox="0 0 300 220" fill="none" preserveAspectRatio="none"><path d="M40 110H150M150 110V40H260M150 110H260M150 110V180H260" /><path className={styles.signal} d="M40 110H150V40H260" /><path className={styles.signal} d="M40 110H150V180H260" /></svg>
+        <span className={styles.inputNode} /><span className={styles.agentNode}>✳</span><span className={`${styles.outputNode} ${styles.outputTop}`}>01</span><span className={`${styles.outputNode} ${styles.outputMiddle}`}>02</span><span className={`${styles.outputNode} ${styles.outputBottom}`}>03</span>
+      </div>}
+    </div>
+  );
+}
 
-   Each skill row expands its detail on hover (mouse). Tap/click still
-   toggles for touch and keyboard users; only one row stays open.
-   Height animates via the grid-template-rows 0fr→1fr trick. */
 export default function SkillSets() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [shown, setShown] = useState(false);
-  const [openKey, setOpenKey] = useState<string | null>(null);
+  const root = useRef<HTMLDivElement>(null);
+  const [openKey, setOpenKey] = useState<string | null>("0-0");
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    if (!("IntersectionObserver" in window)) {
-      setShown(true);
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setShown(true);
-            io.disconnect();
-          }
-        });
-      },
-      { threshold: 0.15 }
-    );
-
-    io.observe(el);
-    return () => io.disconnect();
+    const elements = root.current?.querySelectorAll<HTMLElement>("[data-skill-reveal]");
+    if (!elements || !("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.setAttribute("data-visible", "true");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    elements.forEach((element) => {
+      if (element.getBoundingClientRect().top > window.innerHeight) element.setAttribute("data-pending", "true");
+      observer.observe(element);
+    });
+    return () => observer.disconnect();
   }, []);
 
-  const d = (ms: number) => ({ "--d": `${ms}ms` }) as React.CSSProperties;
-
   return (
-    <div
-      ref={ref}
-      className={`sk bg-coal px-[clamp(20px,2.5vw,44px)] py-[clamp(80px,9vw,160px)] ${
-        shown ? "is-shown" : ""
-      }`}
-    >
-      <div className="mx-auto grid w-[min(1760px,100%)] gap-y-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-x-[clamp(48px,7vw,140px)]">
-        {/* ===== left column (drifts in from the left) ===== */}
-        <div>
-          <div className="el el-l" style={d(0)}>
-            <p className="text-[12px] uppercase tracking-[0.08em] text-white/40">
-              (Skills)
-            </p>
-          </div>
-
-          <div className="el el-l" style={d(90)}>
-            <h2 className="mt-6 text-[clamp(34px,3.4vw,58px)] font-normal leading-[1.05] tracking-[-0.02em] text-white">
-              Design
-              <br />
-              skill sets
-            </h2>
-          </div>
-
-          <div className="el el-l" style={d(200)}>
-            <p className="mt-8 max-w-[380px] text-[14px] leading-[1.5] text-white/50">
-              {skillsIntro}
-            </p>
-          </div>
-        </div>
-
-        {/* ===== right column: accordion rows (drift in from the right) ===== */}
-        <div className="flex flex-col gap-12">
-          {skillGroups.map((group, gi) => {
-            const hd = 240 + gi * 180;
-            return (
-              <section
-                key={group.title}
-                aria-label={group.title}
-                className="relative"
-              >
-                <span
-                  aria-hidden="true"
-                  className="el absolute left-0 top-0 h-px w-full bg-white/15"
-                  style={d(hd)}
-                />
-
-                <div
-                  className="el el-r flex items-baseline justify-between pt-5"
-                  style={d(hd + 40)}
-                >
-                  <h3 className="text-[15px] font-medium uppercase tracking-[0.08em] text-white/70">
-                    {group.title}
-                  </h3>
-                  <span className="text-[12px] text-white/35">
-                    {group.count}
-                  </span>
-                </div>
-
-                <ul className="pt-2">
-                  {group.skills.map((skill, i) => {
-                    const rd = 320 + gi * 180 + i * 60;
-                    const key = `${gi}-${i}`;
-                    const open = openKey === key;
-                    return (
-                      <li
-                        key={skill.name}
-                        className="relative"
-                        onPointerEnter={(e) => {
-                          if (e.pointerType === "mouse") setOpenKey(key);
-                        }}
-                        onPointerLeave={(e) => {
-                          if (e.pointerType === "mouse")
-                            setOpenKey((k) => (k === key ? null : k));
-                        }}
-                      >
-                        <span
-                          aria-hidden="true"
-                          className="el absolute bottom-0 left-0 h-px w-full bg-white/[0.08]"
-                          style={d(rd)}
-                        />
-                        <button
-                          type="button"
-                          aria-expanded={open}
-                          aria-controls={`skill-panel-${key}`}
-                          onClick={() => setOpenKey(open ? null : key)}
-                          style={d(rd + 40)}
-                          className={`el el-r group flex w-full items-center gap-3 py-[14px] text-left text-[clamp(15px,1.1vw,19px)] transition-colors duration-200 ${
-                            open ? "text-white" : "text-white/60 hover:text-white"
-                          }`}
-                        >
-                          {/* chevron: slides in on hover, points down when open */}
-                          <svg
-                            aria-hidden="true"
-                            viewBox="0 0 8 12"
-                            fill="none"
-                            className={`h-3 w-2 shrink-0 transition-all duration-200 ${
-                              open
-                                ? "translate-x-0 rotate-90 opacity-60"
-                                : "-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-60"
-                            }`}
-                          >
-                            <path
-                              d="M1.5 1l5 5-5 5"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                            />
-                          </svg>
-                          <span className="flex-1">{skill.name}</span>
-                          <span className="text-[11px] tabular-nums text-white/30">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                        </button>
-
-                        {/* expandable detail (opens on hover, 400ms) */}
-                        <div
-                          id={`skill-panel-${key}`}
-                          className={`grid transition-[grid-template-rows] duration-[400ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
-                            open
-                              ? "[grid-template-rows:1fr]"
-                              : "[grid-template-rows:0fr]"
-                          }`}
-                        >
-                          <div className="overflow-hidden">
-                            <p className="max-w-[560px] pb-[16px] pl-5 text-[13.5px] leading-[1.55] text-white/45">
-                              {skill.detail}
-                            </p>
-                          </div>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            );
-          })}
-        </div>
+    <div ref={root} className={styles.section}>
+      <div className={styles.inner}>
+        <header className={styles.header} data-skill-reveal>
+          <div><p className={styles.micro}>{skillsContent.label}</p><h2>{skillsContent.title}</h2></div>
+          <div className={styles.intro}><span className={styles.micro}>{skillsContent.note}</span><p>{skillsIntro}</p></div>
+        </header>
+        {skillGroups.map((group, gi) => (
+          <section key={group.title} className={styles.chapter} aria-labelledby={`skills-group-${gi}`} data-skill-reveal>
+            <div className={styles.chapterHeading}>
+              <span className={styles.micro}>[0{gi + 1}] / {group.skills.length.toString().padStart(2, "0")} capabilities</span>
+              <h3 id={`skills-group-${gi}`}>{group.title}</h3>
+              <p className={styles.statement}>{skillsContent.chapters[gi].statement}</p>
+              <p className={styles.summary}>{skillsContent.chapters[gi].summary}</p>
+            </div>
+            <SkillVisual index={gi} />
+            <ul className={styles.skills}>
+              {group.skills.map((skill, i) => {
+                const key = `${gi}-${i}`;
+                const open = openKey === key;
+                return <li key={skill.name} className={styles.skill} data-open={open}>
+                  <button type="button" aria-expanded={open} aria-controls={`skill-panel-${key}`} id={`skill-trigger-${key}`} onClick={() => setOpenKey(open ? null : key)}>
+                    <span className={styles.skillIndex}>{String(i + 1).padStart(2, "0")}</span><span>{skill.name}</span><span className={styles.toggle} aria-hidden="true">{open ? "−" : "+"}</span>
+                  </button>
+                  <div className={styles.detail} id={`skill-panel-${key}`} role="region" aria-labelledby={`skill-trigger-${key}`} aria-hidden={!open}><div><p>{skill.detail}</p></div></div>
+                </li>;
+              })}
+            </ul>
+          </section>
+        ))}
       </div>
     </div>
   );

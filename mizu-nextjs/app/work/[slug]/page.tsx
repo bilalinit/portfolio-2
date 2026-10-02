@@ -9,7 +9,8 @@ import { allWork } from "@/data/projects";
    title, red handwritten byline, centered media block, then the
    (Overview) label + paragraph. Shell-less like /work: no hero, no
    footer; the cursor stays for the site-wide cursor:none rule.
-   Media is the shared showreel until per-project footage exists. */
+   Media is per-project when `media` is set on the WorkItem, else the
+   shared showreel. */
 
 interface ProjectProps {
   params: Promise<{ slug: string }>;
@@ -25,7 +26,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const work = allWork.find((w) => w.slug === slug);
   if (!work) return {};
-  return { title: `${work.name} — MIZU`, description: work.overview };
+  return { title: `${work.name} — MIZU`, description: work.overview.join(" ") };
 }
 
 /* staggered load-in, same rise as the hero (guard: .pp .rise in globals) */
@@ -81,31 +82,46 @@ export default async function ProjectPage({ params }: ProjectProps) {
           By MIZU Studio
         </p>
 
-        {/* media block */}
+        {/* media block — per-project asset when one exists, shared showreel otherwise */}
         <div
           className={`${rise} [animation-delay:0.22s] mx-auto mt-[clamp(36px,5vw,64px)] aspect-video w-[min(640px,100%)] overflow-hidden bg-[#e7e7e7]`}
         >
-          <video
-            className="block h-full w-full object-cover"
-            src="/showreel.mp4"
-            controls
-            playsInline
-            preload="metadata"
-            aria-label={`Showreel — ${work.name}`}
-          />
+          {work.media ? (
+            <img
+              className="block h-full w-full object-cover"
+              src={work.media.src}
+              alt={work.media.alt}
+            />
+          ) : (
+            <video
+              className="block h-full w-full object-cover"
+              src="/showreel.mp4"
+              controls
+              playsInline
+              preload="metadata"
+              aria-label={`Showreel — ${work.name}`}
+            />
+          )}
         </div>
 
-        {/* overview */}
+        {/* overview — one stacked paragraph per entry in the data */}
         <p
           className={`${rise} [animation-delay:0.32s] mt-[clamp(48px,6vw,88px)] font-hand text-[clamp(18px,1.6vw,24px)] text-ink`}
         >
           (Overview)
         </p>
-        <p
-          className={`${rise} [animation-delay:0.4s] mx-auto mt-[clamp(20px,2.5vw,36px)] max-w-[600px] text-[clamp(16px,1.4vw,19px)] leading-[1.6] text-ink`}
+        <div
+          className={`${rise} [animation-delay:0.4s] mx-auto mt-[clamp(20px,2.5vw,36px)] max-w-[640px] space-y-6 text-left`}
         >
-          {work.overview}
-        </p>
+          {work.overview.map((paragraph, i) => (
+            <p
+              key={i}
+              className="text-[clamp(17px,1.5vw,21px)] leading-[1.65] text-ink"
+            >
+              {paragraph}
+            </p>
+          ))}
+        </div>
 
         <p
           className={`${rise} [animation-delay:0.48s] mt-[clamp(40px,5vw,72px)] text-[12px] font-medium uppercase tracking-[0.05em] text-ink/50`}

@@ -1,16 +1,20 @@
 <!--
   MIZU assistant knowledge file — loaded whole when the get_project_details
-  tool is called with project="camera-navigator-chain".
+  tool is called with project="game-cam".
   Client-facing answers should describe what the product IS and can do —
   never volunteer build history or internal process. Reply in short
   plain-text prose, never raw markdown dumps.
 -->
 
-# Camera Navigator CHAIN — Technical Reference
+# Game cam — Technical Reference
+
+> Name note: Game cam was formerly released as "Camera Navigator CHAIN" —
+> same product. If a visitor uses the old name, they mean this; lead with
+> the portfolio name, Game cam.
 
 ## What It Is
 
-Camera Navigator CHAIN is an After Effects plugin that provides game-style first-person camera control. The user presses WASD to fly through a 3D scene and drags the mouse to look around. Keyframes are recorded automatically or on-demand, producing a timeline animation that can be edited normally after recording.
+Game cam is an After Effects plugin that provides game-style first-person camera control. The user presses WASD to fly through a 3D scene and drags the mouse to look around. Keyframes are recorded automatically or on-demand, producing a timeline animation that can be edited normally after recording.
 
 The system is split into three cooperating processes:
 
