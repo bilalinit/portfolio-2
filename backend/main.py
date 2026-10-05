@@ -89,12 +89,15 @@ KNOWLEDGE_DIR = Path(__file__).parent / "knowledge"
 PROJECT_DOCS = {
     "dropsync": "dropsync.md",
     "game-cam": "game-cam.md",
+    "warda": "warda.md",
+    "promptly": "promptly.md",
+    "promptly-mobile": "promptly-mobile.md",
 }
 
 
 @function_tool
 def get_project_details(
-    project: Literal["dropsync", "game-cam"],
+    project: Literal["dropsync", "game-cam", "warda", "promptly", "promptly-mobile"],
 ) -> str:
     """Load the full write-up for one MIZU project: features, capabilities,
     architecture and engineering details.
@@ -105,8 +108,10 @@ def get_project_details(
     short summary already answers.
 
     Args:
-        project: "dropsync" (secure file-sharing & collaboration app) or
-            "game-cam" (After Effects camera-control plugin).
+        project: "dropsync" (file-sharing and collaboration), "game-cam"
+            (After Effects camera plugin), "warda" (Quran teaching studio
+            website), "promptly" (Windows voice-to-text app), or
+            "promptly-mobile" (Android voice-to-text app).
     """
     path = KNOWLEDGE_DIR / PROJECT_DOCS[project]
     log.info("tool call: get_project_details(project=%r)", project)
@@ -238,6 +243,24 @@ auth, encryption, real-time data, AI backends.
   keyframes, chained motions, built as a native C++ real-time pipeline with
   a custom panel inside the app. (Formerly released as "Camera Navigator
   CHAIN" — same product; call it Game cam.)
+- Warda ("warda") — the website for Wardah's Quran and Tajweed teaching
+  studio: courses, live student reviews, Google sign-in and student profiles,
+  WhatsApp booking, light/dark themes, and an English/Roman Urdu AI assistant.
+  Built with Next.js, React, Firebase and a Python agent backend. Visitors
+  may also call it Wardah or Ustadhah Wardah; these mean the same project.
+- Promptly ("promptly") — our Windows voice-to-text desktop app: a global
+  hotkey records speech, Groq Whisper transcribes it, optional AI cleans up
+  the text, and it pastes into the active app. Includes a tray app, two
+  draggable overlay styles and a personal word list. Built with Python/PyQt6.
+- Promptly Mobile ("promptly-mobile") — the Android version: a floating
+  recording button and quick settings tiles, Groq Whisper transcription,
+  AI text polish, a personal word list and retries for connection failures.
+  It copies text to the clipboard for the user to paste; it does NOT
+  auto-paste into other apps like the Windows version. Android 8.0 or newer.
+  Both Promptly versions use the user's own Groq API key and need internet
+  for transcription. If a visitor says just "Promptly", introduce the
+  product family; ask which platform they mean when a platform-specific
+  answer is needed. Use the matching project's tool for detailed questions.
 
 ## The project-details tool
 When someone asks for more than the short version — features, how something

@@ -125,6 +125,7 @@ export const allWork: WorkItem[] = [
     thumb: "promptly",
     blurb: "Speak a thought. Turn it into clean text in the window you're already using",
     tag: "Windows",
+    github: "https://github.com/AhmedSaeed4/promptly",
     overview: [
       "Promptly is a Windows desktop app that turns your voice into text wherever you work. Press a global hotkey, speak, then press it again: your words are transcribed and pasted into the active terminal, editor, browser or chat app. It lives quietly in the system tray, with a compact, draggable overlay that shows when it is recording, transcribing or done.",
       "Optional AI polish removes filler words and cleans up grammar and punctuation while preserving your meaning and language. A personal word list helps it recognise names, brands and technical terms. You can choose between two overlay designs, change the hotkey, control automatic pasting and have the app start with Windows.",
