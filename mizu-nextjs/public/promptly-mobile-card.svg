@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 600" fill="none">
+  <defs><linearGradient id="bg" x2="720" y2="600" gradientUnits="userSpaceOnUse"><stop stop-color="#eee8dc"/><stop offset="1" stop-color="#d6cbb8"/></linearGradient><filter id="shadow" x="-50%" y="-30%" width="200%" height="200%"><feDropShadow dx="-12" dy="20" stdDeviation="20" flood-color="#524b3c" flood-opacity=".2"/></filter></defs>
+  <path fill="url(#bg)" d="M0 0h720v600H0z"/>
+  <text x="48" y="161" fill="#322e28" font-family="Arial,sans-serif" font-size="60" font-weight="600" letter-spacing="-3">Promptly</text>
+  <text x="52" y="192" fill="#786e60" font-family="Arial,sans-serif" font-size="13" letter-spacing="4">MOBILE</text>
+  <g transform="rotate(8 495 340)" filter="url(#shadow)">
+    <rect x="377" y="95" width="240" height="435" rx="35" fill="#242320"/>
+    <rect x="385" y="103" width="224" height="419" rx="28" fill="#f6f4ef"/>
+    <rect x="456" y="112" width="82" height="19" rx="9.5" fill="#242320"/>
+    <g fill="#d8d5cf"><rect x="408" y="168" width="128" height="8" rx="4"/><rect x="408" y="190" width="170" height="5" rx="2.5"/><rect x="408" y="204" width="148" height="5" rx="2.5"/><rect x="408" y="218" width="166" height="5" rx="2.5"/></g>
+    <rect x="402" y="265" width="190" height="110" rx="12" fill="#e7e4de"/>
+    <g fill="#c8c3b9"><rect x="416" y="283" width="127" height="5" rx="2.5"/><rect x="416" y="298" width="160" height="5" rx="2.5"/><rect x="416" y="313" width="144" height="5" rx="2.5"/></g>
+    <path d="M408 415h141m-141 15h168m-168 15h119" stroke="#d8d5cf" stroke-width="5" stroke-linecap="round"/>
+    <rect x="463" y="504" width="68" height="4" rx="2" fill="#242320"/>
+    <circle cx="579" cy="356" r="30" fill="white" stroke="#e5e1d8"/>
+    <rect x="568" y="345" width="22" height="22" rx="3" fill="#e75249"/>
+  </g>
+  <circle cx="182" cy="358" r="92" stroke="#ada38f" stroke-opacity=".4"/>
+  <circle cx="182" cy="358" r="68" stroke="#ada38f" stroke-opacity=".4"/>
+  <circle cx="182" cy="358" r="43" fill="#fff"/>
+  <rect x="166" y="342" width="32" height="32" rx="4" fill="#191919"/>
+</svg>

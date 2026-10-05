@@ -10,11 +10,17 @@ import type { ThumbKind } from "@/data/projects";
 export const THUMB_SRC: Record<ThumbKind, string> = {
   dropsync: "/dropsync-card.svg",
   gamecam: "/gamecam-card.svg",
+  warda: "/warda-site.jpg",
+  promptly: "/promptly-card.svg",
+  "promptly-mobile": "/promptly-mobile-card.svg",
 };
 
 const THUMB_ALT: Record<ThumbKind, string> = {
   dropsync: "DropSync logo",
   gamecam: "Game cam logo",
+  warda: "Warda teaching studio website",
+  promptly: "Promptly voice recording artwork",
+  "promptly-mobile": "Promptly Mobile floating recording button artwork",
 };
 
 export default function ProjectThumb({ kind }: { kind: ThumbKind }) {

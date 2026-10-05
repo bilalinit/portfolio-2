@@ -32,6 +32,11 @@
 .artwork { position: relative; aspect-ratio: 1.2; overflow: hidden; isolation: isolate; container-type: inline-size; }
 .dropArt { background: #cbd1d5; }
 .gameArt { background: #202322; color: #e5e3de; }
+.illustratedArt { background: #e8e4f0; color: #292332; }
+.projectIllustration { display: block; width: 100%; height: 100%; object-fit: cover; }
+.wardaArt { background: #eee9dc; color: #174638; }
+.wardaArt .projectIllustration { position: absolute; top: 13%; height: 74%; object-position: 52% center; }
+.illustratedArt .artBottom { color: inherit; }
 .artTop,.artBottom { position: absolute; z-index: 3; display: flex; justify-content: space-between; align-items: center; left: 18px; right: 18px; font-size: clamp(6px,1.8cqw,9px); }
 .artTop { top: 16px; }
 .artBottom { bottom: 16px; color: #545b60; }
