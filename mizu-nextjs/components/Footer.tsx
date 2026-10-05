@@ -117,7 +117,7 @@ export default function Footer() {
           <p>&copy; 2026 MIZU</p>
           <div>
             <a
-              href="#"
+              href="/privacy-policy"
               className="w-fit transition-colors duration-300 hover:text-[#1a1a1a]"
             >
               Privacy Policy
