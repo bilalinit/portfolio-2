@@ -3,7 +3,7 @@
 import { useEffect, useRef, type CSSProperties } from "react";
 import Link from "next/link";
 import { about } from "@/data/about";
-import { CONTACT_EMAIL } from "@/data/pricing";
+import { gmailComposeUrl } from "@/lib/contact";
 import styles from "./About.module.css";
 
 export default function About() {
@@ -83,7 +83,7 @@ export default function About() {
         <div className={styles.practiceIntro} data-reveal><span className={styles.sectionLabel}>{about.practiceLabel}</span><h2 id="practice-title" className={styles.sectionTitle}>{about.practiceTitle}</h2><p>{about.practiceCopy}</p><Link href="/work" className={styles.textLink}>{about.workLabel} <span aria-hidden="true">↗</span></Link></div>
         <div className={styles.principles}>{about.principles.map((principle) => <article key={principle.number} data-reveal><span className={styles.micro}>[{principle.number}]</span><h3>{principle.title}</h3><p>{principle.copy}</p></article>)}</div>
       </section>
-      <section className={styles.invitation} aria-labelledby="invitation-title" data-reveal><div><span className={styles.micro}>{about.invitationLabel}</span><h2 id="invitation-title">{about.invitation}</h2></div><div className={styles.invitationSide}><p>{about.invitationCopy}</p><a href={`mailto:${CONTACT_EMAIL}`} className={styles.contact}>{about.contactLabel}<span aria-hidden="true">↗</span></a></div></section>
+      <section className={styles.invitation} aria-labelledby="invitation-title" data-reveal><div><span className={styles.micro}>{about.invitationLabel}</span><h2 id="invitation-title">{about.invitation}</h2></div><div className={styles.invitationSide}><p>{about.invitationCopy}</p><a href={gmailComposeUrl()} target="_blank" rel="noopener noreferrer" className={styles.contact}>{about.contactLabel}<span aria-hidden="true">↗</span></a></div></section>
     </main>
   );
 }

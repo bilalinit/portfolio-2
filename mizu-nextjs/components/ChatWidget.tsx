@@ -13,6 +13,7 @@ import { DotsIcon } from "@/components/icons";
 import { THUMB_SRC } from "@/components/ProjectThumb";
 import { allWork, type WorkItem } from "@/data/projects";
 import { CONTACT_EMAIL } from "@/data/pricing";
+import { gmailComposeUrl } from "@/lib/contact";
 import DotSphere, { type SphereMode } from "@/components/DotSphere";
 import {
   AGENT_URL,
@@ -982,7 +983,7 @@ export default function ChatWidget() {
               <div className="px-6 pb-6 pt-4">
                 <p className="text-[13px] text-white/50">Prefer a human?</p>
                 <a
-                  href={`mailto:${CONTACT_EMAIL}`}
+                  href={gmailComposeUrl()} target="_blank" rel="noopener noreferrer"
                   className="relative mt-2 inline-block w-fit text-[19px] text-white no-underline after:absolute after:left-0 after:-bottom-[3px] after:h-px after:w-full after:bg-current after:origin-right after:scale-x-0 after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.4,0,0.2,1)] hover:after:origin-left hover:after:scale-x-100"
                 >
                   {CONTACT_EMAIL}

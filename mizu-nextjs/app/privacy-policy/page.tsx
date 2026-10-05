@@ -3,6 +3,7 @@ import Cursor from "@/components/Cursor";
 import Hero from "@/components/Hero";
 import Footer from "@/components/Footer";
 import { CONTACT_EMAIL } from "@/data/pricing";
+import { gmailComposeUrl } from "@/lib/contact";
 import { privacyCopy as copy, privacySections } from "@/data/privacy";
 import styles from "./privacy.module.css";
 
@@ -33,7 +34,7 @@ export default function PrivacyPolicyPage() {
             {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             {"links" in section && section.links.map((link) => <a key={link.href} className={styles.sourceLink} href={link.href} target="_blank" rel="noopener noreferrer">{link.label}</a>)}
           </section>)}
-          <section id="privacy-contact" className={styles.contact} aria-labelledby="privacy-contact-title"><p className={styles.eyebrow}>{copy.contactLabel}</p><h2 id="privacy-contact-title">{copy.contactTitle}</h2><p>{copy.contactText}</p><a href={`mailto:${CONTACT_EMAIL}?subject=Privacy%20enquiry`}>{CONTACT_EMAIL}</a></section>
+          <section id="privacy-contact" className={styles.contact} aria-labelledby="privacy-contact-title"><p className={styles.eyebrow}>{copy.contactLabel}</p><h2 id="privacy-contact-title">{copy.contactTitle}</h2><p>{copy.contactText}</p><a href={gmailComposeUrl("Privacy enquiry")} target="_blank" rel="noopener noreferrer">{CONTACT_EMAIL}</a></section>
         </div>
       </div>
     </main>

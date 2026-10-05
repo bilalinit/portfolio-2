@@ -5,7 +5,7 @@
    fake instant price. */
 
 /* THE contact address for the whole site. Every surface that shows or sends
-   mail reads this — the pricing brief's mailto draft, the footer link, and
+   mail reads this — the pricing brief's Gmail draft, the footer link, and
    the chat widget's contact view + error copy. Change it here and nowhere
    else; the components import it precisely so a new address can never be
    missed in one of them. (The backend's Nami prompt has its own copy of the
@@ -16,6 +16,7 @@ export type BriefStep = {
   label: string;
   placeholder: string;
   options: string[];
+  hint?: string;
 };
 
 /* The four required questions, in the brief's narrative order:
@@ -24,36 +25,80 @@ export type BriefStep = {
    factor. Both replaced the old overlapping Size/Timeline duration pairs. */
 export const briefSteps: BriefStep[] = [
   {
-    label: "Project Type",
-    placeholder: "Select project type*",
+    label: "Service",
+    placeholder: "What do you need?*",
     options: ["Web Development", "Web Design", "Branding", "E-commerce"],
   },
   {
-    label: "Project Scope",
-    placeholder: "Select scope*",
+    label: "Project scope",
+    placeholder: "Choose the scope*",
     options: [
       "Landing page (1–3 sections)",
       "Small site (4–8 pages)",
       "Full site (9–20 pages)",
       "Web app / custom build",
+      "Not sure yet",
     ],
   },
   {
-    label: "Project Creativity",
-    placeholder: "Select project creativity*",
-    options: ["Standard", "High-end", "Award-winning"],
+    label: "Design level",
+    placeholder: "Choose a design level*",
+    options: ["Standard", "High-end"],
+    hint: "Standard: a clear, polished design. High-end: more bespoke visual design and interactions.",
   },
   {
-    label: "Start & Urgency",
-    placeholder: "Select start*",
+    label: "Preferred start",
+    placeholder: "When would you like to start?*",
     options: [
       "ASAP (rush)",
       "In 1–2 months",
-      "This quarter",
       "Flexible — best availability",
     ],
   },
 ];
+
+/** Service-specific scope choices; website design and development use the page sizes above. */
+export const serviceScopeOptions: Record<string, string[]> = {
+  Branding: ["Logo & visual identity", "Brand guidelines", "Full brand identity", "Not sure yet"],
+  "E-commerce": ["New online store", "Store redesign", "Store features / integrations", "Not sure yet"],
+};
+
+export const quoteCopy = {
+  description: "Tell us what you need. We’ll review your brief and reply with an estimate and next steps.",
+  notesLabel: "Project details — optional",
+  notesPlaceholder: "Your goal, existing website, or anything else we should know",
+  draftHint: "Opens a draft in Gmail. Review the details, add any context, then send it to us.",
+  emailSuffix: "Sent from the project enquiry form on mizu.studio.",
+} as const;
+
+export function buildQuoteDraft(picks: string[], notes: string) {
+  const [service, scope, design, start] = picks;
+  const lines = [
+    "Hi MIZU,",
+    "",
+    "I'd like to discuss a project with your studio. Here is the brief I put together on your website:",
+    "",
+    "PROJECT BRIEF",
+    `Service: ${service || "To be discussed"}`,
+    `Scope: ${scope || "To be discussed"}`,
+    `Design level: ${design || "To be discussed"}`,
+    `Preferred start: ${start || "To be discussed"}`,
+  ];
+  if (notes.trim()) lines.push("", "PROJECT DETAILS", notes.trim());
+  lines.push(
+    "",
+    "Could you share an estimated cost, a likely timeline and your availability based on this brief? Please let me know what other information you need and the best next step.",
+    "",
+    "Thanks,",
+    "[Your name]",
+    "",
+    quoteCopy.emailSuffix,
+  );
+  return {
+    subject: `Project enquiry — ${service || "New project"} / ${scope || "Scope to discuss"}`,
+    body: lines.join("\n"),
+  };
+}
 
 export type RecurringPlan = {
   name: string;

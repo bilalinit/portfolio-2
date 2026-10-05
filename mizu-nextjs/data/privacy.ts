@@ -30,7 +30,7 @@ export const privacySections = [
     title: "Information we collect",
     paragraphs: [
       "When you chat with Nami, we receive the messages you submit and the earlier messages in the current conversation. That can include your name, contact details or project information if you choose to type them.",
-      "When you email us, we receive your email address, the name shown by your email account, your message and any attachments. Our quote form prepares a draft in your email app; the draft is not sent to MIZU until you send the email.",
+      "When you email us, we receive your email address, the name shown by your email account, your message and any attachments. Our contact links open Gmail, and our quote form passes the selected project details and any notes to Gmail to prepare a draft. Google receives those details when you open the draft; MIZU receives the email only after you send it. Gmail's own privacy policy applies to its service.",
       "Requests to the site and chat service include technical information such as your IP address. Our servers and infrastructure providers may record request times, requested URLs, browser information, response status and diagnostic or security events. The chat service uses your IP address and request timestamps to limit repeated requests and prevent abuse.",
     ],
   },

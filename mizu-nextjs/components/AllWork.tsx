@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { allWork, totalWork, workCategories, type WorkItem } from "@/data/projects";
 import { workPageCopy as copy, workPresentations } from "@/data/work";
-import { CONTACT_EMAIL } from "@/data/pricing";
+import { gmailComposeUrl } from "@/lib/contact";
 import Hero from "@/components/Hero";
 import Footer from "@/components/Footer";
 import ProjectThumb from "@/components/ProjectThumb";
@@ -90,6 +90,6 @@ export default function AllWork() {
       </article>)}</div>
       {items.length === 0 && <div className={styles.empty}><p>{copy.empty}</p><Link href="/work">{copy.showAll}</Link></div>}
     </section>
-    <section className={styles.invitation} data-reveal><div><span className={styles.micro}>{copy.nextLabel}</span><h2>{copy.nextTitle}</h2></div><a href={`mailto:${CONTACT_EMAIL}`} className={styles.contact}>{copy.contact}</a></section>
+    <section className={styles.invitation} data-reveal><div><span className={styles.micro}>{copy.nextLabel}</span><h2>{copy.nextTitle}</h2></div><a href={gmailComposeUrl()} target="_blank" rel="noopener noreferrer" className={styles.contact}>{copy.contact}</a></section>
   </main><Footer /></>;
 }
