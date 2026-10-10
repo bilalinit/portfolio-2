@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 600" fill="none">
+  <defs>
+    <linearGradient id="bg" x2="720" y2="600" gradientUnits="userSpaceOnUse"><stop stop-color="#ede9f3"/><stop offset="1" stop-color="#c9bfdc"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-100%" width="160%" height="350%"><feDropShadow dx="0" dy="22" stdDeviation="18" flood-color="#403255" flood-opacity=".22"/></filter>
+  </defs>
+  <path fill="url(#bg)" d="M0 0h720v600H0z"/>
+  <circle cx="590" cy="235" r="220" stroke="#fff" stroke-opacity=".35"/>
+  <circle cx="590" cy="235" r="170" stroke="#fff" stroke-opacity=".35"/>
+  <text x="56" y="164" fill="#302638" font-family="Arial,sans-serif" font-size="64" font-weight="600" letter-spacing="-3">Promptly</text>
+  <g stroke="#87739f" stroke-width="5" stroke-linecap="round" opacity=".7">
+    <path d="M70 300v20m20-35v50m20-66v82m20-55v28m20-96v164m20-140v116m20-155v194m20-165v136m20-105v74m20-124v174m20-198v222m20-171v120m20-85v50m20-63v76m20-99v122m20-85v48m20-36v22m20-44v66m20-108v152m20-135v118m20-153v188m20-132v76m20-57v38m20-37v36m20-48v58m20-38v20m20-27v34m20-40v46m20-34v22"/>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="164" y="403" width="392" height="80" rx="40" fill="#19171c"/>
+    <circle cx="205" cy="443" r="17" fill="#ee5a5a"/>
+    <rect x="199" y="437" width="12" height="12" rx="2" fill="#fff"/>
+    <g stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M244 439v8M256 432v22M268 422v42M280 436v14M292 439v8"/></g>
+    <rect x="318" y="437" width="112" height="5" rx="2.5" fill="#fff" fill-opacity=".6"/>
+    <rect x="318" y="449" width="70" height="4" rx="2" fill="#fff" fill-opacity=".25"/>
+    <rect x="473" y="429" width="56" height="28" rx="7" stroke="#fff" stroke-opacity=".22"/>
+    <path d="M495 440v6m6-6v6m6-6v6" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

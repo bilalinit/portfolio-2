@@ -28,4 +28,25 @@ export const workPresentations: Record<string, { label: string; image: string; a
     caption: "From movement to keyframes",
     services: ["Interface design", "Plugin development"],
   },
+  warda: {
+    label: "A thoughtful place to learn.",
+    image: "/warda-site.jpg",
+    alt: "Warda teaching studio website concept",
+    caption: "Quran learning / Human connection",
+    services: ["Web design", "Development", "AI"],
+  },
+  promptly: {
+    label: "Your voice, in your workflow.",
+    image: "/promptly-card.svg",
+    alt: "Promptly voice recording concept with a waveform and desktop overlay",
+    caption: "Speak / Transcribe / Paste",
+    services: ["Product design", "Desktop development", "AI"],
+  },
+  "promptly-mobile": {
+    label: "A little button. A lot less typing.",
+    image: "/promptly-mobile-card.svg",
+    alt: "Promptly Mobile concept with a floating recording button on a phone",
+    caption: "Voice to text / Android",
+    services: ["Interface design", "Android development", "AI"],
+  },
 };

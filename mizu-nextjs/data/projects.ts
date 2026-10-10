@@ -6,14 +6,15 @@
    ========================================================================== */
 
 /* thumb art kinds — one per real asset in ProjectThumb.tsx */
-export type ThumbKind = "dropsync" | "gamecam";
+export type ThumbKind = "dropsync" | "gamecam" | "warda" | "promptly" | "promptly-mobile";
 
-export type WorkCategoryLabel = "Website" | "Mobile App" | "Experiential" | "E-commerce";
+export type WorkCategoryLabel = "Website" | "Desktop App" | "Mobile App" | "Experiential" | "E-commerce";
 
-/* the four work-menu filters. Slugs drive /work/category/[slug]; counts
+/* the work-menu filters. Slugs drive /work/category/[slug]; counts
    are derived from allWork below, never hand-maintained. */
 const categoryDefs: { label: WorkCategoryLabel; slug: string }[] = [
   { label: "Website", slug: "website" },
+  { label: "Desktop App", slug: "desktop-app" },
   { label: "Mobile App", slug: "mobile-app" },
   { label: "Experiential", slug: "experiential" },
   { label: "E-commerce", slug: "e-commerce" },
@@ -99,6 +100,55 @@ export const allWork: WorkItem[] = [
       "Under the hood it's a genuine real-time system: a C++ plugin runs inside After Effects at the application's refresh rate and talks to a control panel over a shared-memory channel, so movement and mouse-look land with sub-microsecond latency instead of the lag of the scripting route. While you fly, the viewport drops to draft resolution to keep frame rates high, then restores the moment you stop.",
       "The output is deliberately clean. Camera moves are written to a parented chain of YAW and PITCH layers, so every motion stays independently editable — change speeds, retime keyframes, or chain a new move on top without breaking what came before. Whole flight segments undo in a single step, and auto-key mode records continuously while you steer.",
     ],
+  },
+  {
+    slug: "warda",
+    name: "Warda",
+    category: "Website",
+    year: "2026",
+    thumb: "warda",
+    blurb: "A welcoming home for Quran learning, with student stories and a bilingual AI assistant",
+    tag: "Teaching studio",
+    aliases: ["Wardah", "Ustadhah Wardah"],
+    overview: [
+      "Warda is the online home of Wardah, a professional Quran and Tajweed teacher. We created a calm, welcoming website that introduces her teaching approach, explains the learning tracks and helps prospective students book a class through WhatsApp. An emerald palette, considered typography and subtle motion give the studio a clear, personal identity in both light and dark themes.",
+      "The experience brings lessons, common questions and student stories together. Students can sign in with Google to share a review, see it appear live on the Wall of Love, and manage their own stories from a protected profile page. Firebase Authentication and Firestore support the experience behind the scenes.",
+      "A purpose-built AI assistant answers course and scheduling questions in English or Roman Urdu. It keeps the conversation focused on the studio, directs booking and pricing enquiries to Wardah, and leaves religious rulings to the teacher herself. The website and assistant were built with Next.js, React, Firebase and a Python API using the OpenAI Agents SDK.",
+    ],
+    media: { src: "/warda-site.jpg", alt: "Warda teaching studio website concept in an emerald and cream palette" },
+  },
+  {
+    slug: "promptly",
+    name: "Promptly",
+    category: "Desktop App",
+    year: "2026",
+    thumb: "promptly",
+    blurb: "Speak a thought. Turn it into clean text in the window you're already using",
+    tag: "Windows",
+    github: "https://github.com/AhmedSaeed4/promptly",
+    overview: [
+      "Promptly is a Windows desktop app that turns your voice into text wherever you work. Press a global hotkey, speak, then press it again: your words are transcribed and pasted into the active terminal, editor, browser or chat app. It lives quietly in the system tray, with a compact, draggable overlay that shows when it is recording, transcribing or done.",
+      "Optional AI polish removes filler words and cleans up grammar and punctuation while preserving your meaning and language. A personal word list helps it recognise names, brands and technical terms. You can choose between two overlay designs, change the hotkey, control automatic pasting and have the app start with Windows.",
+      "Built with Python and PyQt6, Promptly records audio and transcribes it through Groq's Whisper API in a background thread so the interface stays responsive. Native Windows hotkeys and paste controls connect it to the apps you already use. The desktop release is packaged as a portable executable, with first-launch settings for your own API key.",
+    ],
+    media: { src: "/promptly-card.svg", alt: "Promptly voice recording concept with an audio waveform and compact desktop overlay" },
+  },
+  {
+    slug: "promptly-mobile",
+    name: "Promptly Mobile",
+    category: "Mobile App",
+    year: "2026",
+    thumb: "promptly-mobile",
+    blurb: "Voice-to-text from a floating button, ready to paste anywhere on Android",
+    tag: "Android",
+    github: "https://github.com/AhmedSaeed4/promptly-mobile",
+    liveUrl: "https://github.com/AhmedSaeed4/promptly-mobile/releases",
+    overview: [
+      "Promptly Mobile brings the same speak-to-text workflow to Android. A small floating button stays within reach over the app you're using: tap to record, tap again to stop, then paste the finished text from your clipboard. Colour changes communicate recording, transcription and a saved recording waiting for a connection.",
+      "The app includes optional AI text polish and a personal word list, plus quick settings buttons for recording and showing the floating control. Drag the bubble to dismiss it when you're finished. When the bubble is hidden, the app sleeps until you need it again.",
+      "Built for Android 8.0 and later, it uses Groq's Whisper transcription with your own API key. Temporary connection failures trigger automatic retries, and an unfinished recording can be kept for another attempt. Unlike the desktop app, Android copies the result to the clipboard for you to paste yourself.",
+    ],
+    media: { src: "/promptly-mobile-card.svg", alt: "Promptly Mobile concept showing its floating recording button on an Android phone" },
   },
 ];
 

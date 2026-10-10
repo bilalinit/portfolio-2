@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { CONTACT_EMAIL } from "@/data/pricing";
+import { gmailComposeUrl } from "@/lib/contact";
 
 /* Footer — light-gray card with rounded top corners, inset from the page edges:
    statement heading on the left, three link columns, an underlined
@@ -97,7 +97,7 @@ export default function Footer() {
               {/* Contact us lives under the first column, like the reference */}
               {col.title === "Explore" && (
                 <a
-                  href={`mailto:${CONTACT_EMAIL}`}
+                  href={gmailComposeUrl()} target="_blank" rel="noopener noreferrer"
                   className="mt-[clamp(56px,7vw,128px)] inline-block text-[clamp(15px,1.15vw,18px)] text-[#1a1a1a] underline decoration-1 underline-offset-[6px] transition-colors duration-300 hover:text-[#8f8f8f]"
                 >
                   Contact us
@@ -117,7 +117,7 @@ export default function Footer() {
           <p>&copy; 2026 MIZU</p>
           <div>
             <a
-              href="#"
+              href="/privacy-policy"
               className="w-fit transition-colors duration-300 hover:text-[#1a1a1a]"
             >
               Privacy Policy

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { briefSteps, CONTACT_EMAIL, customPlan, recurringPlans } from "@/data/pricing";
+import { briefSteps, buildQuoteDraft, customPlan, quoteCopy, recurringPlans, serviceScopeOptions } from "@/data/pricing";
+import { gmailComposeUrl } from "@/lib/contact";
 
 /* Pricing section — ported from price.html (original gray palette) with
    the exact animation
@@ -13,17 +14,11 @@ import { briefSteps, CONTACT_EMAIL, customPlan, recurringPlans } from "@/data/pr
    - form steps dim to 40% until focused or filled
 
    The section is functional: the Single tab is a four-question brief that
-   assembles itself into a pre-filled email draft (mailto) as the visitor
+   assembles itself into a pre-filled Gmail draft as the visitor
    picks options — we read the email and answer with a real number. The
    Recurring cards open plan-specific drafts the same way. */
 
 type Tab = "single" | "recurring";
-
-const MAILTO_SUFFIX = "(Sent from the pricing section on mizu.studio)";
-
-function mailtoUrl(subject: string, body: string) {
-  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-}
 
 /* the house CTA of this section — same pill the recurring cards use */
 const ctaClass =
@@ -38,6 +33,7 @@ export default function Pricing() {
   const [picks, setPicks] = useState<string[]>(["", "", "", ""]);
   const [notes, setNotes] = useState("");
   const ready = picks.every(Boolean);
+  const scopeOptions = serviceScopeOptions[picks[0]] || briefSteps[1].options;
 
   /* the demo page had this section above the fold, so its entrance
      played on load; here it sits below the skills section, so the first
@@ -87,28 +83,16 @@ export default function Pricing() {
   }, [tab, revealed]);
 
   const setPick = (i: number, value: string) => {
-    setPicks((prev) => prev.map((p, j) => (j === i ? value : p)));
+    setPicks((prev) => prev.map((p, j) => {
+      if (j === i) return value;
+      if (i === 0 && j === 1 && value !== prev[0]) return "";
+      return p;
+    }));
   };
 
   /* the assembled draft */
-  const briefBody = useMemo(() => {
-    const lines = [
-      "Hi MIZU,",
-      "",
-      "I'd like a quote for a project:",
-      "",
-      `- Project type: ${picks[0] || "—"}`,
-      `- Scope: ${picks[1] || "—"}`,
-      `- Finish level: ${picks[2] || "—"}`,
-      `- Start: ${picks[3] || "—"}`,
-    ];
-    if (notes) lines.push(`- Notes: ${notes}`);
-    lines.push("", MAILTO_SUFFIX);
-    return lines.join("\n");
-  }, [picks, notes]);
-
-  const briefSubject = `Quote request — ${picks[0] || "project"}, ${picks[1] || "scope"}`;
-  const briefHref = mailtoUrl(briefSubject, briefBody);
+  const draft = useMemo(() => buildQuoteDraft(picks, notes), [picks, notes]);
+  const briefHref = gmailComposeUrl(draft.subject, draft.body);
 
   const singleActive = revealed && tab === "single";
   const recurringActive = revealed && tab === "recurring";
@@ -183,8 +167,7 @@ export default function Pricing() {
                     Single Project
                   </h3>
                   <p className="text-[14px] text-[#666666]">
-                    For clearly defined projects, with a fixed scope, timeline,
-                    and budget.
+                    {quoteCopy.description}
                   </p>
                 </div>
 
@@ -211,10 +194,11 @@ export default function Pricing() {
                       onChange={(e) => setPick(i, e.target.value)}
                     >
                       <option value="">{step.placeholder}</option>
-                      {step.options.map((option) => (
+                      {(i === 1 ? scopeOptions : step.options).map((option) => (
                         <option key={option}>{option}</option>
                       ))}
                     </select>
+                    {step.hint && <p className="mt-2 text-[12px] leading-[1.5] text-[#666666]">{step.hint}</p>}
                   </div>
                 ))}
 
@@ -229,14 +213,14 @@ export default function Pricing() {
                       5
                     </div>
                     <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#aaaaaa]">
-                      Anything else — optional
+                      {quoteCopy.notesLabel}
                     </div>
                   </div>
                   <input
                     type="text"
                     className="pr-input"
-                    aria-label="Anything else we should know (optional)"
-                    placeholder="Anything else we should know? (optional)"
+                    aria-label={quoteCopy.notesLabel}
+                    placeholder={quoteCopy.notesPlaceholder}
                     maxLength={300}
                     value={notes}
                     onFocus={() => setActiveStep(4)}
@@ -246,7 +230,7 @@ export default function Pricing() {
 
                 {/* single CTA — opens the pre-filled email draft */}
                 {ready ? (
-                  <a href={briefHref} className={`${ctaClass} block`}>
+                  <a href={briefHref} target="_blank" rel="noopener noreferrer" className={`${ctaClass} block`}>
                     Get a quote
                   </a>
                 ) : (
@@ -258,6 +242,7 @@ export default function Pricing() {
                     Get a quote
                   </button>
                 )}
+                <p className="mt-3 text-center text-[12px] leading-[1.5] text-[#666666]">{quoteCopy.draftHint}</p>
               </div>
             </div>
 
@@ -306,7 +291,8 @@ export default function Pricing() {
                       ))}
                     </ul>
                     <a
-                      href={mailtoUrl(
+                      target="_blank" rel="noopener noreferrer"
+                      href={gmailComposeUrl(
                         plan.subject,
                         [
                           "Hi MIZU,",
@@ -315,7 +301,7 @@ export default function Pricing() {
                           "",
                           ...plan.features.map((f) => `- ${f}`),
                           "",
-                          MAILTO_SUFFIX,
+                          quoteCopy.emailSuffix,
                         ].join("\n")
                       )}
                       className="mt-6 w-full rounded-[10px] bg-[#1a1a1a] py-3.5 text-center text-[13px] font-semibold uppercase tracking-[0.04em] text-white no-underline [transition:transform_.2s_ease,opacity_.2s_ease] hover:-translate-y-px hover:opacity-90"
@@ -336,7 +322,8 @@ export default function Pricing() {
                     </p>
                   </div>
                   <a
-                    href={mailtoUrl(
+                    target="_blank" rel="noopener noreferrer"
+                    href={gmailComposeUrl(
                       customPlan.subject,
                       [
                         "Hi MIZU,",
@@ -347,7 +334,7 @@ export default function Pricing() {
                         "- Roughly how much of your time:",
                         "- For how long:",
                         "",
-                        MAILTO_SUFFIX,
+                        quoteCopy.emailSuffix,
                       ].join("\n")
                     )}
                     className="w-full shrink-0 rounded-[10px] border border-[#1a1a1a]/25 py-3.5 px-6 text-center text-[13px] font-semibold uppercase tracking-[0.04em] text-[#1a1a1a] no-underline [transition:background-color_.2s_ease] hover:bg-[#e8e8e8] min-[901px]:w-auto"

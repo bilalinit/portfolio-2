@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { allWork, totalWork, workCategories, type WorkItem } from "@/data/projects";
 import { workPageCopy as copy, workPresentations } from "@/data/work";
-import { CONTACT_EMAIL } from "@/data/pricing";
+import { gmailComposeUrl } from "@/lib/contact";
 import Hero from "@/components/Hero";
 import Footer from "@/components/Footer";
 import ProjectThumb from "@/components/ProjectThumb";
@@ -14,6 +14,11 @@ import styles from "./AllWork.module.css";
 function ProjectArtwork({ item }: { item: WorkItem }) {
   const presentation = workPresentations[item.slug];
   if (!presentation) return <div className={styles.fallback}><ProjectThumb kind={item.thumb} /></div>;
+  if (item.thumb === "warda" || item.thumb === "promptly" || item.thumb === "promptly-mobile") return <div className={`${styles.artwork} ${styles.illustratedArt} ${item.thumb === "warda" ? styles.wardaArt : ""}`}>
+    <img className={styles.projectIllustration} src={presentation.image} alt={presentation.alt} loading="lazy" />
+    <div className={styles.artTop}><span>{presentation.label}</span></div>
+    <div className={styles.artBottom}><span>{presentation.caption}</span><span>{item.year}</span></div>
+  </div>;
   return <div className={`${styles.artwork} ${item.thumb === "dropsync" ? styles.dropArt : styles.gameArt}`}>
     <div className={styles.artTop}><span>{presentation.label}</span></div>
     {item.thumb === "dropsync" ? <>
@@ -85,6 +90,6 @@ export default function AllWork() {
       </article>)}</div>
       {items.length === 0 && <div className={styles.empty}><p>{copy.empty}</p><Link href="/work">{copy.showAll}</Link></div>}
     </section>
-    <section className={styles.invitation} data-reveal><div><span className={styles.micro}>{copy.nextLabel}</span><h2>{copy.nextTitle}</h2></div><a href={`mailto:${CONTACT_EMAIL}`} className={styles.contact}>{copy.contact}</a></section>
+    <section className={styles.invitation} data-reveal><div><span className={styles.micro}>{copy.nextLabel}</span><h2>{copy.nextTitle}</h2></div><a href={gmailComposeUrl()} target="_blank" rel="noopener noreferrer" className={styles.contact}>{copy.contact}</a></section>
   </main><Footer /></>;
 }
