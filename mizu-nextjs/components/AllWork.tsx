@@ -14,6 +14,11 @@ import styles from "./AllWork.module.css";
 function ProjectArtwork({ item }: { item: WorkItem }) {
   const presentation = workPresentations[item.slug];
   if (!presentation) return <div className={styles.fallback}><ProjectThumb kind={item.thumb} /></div>;
+  if (item.thumb === "atlas") return <div className={`${styles.artwork} ${styles.atlasArt}`}>
+    <div className={styles.artTop}><span>{presentation.label}</span></div>
+    <img className={styles.atlasScreenshot} src={presentation.image} alt={presentation.alt} loading="lazy" />
+    <div className={styles.artBottom}><span>{presentation.caption}</span><span>{item.year}</span></div>
+  </div>;
   if (item.thumb === "warda" || item.thumb === "promptly" || item.thumb === "promptly-mobile") return <div className={`${styles.artwork} ${styles.illustratedArt} ${item.thumb === "warda" ? styles.wardaArt : ""}`}>
     <img className={styles.projectIllustration} src={presentation.image} alt={presentation.alt} loading="lazy" />
     <div className={styles.artTop}><span>{presentation.label}</span></div>

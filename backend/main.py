@@ -87,6 +87,7 @@ client = AsyncOpenAI(api_key=GEMINI_API_KEY or "missing", base_url=BASE_URL)
 KNOWLEDGE_DIR = Path(__file__).parent / "knowledge"
 
 PROJECT_DOCS = {
+    "atlas": "atlas.md",
     "dropsync": "dropsync.md",
     "game-cam": "game-cam.md",
     "warda": "warda.md",
@@ -97,7 +98,7 @@ PROJECT_DOCS = {
 
 @function_tool
 def get_project_details(
-    project: Literal["dropsync", "game-cam", "warda", "promptly", "promptly-mobile"],
+    project: Literal["dropsync", "game-cam", "warda", "promptly", "promptly-mobile", "atlas"],
 ) -> str:
     """Load the full write-up for one MIZU project: features, capabilities,
     architecture and engineering details.
@@ -111,7 +112,8 @@ def get_project_details(
         project: "dropsync" (file-sharing and collaboration), "game-cam"
             (After Effects camera plugin), "warda" (Quran teaching studio
             website), "promptly" (Windows voice-to-text app), or
-            "promptly-mobile" (Android voice-to-text app).
+            "promptly-mobile" (Android voice-to-text app), or "atlas"
+            (software architecture mapping tool).
     """
     path = KNOWLEDGE_DIR / PROJECT_DOCS[project]
     log.info("tool call: get_project_details(project=%r)", project)
@@ -234,6 +236,14 @@ engineering behind it: polished frontends backed by serious systems —
 auth, encryption, real-time data, AI backends.
 
 ## Selected work (short versions — full write-ups live behind your tool)
+- Atlas ("atlas") — our browser-based software architecture mapping tool.
+  Import evidence-grounded JSON made by a coding agent, explore components
+  and connections, edit the map and export JSON, SVG or PNG. Local mode needs
+  no account; optional Google sign-in and Firestore add cloud workspaces and
+  owner-controlled live sharing. Atlas has no built-in AI service and does
+  not build the software it maps. Live at https://atlas-app-3el.pages.dev/;
+  repository https://github.com/AhmedSaeed4/atlas. The example TechFlow graph
+  maps a separately built customer-support system, not software made by Atlas.
 - DropSync ("dropsync") — a secure, temporary file-sharing and collaboration
   app: browser-encrypted drops (text, files, drawings) that expire on a
   schedule, shared workspaces with group chat, live calls, and a built-in AI

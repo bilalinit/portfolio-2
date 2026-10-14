@@ -123,6 +123,15 @@ export default async function ProjectPage({ params }: ProjectProps) {
           ))}
         </div>
 
+        {work.demo && <div className="mx-auto mt-10 max-w-[640px] rounded-sm bg-ink p-6 text-left text-beige">
+          {work.demo.image && <img src={work.demo.image.src} alt={work.demo.image.alt} loading="lazy" className="mb-6 block h-auto w-full rounded-sm" />}
+          <p className="text-sm leading-relaxed text-beige/75">{work.demo.description}</p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <a href={work.demo.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-sm bg-beige px-5 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-4">{work.demo.label}</a>
+            {work.liveUrl && <a href={work.liveUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-sm border border-beige/30 px-5 text-sm focus-visible:outline-2 focus-visible:outline-offset-4">{work.name}</a>}
+          </div>
+        </div>}
+
         <p
           className={`${rise} [animation-delay:0.48s] mt-[clamp(40px,5vw,72px)] text-[12px] font-medium uppercase tracking-[0.05em] text-ink/50`}
         >

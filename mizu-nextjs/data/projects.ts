@@ -6,7 +6,7 @@
    ========================================================================== */
 
 /* thumb art kinds — one per real asset in ProjectThumb.tsx */
-export type ThumbKind = "dropsync" | "gamecam" | "warda" | "promptly" | "promptly-mobile";
+export type ThumbKind = "dropsync" | "gamecam" | "warda" | "promptly" | "promptly-mobile" | "atlas";
 
 export type WorkCategoryLabel = "Website" | "Desktop App" | "Mobile App" | "Experiential" | "E-commerce";
 
@@ -44,6 +44,8 @@ export interface WorkItem {
   /** deployed site (or wherever the project can be tried) — makes the
       mention preview's bracket-arrow pin clickable, linking here */
   liveUrl?: string;
+  /** Optional live demonstration of the product, separate from its homepage. */
+  demo?: { url: string; label: string; description: string; image?: { src: string; alt: string } };
 }
 
 export interface WorkCategory {
@@ -100,6 +102,30 @@ export const allWork: WorkItem[] = [
       "Under the hood it's a genuine real-time system: a C++ plugin runs inside After Effects at the application's refresh rate and talks to a control panel over a shared-memory channel, so movement and mouse-look land with sub-microsecond latency instead of the lag of the scripting route. While you fly, the viewport drops to draft resolution to keep frame rates high, then restores the moment you stop.",
       "The output is deliberately clean. Camera moves are written to a parented chain of YAW and PITCH layers, so every motion stays independently editable — change speeds, retime keyframes, or chain a new move on top without breaking what came before. Whole flight segments undo in a single step, and auto-key mode records continuously while you steer.",
     ],
+  },
+  {
+    slug: "atlas",
+    name: "Atlas",
+    category: "Website",
+    year: "2026",
+    thumb: "atlas",
+    blurb: "Turn repository evidence into an editable map of how your software fits together",
+    tag: "Architecture tool",
+    github: "https://github.com/AhmedSaeed4/atlas",
+    liveUrl: "https://atlas-app-3el.pages.dev/",
+    demo: {
+      url: "https://atlas-app-3el.pages.dev/workspace?view=MUwNPd2D-ryo2dWUP3a0cw",
+      label: "Explore an example graph",
+      description: "Explore the TechFlow customer-support system as a read-only map of 36 components and 81 connections. The software was built separately; Atlas maps how its parts fit together.",
+      image: { src: "/atlas-example.png", alt: "Atlas map of TechFlow's customer-support system, connecting agents, APIs, workers, databases and infrastructure" },
+    },
+    overview: [
+      "Atlas makes software architecture easier to understand. We designed and built a browser-based workspace that turns repository evidence into an interactive map of components and their relationships, whether the project is a website, backend, mobile app, desktop tool, library or mixed system.",
+      "Start with the coding agent already working in your repository: Atlas supplies a prompt for creating an evidence-grounded architecture file, which you import into the workspace. Atlas itself has no AI service and does not upload your source repository files. The map describes the software you already built; Atlas is the tool for exploring and refining that description.",
+      "Pan, zoom and filter the map, inspect component details and source evidence, then edit nodes, connections and layout with undo and redo. A dependency-step timeline offers another way to follow the system. Export JSON for a reusable backup, or SVG and PNG for documentation and presentations.",
+      "Local mode keeps maps in your browser without an account. Optional Google sign-in and Firestore workspaces add cloud storage and owner-controlled live sharing, while snapshot links let people explore independent copies. Built with HTML, CSS and JavaScript modules, Atlas pairs a dark and light interface with a focused visual language for complex systems.",
+    ],
+    media: { src: "/atlas-homepage.png", alt: "Atlas homepage with a dark olive palette, lime accents and connected software-window illustration" },
   },
   {
     slug: "warda",

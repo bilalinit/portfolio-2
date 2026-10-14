@@ -14,6 +14,13 @@ export const workPageCopy = {
 } as const;
 
 export const workPresentations: Record<string, { label: string; image: string; alt: string; caption: string; services: string[] }> = {
+  atlas: {
+    label: "Software architecture, made clear.",
+    image: "/atlas-homepage.png",
+    alt: "Atlas architecture mapping tool homepage",
+    caption: "Repository evidence / Connected systems",
+    services: ["Product design", "Development"],
+  },
   dropsync: {
     label: "A space to share. A moment to keep.",
     image: "/dropsync-interface-screenshot.png",
