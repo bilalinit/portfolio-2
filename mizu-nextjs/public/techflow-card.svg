@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="666" viewBox="0 0 800 666" fill="none">
+  <title>TechFlow — connected customer support</title>
+  <desc>Email, WhatsApp and web forms connect to triage, support and escalation agents.</desc>
+  <rect width="800" height="666" fill="#DDD6C7"/>
+  <path d="M0 510H800M0 546H800M0 582H800" stroke="#C8C0AF" stroke-width="1"/>
+  <g transform="translate(66 120)">
+    <rect width="60" height="60" rx="16" fill="#C44C31"/>
+    <path d="M15 19H45V42H15V19ZM15 29H24L28 34H33L37 29H45" stroke="#F7F1E5" stroke-width="3" stroke-linejoin="round"/>
+    <text x="80" y="49" fill="#24221D" font-family="Inter,Arial,sans-serif" font-size="65" font-weight="600" letter-spacing="-3">TechFlow</text>
+    <text x="82" y="80" fill="#6B6255" font-family="Arial,sans-serif" font-size="12" letter-spacing="2">CUSTOMER SUCCESS / DIGITAL FTE</text>
+  </g>
+  <g transform="rotate(-3 405 425)">
+    <rect x="87" y="283" width="650" height="299" rx="10" fill="#B4A994"/>
+    <rect x="73" y="270" width="650" height="299" rx="10" fill="#C6BBA7"/>
+    <rect x="59" y="257" width="650" height="299" rx="10" fill="#22221F" stroke="#46453D" stroke-width="2"/>
+    <path d="M59 306H709" stroke="#45443C"/>
+    <circle cx="86" cy="282" r="4" fill="#D77A5E"/>
+    <circle cx="103" cy="282" r="4" fill="#80796C"/>
+    <circle cx="120" cy="282" r="4" fill="#80796C"/>
+    <text x="682" y="286" text-anchor="end" fill="#B4AD9E" font-family="Arial,sans-serif" font-size="11" letter-spacing="1.5">ONE CONNECTED WORKFLOW</text>
+    <g font-family="Arial,sans-serif" font-size="16" fill="#EAE4D6">
+      <rect x="89" y="336" width="182" height="49" rx="5" fill="#33332D" stroke="#555449"/>
+      <path d="M107 352H126V369H107V352ZM107 352L116.5 360L126 352" stroke="#C7BFAE" stroke-width="1.5" stroke-linejoin="round"/>
+      <text x="140" y="367">Email</text>
+      <rect x="89" y="407" width="182" height="49" rx="5" fill="#33332D" stroke="#555449"/>
+      <path d="M108 421H126V434H114L108 439V421Z" stroke="#C7BFAE" stroke-width="1.5" stroke-linejoin="round"/>
+      <text x="140" y="438">WhatsApp</text>
+      <rect x="89" y="478" width="182" height="49" rx="5" fill="#33332D" stroke="#555449"/>
+      <rect x="108" y="491" width="17" height="19" rx="1" stroke="#C7BFAE" stroke-width="1.5"/>
+      <path d="M112 497H121M112 503H118" stroke="#C7BFAE" stroke-width="1.5"/>
+      <text x="140" y="509">Web form</text>
+    </g>
+    <path d="M271 360H304Q319 360 319 375V416Q319 431 334 431H385M271 431H385M271 502H304Q319 502 319 487V446Q319 431 334 431M385 360H423M385 431H423M385 502H423M385 360V502" stroke="#988D78" stroke-width="2"/>
+    <circle cx="385" cy="431" r="6" fill="#D77A5E"/>
+    <g font-family="Arial,sans-serif" font-size="17" fill="#F1EBDD">
+      <rect x="423" y="336" width="256" height="49" rx="5" fill="#AD4831" stroke="#CD6C51"/>
+      <text x="442" y="367">Triage</text><circle cx="655" cy="360" r="4" fill="#F0C7A1"/>
+      <rect x="423" y="407" width="256" height="49" rx="5" fill="#3D3C32" stroke="#6A6757"/>
+      <text x="442" y="438">Support</text><circle cx="655" cy="431" r="4" fill="#B1B48B"/>
+      <rect x="423" y="478" width="256" height="49" rx="5" fill="#3D3C32" stroke="#6A6757"/>
+      <text x="442" y="509">Escalation</text><circle cx="655" cy="502" r="4" fill="#D8B789"/>
+    </g>
+  </g>
+</svg>

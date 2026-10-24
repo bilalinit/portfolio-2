@@ -2,133 +2,85 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Cursor from "@/components/Cursor";
+import Footer from "@/components/Footer";
+import ProjectThumb from "@/components/ProjectThumb";
 import { allWork } from "@/data/projects";
+import { workPresentations } from "@/data/work";
+import { caseStudies, projectBuilds, caseStudyCopy as copy } from "@/data/caseStudies";
+import styles from "./project.module.css";
 
-/* /work/[slug] — one case study per project, modeled on the overview
-   reference (overview page.png): minimal top bar, giant stacked display
-   title, red handwritten byline, centered media block, then the
-   (Overview) label + paragraph. Shell-less like /work: no hero, no
-   footer; the cursor stays for the site-wide cursor:none rule.
-   Media is per-project when `media` is set on the WorkItem, else the
-   shared showreel. */
-
-interface ProjectProps {
-  params: Promise<{ slug: string }>;
-}
-
-export function generateStaticParams() {
-  return allWork.map((work) => ({ slug: work.slug }));
-}
-
-export async function generateMetadata({
-  params,
-}: ProjectProps): Promise<Metadata> {
+interface ProjectProps { params: Promise<{ slug: string }> }
+export function generateStaticParams() { return allWork.map((work) => ({ slug: work.slug })); }
+export async function generateMetadata({ params }: ProjectProps): Promise<Metadata> {
   const { slug } = await params;
-  const work = allWork.find((w) => w.slug === slug);
-  if (!work) return {};
-  return { title: `${work.name} — MIZU`, description: work.overview.join(" ") };
+  const work = allWork.find((item) => item.slug === slug);
+  return work ? { title: `${work.name} — MIZU`, description: work.blurb } : {};
 }
-
-/* staggered load-in, same rise as the hero (guard: .pp .rise in globals) */
-const rise = "rise animate-[riseIn_0.9s_cubic-bezier(0.22,0.61,0.36,1)_both]";
 
 export default async function ProjectPage({ params }: ProjectProps) {
   const { slug } = await params;
-  const work = allWork.find((w) => w.slug === slug);
-  if (!work) notFound();
-
-  /* multi-word names stack, like the reference's two-line title */
-  const titleLines = work.name.split(" ");
-
-  return (
-    <div className="pp">
-      <Cursor />
-
-      {/* top bar: wordmark left, all-work link right */}
-      <header className="flex items-center justify-between px-6 pt-5 max-[860px]:px-[18px] max-[860px]:pt-[18px]">
-        <Link
-          href="/"
-          className="font-display text-[clamp(20px,1.8vw,26px)] uppercase leading-none text-ink no-underline"
-        >
-          Mizu
-        </Link>
-        <Link
-          href="/work"
-          className="inline-flex items-center py-2 text-[12px] font-medium uppercase tracking-[0.05em] text-ink no-underline transition-colors duration-200 hover:text-ink/60"
-        >
-          <span aria-hidden="true" className="mr-1">
-            [+]
-          </span>{" "}
-          All work
-        </Link>
+  const index = allWork.findIndex((item) => item.slug === slug);
+  if (index === -1) notFound();
+  const work = allWork[index];
+  const study = caseStudies[slug];
+  const presentation = workPresentations[slug];
+  const media = work.media || { src: presentation.image, alt: presentation.alt };
+  const next = allWork[(index + 1) % allWork.length];
+  const build = projectBuilds[slug];
+  return <>
+    <Cursor />
+    <div className={styles.page}>
+      <header className={styles.nav}>
+        <Link href="/" className={styles.wordmark}>Mizu</Link>
+        <Link href="/work" className={styles.back}>{copy.allWork}<span>{String(allWork.length).padStart(2, "0")}</span></Link>
       </header>
-
-      <main className="px-6 pb-[clamp(80px,10vw,160px)] text-center max-[860px]:px-[18px]">
-        {/* stacked display title */}
-        <h1
-          className={`${rise} mx-auto mt-[clamp(48px,7vw,110px)] font-display text-[clamp(46px,8vw,118px)] leading-[0.92] tracking-[0.005em] uppercase text-ink`}
-        >
-          {titleLines.map((line) => (
-            <span key={line} className="block">
-              {line}
-            </span>
-          ))}
-        </h1>
-
-        {/* handwritten byline, red like the reference */}
-        <p
-          className={`${rise} [animation-delay:0.12s] mt-5 font-hand text-[clamp(20px,1.8vw,26px)] text-[#ff5a1f]`}
-        >
-          By MIZU Studio
-        </p>
-
-        {/* media block — per-project asset when one exists, shared showreel otherwise */}
-        <div
-          className={`${rise} [animation-delay:0.22s] mx-auto mt-[clamp(36px,5vw,64px)] aspect-video w-[min(640px,100%)] overflow-hidden bg-[#e7e7e7]`}
-        >
-          {work.media ? (
-            <img
-              className="block h-full w-full object-cover"
-              src={work.media.src}
-              alt={work.media.alt}
-            />
-          ) : (
-            <video
-              className="block h-full w-full object-cover"
-              src="/showreel.mp4"
-              controls
-              playsInline
-              preload="metadata"
-              aria-label={`Showreel — ${work.name}`}
-            />
-          )}
-        </div>
-
-        {/* overview — one stacked paragraph per entry in the data */}
-        <p
-          className={`${rise} [animation-delay:0.32s] mt-[clamp(48px,6vw,88px)] font-hand text-[clamp(18px,1.6vw,24px)] text-ink`}
-        >
-          (Overview)
-        </p>
-        <div
-          className={`${rise} [animation-delay:0.4s] mx-auto mt-[clamp(20px,2.5vw,36px)] max-w-[640px] space-y-6 text-left`}
-        >
-          {work.overview.map((paragraph, i) => (
-            <p
-              key={i}
-              className="text-[clamp(17px,1.5vw,21px)] leading-[1.65] text-ink"
-            >
-              {paragraph}
-            </p>
-          ))}
-        </div>
-
-        <p
-          className={`${rise} [animation-delay:0.48s] mt-[clamp(40px,5vw,72px)] text-[12px] font-medium uppercase tracking-[0.05em] text-ink/50`}
-        >
-          {work.category} — {work.year}
-        </p>
+      <main>
+        <section className={styles.hero} aria-labelledby="project-title">
+          <div className={styles.intro}>
+            <p className={styles.eyebrow}>{work.category} / {work.tag}</p>
+            <h1 id="project-title">{work.name}</h1>
+            <p className={styles.credit}>{copy.credit}</p>
+            <p className={styles.lead}>{work.blurb}</p>
+            {(work.liveUrl || work.github || work.demo) && <div className={styles.actions}>
+              {work.liveUrl && <a className={styles.primary} href={work.liveUrl} target="_blank" rel="noopener noreferrer">{study.liveLabel}</a>}
+              {!work.liveUrl && work.demo && <a className={styles.primary} href={work.demo.url} target="_blank" rel="noopener noreferrer">{work.demo.label}</a>}
+              {work.github && <a className={styles.secondary} href={work.github} target="_blank" rel="noopener noreferrer">{copy.source}</a>}
+            </div>}
+            <dl className={styles.facts}>
+              <div><dt>{copy.year}</dt><dd>{work.year}</dd></div>
+              <div><dt>{copy.contribution}</dt><dd>{presentation.services.join(" / ")}</dd></div>
+            </dl>
+          </div>
+          <figure className={styles.visual} data-tone={study.tone} data-kind={work.thumb}>
+            <div className={styles.media}><img src={media.src} alt={media.alt} fetchPriority="high" /></div>
+            <figcaption><span>{presentation.caption}</span><span>{String(index + 1).padStart(2, "0")}</span></figcaption>
+          </figure>
+        </section>
+        <section className={styles.story} aria-labelledby="idea-title">
+          <div><span className={styles.eyebrow}>{copy.overview}</span><h2 id="idea-title">{presentation.label}</h2></div>
+          <p>{work.overview[0]}</p>
+        </section>
+        <section className={styles.features} aria-labelledby="features-title">
+          <h2 id="features-title" className={styles.eyebrow}>{copy.capabilities}</h2>
+          <div className={styles.featureGrid}>{study.features.map((feature, i) => <article key={feature.title}>
+            <span className={styles.featureNumber}>{String(i + 1).padStart(2, "0")}</span>
+            <h3>{feature.title}</h3><p>{feature.text}</p>
+          </article>)}</div>
+        </section>
+        {work.demo && <section className={styles.demo} aria-labelledby="example-title">
+          <div><span className={styles.eyebrow}>{copy.example}</span><h2 id="example-title">{work.demo.label}</h2><p>{work.demo.description}</p><a className={styles.primary} href={work.demo.url} target="_blank" rel="noopener noreferrer">{work.demo.label}</a></div>
+          {work.demo.image && <a className={styles.demoImage} href={work.demo.url} target="_blank" rel="noopener noreferrer" aria-label={work.demo.label}><img src={work.demo.image.src} alt={work.demo.image.alt} loading="lazy" /></a>}
+        </section>}
+        <section className={styles.technical} aria-labelledby="build-title">
+          <h2 id="build-title">{copy.technical}</h2>
+          <div><p>{build.summary}</p><ul className={styles.buildTools}>{build.tools.map((tool) => <li key={tool}>{tool}</li>)}</ul></div>
+        </section>
+        <Link href={`/work/${next.slug}`} className={styles.next}>
+          <div><span className={styles.eyebrow}>{copy.next}</span><h2>{next.name}</h2><p>{next.blurb}</p><span className={styles.nextLink}>{copy.view}</span></div>
+          <div className={styles.nextVisual}><ProjectThumb kind={next.thumb}/></div>
+        </Link>
       </main>
     </div>
-  );
+    <Footer />
+  </>;
 }

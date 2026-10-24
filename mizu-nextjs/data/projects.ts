@@ -6,14 +6,15 @@
    ========================================================================== */
 
 /* thumb art kinds — one per real asset in ProjectThumb.tsx */
-export type ThumbKind = "dropsync" | "gamecam" | "warda" | "promptly" | "promptly-mobile";
+export type ThumbKind = "dropsync" | "gamecam" | "warda" | "promptly" | "promptly-mobile" | "atlas" | "digital-fte";
 
-export type WorkCategoryLabel = "Website" | "Desktop App" | "Mobile App" | "Experiential" | "E-commerce";
+export type WorkCategoryLabel = "Website" | "Desktop App" | "Mobile App" | "Experiential" | "E-commerce" | "Digital FTE";
 
 /* the work-menu filters. Slugs drive /work/category/[slug]; counts
    are derived from allWork below, never hand-maintained. */
 const categoryDefs: { label: WorkCategoryLabel; slug: string }[] = [
   { label: "Website", slug: "website" },
+  { label: "Digital FTE", slug: "digital-fte" },
   { label: "Desktop App", slug: "desktop-app" },
   { label: "Mobile App", slug: "mobile-app" },
   { label: "Experiential", slug: "experiential" },
@@ -44,6 +45,8 @@ export interface WorkItem {
   /** deployed site (or wherever the project can be tried) — makes the
       mention preview's bracket-arrow pin clickable, linking here */
   liveUrl?: string;
+  /** Optional live demonstration of the product, separate from its homepage. */
+  demo?: { url: string; label: string; description: string; image?: { src: string; alt: string } };
 }
 
 export interface WorkCategory {
@@ -102,6 +105,30 @@ export const allWork: WorkItem[] = [
     ],
   },
   {
+    slug: "atlas",
+    name: "Atlas",
+    category: "Website",
+    year: "2026",
+    thumb: "atlas",
+    blurb: "Turn repository evidence into an editable map of how your software fits together",
+    tag: "Architecture tool",
+    github: "https://github.com/AhmedSaeed4/atlas",
+    liveUrl: "https://atlas-app-3el.pages.dev/",
+    demo: {
+      url: "https://atlas-app-3el.pages.dev/workspace?view=MUwNPd2D-ryo2dWUP3a0cw",
+      label: "Explore an example graph",
+      description: "Explore the TechFlow customer-support system as a read-only map of 36 components and 81 connections. The software was built separately; Atlas maps how its parts fit together.",
+      image: { src: "/atlas-example.png", alt: "Atlas map of TechFlow's customer-support system, connecting agents, APIs, workers, databases and infrastructure" },
+    },
+    overview: [
+      "Atlas makes software architecture easier to understand. We designed and built a browser-based workspace that turns repository evidence into an interactive map of components and their relationships, whether the project is a website, backend, mobile app, desktop tool, library or mixed system.",
+      "Start with the coding agent already working in your repository: Atlas supplies a prompt for creating an evidence-grounded architecture file, which you import into the workspace. Atlas itself has no AI service and does not upload your source repository files. The map describes the software you already built; Atlas is the tool for exploring and refining that description.",
+      "Pan, zoom and filter the map, inspect component details and source evidence, then edit nodes, connections and layout with undo and redo. A dependency-step timeline offers another way to follow the system. Export JSON for a reusable backup, or SVG and PNG for documentation and presentations.",
+      "Local mode keeps maps in your browser without an account. Optional Google sign-in and Firestore workspaces add cloud storage and owner-controlled live sharing, while snapshot links let people explore independent copies. Built with HTML, CSS and JavaScript modules, Atlas pairs a dark and light interface with a focused visual language for complex systems.",
+    ],
+    media: { src: "/atlas-homepage.png", alt: "Atlas homepage with a dark olive palette, lime accents and connected software-window illustration" },
+  },
+  {
     slug: "warda",
     name: "Warda",
     category: "Website",
@@ -149,6 +176,30 @@ export const allWork: WorkItem[] = [
       "Built for Android 8.0 and later, it uses Groq's Whisper transcription with your own API key. Temporary connection failures trigger automatic retries, and an unfinished recording can be kept for another attempt. Unlike the desktop app, Android copies the result to the clipboard for you to paste yourself.",
     ],
     media: { src: "/promptly-mobile-card.svg", alt: "Promptly Mobile concept showing its floating recording button on an Android phone" },
+  },
+  {
+    slug: "digital-fte",
+    name: "TechFlow",
+    category: "Digital FTE",
+    year: "2026",
+    thumb: "digital-fte",
+    tag: "Customer support",
+    aliases: ["CRM Digital FTE", "CRM-Digital-FTE", "TechFlow Customer Success Digital FTE", "Digital FTE"],
+    blurb: "A Digital FTE for customer support across email, WhatsApp and web, with a shared CRM and specialist AI agents",
+    github: "https://github.com/AhmedSaeed4/CRM-Digital-FTE/",
+    media: { src: "/atlas-example.png", alt: "TechFlow system architecture connecting customer channels, support agents, APIs, databases and workers" },
+    demo: {
+      url: "https://atlas-app-3el.pages.dev/workspace?view=MUwNPd2D-ryo2dWUP3a0cw",
+      label: "Explore the workflow",
+      description: "Follow TechFlow’s architecture in Atlas: 36 components and 81 connections across customer channels, agent handoffs and infrastructure. This is a read-only system map, rather than a live support session.",
+      image: { src: "/atlas-example.png", alt: "TechFlow customer-support architecture map in Atlas" },
+    },
+    overview: [
+      "TechFlow is a customer-success Digital FTE: an AI support system that brings Gmail, WhatsApp and a web form into one workflow. A shared CRM keeps the customer’s history alongside each ticket, while specialist agents triage requests, answer product questions and hand off cases that need human attention.",
+      "The agent layer uses the OpenAI Agents SDK with separate triage, support and escalation agents. Input and output checks combine a keyword fast path with model-based review. Knowledge-base lookup, ticket operations and channel-specific response formatting help the system handle enquiries in context.",
+      "FastAPI accepts requests, PostgreSQL stores customer and ticket records, and Kafka carries events to a separate message-processing worker. If Kafka is unavailable, database polling offers an alternative intake path. Gmail and Twilio WhatsApp integrations connect the support workflow to the customer’s channel.",
+      "The project includes a Next.js support form, Docker builds, Kubernetes manifests and a documented Minikube deployment, plus pytest and Locust checks. API and worker workloads have separate scaling configurations. The repository documents local setup and the provider credentials needed to run the system; the architecture example is available through Atlas.",
+    ],
   },
 ];
 
