@@ -14,6 +14,13 @@ export const workPageCopy = {
 } as const;
 
 export const workPresentations: Record<string, { label: string; image: string; alt: string; caption: string; services: string[] }> = {
+  "digital-fte": {
+    label: "Support that stays connected.",
+    image: "/techflow-card.svg",
+    alt: "TechFlow artwork connecting Email, WhatsApp and web forms to triage, support and escalation agents",
+    caption: "Three channels / One support workflow",
+    services: ["Agent design", "Development", "AI"],
+  },
   atlas: {
     label: "Software architecture, made clear.",
     image: "/atlas-homepage.png",

@@ -19,7 +19,7 @@ function ProjectArtwork({ item }: { item: WorkItem }) {
     <img className={styles.atlasScreenshot} src={presentation.image} alt={presentation.alt} loading="lazy" />
     <div className={styles.artBottom}><span>{presentation.caption}</span><span>{item.year}</span></div>
   </div>;
-  if (item.thumb === "warda" || item.thumb === "promptly" || item.thumb === "promptly-mobile") return <div className={`${styles.artwork} ${styles.illustratedArt} ${item.thumb === "warda" ? styles.wardaArt : ""}`}>
+  if (item.thumb === "warda" || item.thumb === "promptly" || item.thumb === "promptly-mobile" || item.thumb === "digital-fte") return <div className={`${styles.artwork} ${styles.illustratedArt} ${item.thumb === "warda" ? styles.wardaArt : ""} ${item.thumb === "digital-fte" ? styles.techflowArt : ""}`}>
     <img className={styles.projectIllustration} src={presentation.image} alt={presentation.alt} loading="lazy" />
     <div className={styles.artTop}><span>{presentation.label}</span></div>
     <div className={styles.artBottom}><span>{presentation.caption}</span><span>{item.year}</span></div>

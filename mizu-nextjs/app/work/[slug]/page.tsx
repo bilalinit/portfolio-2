@@ -41,8 +41,9 @@ export default async function ProjectPage({ params }: ProjectProps) {
             <h1 id="project-title">{work.name}</h1>
             <p className={styles.credit}>{copy.credit}</p>
             <p className={styles.lead}>{work.blurb}</p>
-            {(work.liveUrl || work.github) && <div className={styles.actions}>
+            {(work.liveUrl || work.github || work.demo) && <div className={styles.actions}>
               {work.liveUrl && <a className={styles.primary} href={work.liveUrl} target="_blank" rel="noopener noreferrer">{study.liveLabel}</a>}
+              {!work.liveUrl && work.demo && <a className={styles.primary} href={work.demo.url} target="_blank" rel="noopener noreferrer">{work.demo.label}</a>}
               {work.github && <a className={styles.secondary} href={work.github} target="_blank" rel="noopener noreferrer">{copy.source}</a>}
             </div>}
             <dl className={styles.facts}>

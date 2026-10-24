@@ -8,6 +8,7 @@ import type { ThumbKind } from "@/data/projects";
    composed card SVG in public/, add the ThumbKind here + in
    projects.ts. */
 export const THUMB_SRC: Record<ThumbKind, string> = {
+  "digital-fte": "/techflow-card.svg",
   atlas: "/atlas-homepage.png",
   dropsync: "/dropsync-card.svg",
   gamecam: "/gamecam-card.svg",
@@ -17,6 +18,7 @@ export const THUMB_SRC: Record<ThumbKind, string> = {
 };
 
 const THUMB_ALT: Record<ThumbKind, string> = {
+  "digital-fte": "TechFlow connected customer-support artwork",
   atlas: "Atlas software architecture mapping tool",
   dropsync: "DropSync logo",
   gamecam: "Game cam logo",
