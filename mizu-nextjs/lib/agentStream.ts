@@ -13,6 +13,8 @@
 export const AGENT_URL =
   process.env.NEXT_PUBLIC_AGENT_URL ?? "http://localhost:8000";
 
+export const AGENT_ENABLED = process.env.NEXT_PUBLIC_AGENT_ENABLED !== "false";
+
 const GENERATING_LABEL = "Thinking…";
 
 /* raw tool names from the backend → what the visitor sees */
