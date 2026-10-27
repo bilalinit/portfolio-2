@@ -57,12 +57,12 @@ export const privacySections = [
     id: "sharing",
     title: "Service providers and sharing",
     paragraphs: [
-      "Vercel hosts the website frontend and processes requests needed to deliver its pages and assets. Hugging Face Spaces hosts Nami's backend, which receives chat messages, conversation context and request information before calling Google Gemini. Google processes chat content to check for misuse and generate replies. Our email providers process communications sent to the studio.",
-      "Vercel and Hugging Face may process technical information and operational logs to deliver and secure their services. Operational and AI diagnostic services may also process error or execution records, which can include message-related information. We do not sell your personal information or share it for targeted advertising.",
+      "Cloudflare hosts the website frontend and processes requests needed to deliver its pages and assets. Hugging Face Spaces hosts Nami's backend, which receives chat messages, conversation context and request information before calling Google Gemini. Google processes chat content to check for misuse and generate replies. Our email providers process communications sent to the studio.",
+      "Cloudflare and Hugging Face may process technical information and operational logs to deliver and secure their services. Operational and AI diagnostic services may also process error or execution records, which can include message-related information. We do not sell your personal information or share it for targeted advertising.",
       "Information may also be disclosed when necessary to comply with a legal obligation, respond to a valid legal request or protect the rights and security of the studio and its visitors. Service providers may process information in countries other than your own, under their applicable terms and data-protection arrangements.",
     ],
     links: [
-      { label: "Vercel privacy notice", href: "https://vercel.com/legal/privacy-notice" },
+      { label: "Cloudflare privacy notice", href: "https://www.cloudflare.com/privacypolicy/" },
       { label: "Hugging Face privacy policy", href: "https://huggingface.co/privacy" },
     ],
   },
@@ -79,7 +79,7 @@ export const privacySections = [
     title: "How long information stays",
     paragraphs: [
       "The chat application processes conversation content for the current request rather than storing a permanent chat archive. Rate-limit timestamps are evaluated over rolling one-minute and one-hour windows; IP entries are held in server memory and can remain until cleanup or a server restart. These windows are not a guarantee that infrastructure logs are deleted after an hour.",
-      "Enquiries and project correspondence may be retained for follow-up, delivering work, record keeping and resolving disputes. The relevant period depends on whether an enquiry becomes a project, the information involved and applicable legal obligations. Vercel and Hugging Face logs follow the applicable service plan and configuration; email and Google Gemini records follow their respective settings and terms. These provider records are separate from the chat interface and may remain after you reload or leave the site. Contact us for information about a particular record or to request deletion where available.",
+      "Enquiries and project correspondence may be retained for follow-up, delivering work, record keeping and resolving disputes. The relevant period depends on whether an enquiry becomes a project, the information involved and applicable legal obligations. Cloudflare and Hugging Face logs follow the applicable service plan and configuration; email and Google Gemini records follow their respective settings and terms. These provider records are separate from the chat interface and may remain after you reload or leave the site. Contact us for information about a particular record or to request deletion where available.",
     ],
   },
   {

@@ -17,6 +17,7 @@ import { gmailComposeUrl } from "@/lib/contact";
 import DotSphere, { type SphereMode } from "@/components/DotSphere";
 import {
   AGENT_URL,
+  AGENT_ENABLED,
   AgentStreamError,
   rateLimitError,
   streamAgentChat,
@@ -62,8 +63,9 @@ type Dir = "opening" | "closing" | null;
 
 const ASSISTANT_NAME = "Nami";
 
-const GREETING =
-  "Hey — I'm Nami, MIZU's AI assistant. Anything catch your eye?";
+const GREETING = AGENT_ENABLED
+  ? "Hey — I'm Nami, MIZU's AI assistant. Anything catch your eye?"
+  : "Nami is temporarily unavailable. You can still browse our work or use the Contact tab to tell the studio about your project.";
 
 const SUGGESTIONS = [
   "Where should I start?",
@@ -665,6 +667,7 @@ export default function ChatWidget() {
   const mentionApi = { show: showMention, leave: leaveMention };
 
   const send = async (raw: string) => {
+    if (!AGENT_ENABLED) return;
     const text = raw.trim();
     if (!text || thinking || cooldownLeft > 0) return;
     setMessages((m) => [...m, { from: "user", text, time: now() }]);
@@ -889,7 +892,7 @@ export default function ChatWidget() {
                 </div>
 
                 <div className="flex flex-wrap gap-2 px-6 pb-4 pt-5">
-                  {SUGGESTIONS.map((s, i) => (
+                  {(AGENT_ENABLED ? SUGGESTIONS : []).map((s, i) => (
                     <button
                       key={s}
                       type="button"
@@ -1048,6 +1051,7 @@ export default function ChatWidget() {
             <textarea
               ref={composerRef}
               rows={1}
+              disabled={!AGENT_ENABLED}
               value={input}
               tabIndex={showInput ? 0 : -1}
               aria-hidden={!showInput}
@@ -1062,7 +1066,7 @@ export default function ChatWidget() {
                 }
               }}
               placeholder={
-                cooldownLeft > 0
+                !AGENT_ENABLED ? "Chat temporarily unavailable" : cooldownLeft > 0
                   ? `Rate limited — try again in ${formatRetry(cooldownLeft)}`
                   : "Ask me anything..."
               }
@@ -1096,7 +1100,7 @@ export default function ChatWidget() {
             aria-label="Send message"
             tabIndex={showInput ? 0 : -1}
             aria-hidden={!showInput}
-            disabled={thinking || cooldownLeft > 0 || !input.trim()}
+            disabled={!AGENT_ENABLED || thinking || cooldownLeft > 0 || !input.trim()}
             onClick={() => send(input)}
             className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/80 transition-[background-color,color,opacity] duration-200 enabled:hover:bg-white/20 enabled:hover:text-white ${
               !showInput

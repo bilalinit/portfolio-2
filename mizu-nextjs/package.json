@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:cloudflare": "next build && node scripts/prepare-pages.mjs",
     "start": "next start"
   },
   "dependencies": {
