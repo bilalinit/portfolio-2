@@ -47,3 +47,27 @@ All config lives in `.env` (see `.env.example`): `GEMINI_API_KEY`, `BASE_URL`,
 model, defaults to `MODEL_NAME`), `ALLOWED_ORIGINS`, `HOST`, `PORT`.
 Because the model goes through the OpenAI-compatible client, swapping
 providers (GLM, DeepSeek, …) is just a `BASE_URL` + `MODEL_NAME` + key change.
+
+## Deploy (Vercel)
+
+The same app runs on Vercel as Python serverless functions:
+
+- `api/health.py`, `api/agent.py` and `api/agent/stream.py` each wrap the
+  FastAPI app with a `FixedPath` ASGI shim that pins the public path — the
+  Vercel Python runtime hands the app a rewritten path, so without the shim
+  FastAPI's router would never match (one endpoint per function, no rewrites)
+- `vercel.json` sets `maxDuration` and bundles `knowledge/` with the two
+  agent functions
+- `requirements.txt` is what Vercel installs (it doesn't read `uv.lock`) —
+  regenerate after dependency changes:
+  `uv export --no-dev --no-emit-project --format requirements-txt -o requirements.txt`
+
+Config goes into Vercel's project env vars (never a bundled `.env`):
+`GEMINI_API_KEY` and `ALLOWED_ORIGINS` (the frontend origin, e.g.
+`https://mizu-studio.pages.dev`); `MODEL_NAME`/`GUARDRAIL_MODEL` optional.
+Local dev keeps using `.env`.
+
+One serverless caveat: the per-visitor rate limiter is in-memory, so on
+Vercel it counts per warm instance rather than globally — acceptable for a
+portfolio (Gemini's own quota is the backstop); use Upstash Redis if real
+global limits are ever needed.
