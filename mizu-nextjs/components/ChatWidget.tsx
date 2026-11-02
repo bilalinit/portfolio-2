@@ -18,6 +18,9 @@ import DotSphere, { type SphereMode } from "@/components/DotSphere";
 import {
   AGENT_URL,
   AGENT_ENABLED,
+  MAX_MESSAGE_LENGTH,
+  CHAT_TIMEOUT_MS,
+  boundedHistory,
   AgentStreamError,
   rateLimitError,
   streamAgentChat,
@@ -53,7 +56,7 @@ import {
    /api/agent as {reply}. History rides along so it sees the whole
    conversation. */
 
-type Msg = { from: "user" | "agent"; text: string; time: string };
+type Msg = { from: "user" | "agent"; text: string; time: string; context?: boolean };
 type View = "greet" | "chat" | "contact";
 /* morph geometry stages: pill → circle → bar → open (close reverses) */
 type Stage = "pill" | "circle" | "bar" | "open";
@@ -75,28 +78,29 @@ const SUGGESTIONS = [
 
 /* the widget log → the wire format both endpoints accept */
 const toHistory = (messages: Msg[]) =>
-  messages.map((m) => ({
+  messages.filter((m) => m.context !== false).map((m) => ({
     role: m.from === "agent" ? ("assistant" as const) : ("user" as const),
     content: m.text,
   }));
 
 /* Non-streaming fallback — used only when the stream endpoint can't be
    reached at all (e.g. an older backend behind AGENT_URL). */
-async function sendToAgent(text: string, history: Msg[]): Promise<string> {
+async function sendToAgent(text: string, history: Msg[], signal: AbortSignal): Promise<string> {
   const res = await fetch(`${AGENT_URL}/api/agent`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       message: text,
-      history: toHistory(history),
+      history: boundedHistory(toHistory(history), text),
     }),
+    signal: AbortSignal.any([signal, AbortSignal.timeout(CHAT_TIMEOUT_MS)]),
   });
   if (!res.ok) {
     if (res.status === 429) throw await rateLimitError(res);
     throw new Error(`agent HTTP ${res.status}`);
   }
   const data = (await res.json()) as { reply?: unknown };
-  if (typeof data.reply !== "string" || !data.reply) {
+  if (typeof data.reply !== "string" || !data.reply.trim() || data.reply.length > 4000) {
     throw new Error("agent returned no reply");
   }
   return data.reply;
@@ -382,6 +386,10 @@ export default function ChatWidget() {
      committed to the log once the reveal catches up, so the swap from
      streaming bubble to real message is invisible (same text, same style) */
   const settledRef = useRef<string | null>(null);
+  const successfulRef = useRef(false);
+  const requestRef = useRef<AbortController | null>(null);
+  const sendingRef = useRef(false);
+  useEffect(() => () => requestRef.current?.abort(), []);
   /* timestamp captured at send time, shared by the streaming bubble and the
      committed message */
   const pendingTimeRef = useRef<string>("");
@@ -592,7 +600,12 @@ export default function ChatWidget() {
     if (settledRef.current === null || !smooth.isDone) return;
     const text = settledRef.current;
     settledRef.current = null;
-    setMessages((m) => [...m, { from: "agent", text, time: pendingTimeRef.current }]);
+    setMessages((m) => [
+      ...m.map((item, index) => index === m.length - 1 && item.from === "user"
+        ? { ...item, context: successfulRef.current } : item),
+      { from: "agent", text, time: pendingTimeRef.current, context: successfulRef.current },
+    ]);
+    sendingRef.current = false;
     setThinking(false);
     setActivity(null);
     smooth.reset();
@@ -669,8 +682,13 @@ export default function ChatWidget() {
   const send = async (raw: string) => {
     if (!AGENT_ENABLED) return;
     const text = raw.trim();
-    if (!text || thinking || cooldownLeft > 0) return;
-    setMessages((m) => [...m, { from: "user", text, time: now() }]);
+    if (!text || text.length > MAX_MESSAGE_LENGTH || thinking || sendingRef.current || cooldownLeft > 0) return;
+    sendingRef.current = true;
+    successfulRef.current = false;
+    requestRef.current?.abort();
+    const controller = new AbortController();
+    requestRef.current = controller;
+    setMessages((m) => [...m, { from: "user", text, time: now(), context: false }]);
     setInput("");
     setView("chat");
     setThinking(true);
@@ -679,33 +697,36 @@ export default function ChatWidget() {
     try {
       const reply = await streamAgentChat({
         message: text,
-        history: toHistory(messages),
+        history: boundedHistory(toHistory(messages), text),
+        signal: controller.signal,
         onActivity: setActivity,
         onDelta: smooth.append,
         onDeltaReset: smooth.reset,
       });
+      successfulRef.current = true;
       settledRef.current = reply;
       smooth.setFull(reply);
     } catch (error) {
       /* the backend's per-visitor rate limit → say so and block sends
          until the retry time passes (no point letting requests fail) */
-      const retryAfter =
+      let retryAfter =
         error instanceof AgentStreamError ? error.retryAfter : null;
-      /* otherwise: if no stream was ever established (older backend,
-         network refused), retry once without streaming; a mid-stream
-         failure goes straight to the fallback message — partial text is
-         discarded */
+      /* Only an explicitly unsupported streaming endpoint may fall back.
+         Network failures can happen after processing starts, so replaying
+         those could duplicate a model run. */
       if (
         retryAfter === null &&
         error instanceof AgentStreamError &&
-        error.stage === "connect"
+        error.canFallback && !controller.signal.aborted
       ) {
         try {
-          const reply = await sendToAgent(text, messages);
+          const reply = await sendToAgent(text, messages, controller.signal);
+          successfulRef.current = true;
           settledRef.current = reply;
           smooth.setFull(reply);
           return;
-        } catch {
+        } catch (fallbackError) {
+          if (fallbackError instanceof AgentStreamError) retryAfter = fallbackError.retryAfter;
           /* fall through */
         }
       }
@@ -1051,6 +1072,7 @@ export default function ChatWidget() {
             <textarea
               ref={composerRef}
               rows={1}
+              maxLength={MAX_MESSAGE_LENGTH}
               disabled={!AGENT_ENABLED}
               value={input}
               tabIndex={showInput ? 0 : -1}

@@ -1,7 +1,8 @@
 # keep the serverless bundle small and the secrets out of it —
 # real config goes into Vercel's env vars, never into the bundle
-.env
+.env*
 .venv/
 __pycache__/
 **/__pycache__/
 .git/
+tests/

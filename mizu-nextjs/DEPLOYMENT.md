@@ -43,6 +43,15 @@ handling; do not assume every preview hostname is automatically allowed.
 
 Before launch, verify /health, chat streaming and the allowed-origin preflight.
 Confirm the policy accurately identifies Cloudflare and Vercel as hosts.
+Enable the free backend Vercel Firewall rule described in `backend/README.md`
+before public chat goes live. No Redis or additional provider is required.
+Check the plan's included usage in the dashboard; do not add paid features.
+
+`build:cloudflare` generates `out/_headers` from `public/_headers`, allowing
+chat connections only to the configured backend origin. It sets anti-framing,
+MIME-sniffing, referrer and permissions headers. Static Next.js hydration needs
+inline scripts/styles, so this CSP is not a substitute for escaping user input.
+Verify the headers on the deployed Cloudflare pages after deployment.
 
 ## Verification
 
@@ -50,3 +59,5 @@ Run `npm run build:cloudflare` and `npx tsc --noEmit`. Serve out/ with a static
 server and check direct loads of /, /work, every /work/<slug>, category routes,
 /about, /privacy-policy and a nonexistent path. Check mobile menus, project
 filters, assets, Gmail drafts and a real Nami reply after the backend is ready.
+Run `npm test` for offline SSE, error recovery, cooldown and history-budget
+regression coverage, and `npm audit` for the complete frontend dependency graph.
