@@ -1,6 +1,7 @@
 "use client";
 
-import { AccessibilityIcon } from "@/components/icons";
+import { GitHubIcon } from "@/components/icons";
+import { GITHUB_URL } from "@/data/social";
 
 type NavRowProps = {
   className?: string;
@@ -81,7 +82,7 @@ export default function NavRow({
         </a>
 
         {links.map((link) => (
-          <a key={link.label} href={link.href} className={navLink}>
+          <a key={link.label} href={link.href} className={`${navLink} ${link.label === "Services" ? "max-[1024px]:hidden" : ""}`}>
             {link.label}
           </a>
         ))}
@@ -94,13 +95,15 @@ export default function NavRow({
         >
           Contact
         </a>
-        <button
-          type="button"
-          aria-label="Accessibility options"
-          className="inline-flex items-center justify-center w-[34px] h-[34px] border border-ink bg-transparent text-ink transition-colors duration-300 hover:bg-ink hover:text-beige max-[1024px]:w-9 max-[1024px]:h-9"
+        <a
+          href={GITHUB_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Visit AhmedSaeed4 on GitHub"
+          className="inline-flex items-center justify-center w-11 h-11 border border-ink bg-transparent text-ink transition-colors duration-300 hover:bg-ink hover:text-beige"
         >
-          <AccessibilityIcon />
-        </button>
+          <GitHubIcon />
+        </a>
       </div>
     </div>
   );

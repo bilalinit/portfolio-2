@@ -331,6 +331,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
           </p>
 
           <p
+            hidden
             className={`${riseIn} m-0 text-[clamp(12px,0.95vw,15px)] font-normal leading-[1.25] tracking-[-0.005em] text-ink/70 [animation-delay:0.55s]`}
           >
             Working together
