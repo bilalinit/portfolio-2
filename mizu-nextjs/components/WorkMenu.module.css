@@ -32,8 +32,16 @@
   border-top: 1px solid rgb(8 20 35 / .13);
 }
 .categories a {
-  display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #666;
-  text-underline-offset: 5px; transition: color .25s ease;
+  position: relative; display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #666;
+  text-decoration: none; transition: color .25s ease;
+}
+.categories a::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 9px; height: 1px;
+  background: currentColor; transform: scaleX(0); transform-origin: right;
+  transition: transform .38s cubic-bezier(.4,0,.2,1);
+}
+.categories a:focus-visible::after {
+  transform: scaleX(1); transform-origin: left;
 }
 .allWork {
   display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 50px;
@@ -84,7 +92,8 @@
 }
 @media (hover: hover) and (pointer: fine) {
   .project:hover .projectHeading { color: #3149f5; }
-  .categories a:hover { color: var(--color-ink); text-decoration: underline; }
+  .categories a:hover { color: var(--color-ink); }
+  .categories a:hover::after { transform: scaleX(1); transform-origin: left; }
   .allWork:hover { background: #3149f5; }
   .closeDesktop:hover, .closeMobile:hover { color: #666; }
 }
