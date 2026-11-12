@@ -1,19 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Instrument_Sans, Manrope } from "next/font/google";
+import { Manrope } from "next/font/google";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useMenus } from "@/components/MenuLayer";
 import { MizuMark } from "@/components/icons";
 import styles from "./Hero.module.css";
-
-// A scoped type trial: only the home hero statement uses this family.
-const statementFont = Instrument_Sans({
-  subsets: ["latin"],
-  weight: "400",
-  display: "swap",
-  preload: false,
-});
 
 const wordmarkFont = Manrope({
   subsets: ["latin"],
@@ -110,7 +102,7 @@ const colHeading =
    enormous in the light display cut so it spans its column edge to edge,
    with the brand statement and a small note in a right-hand column that
    spans the same baseline. The wordmark uses a scoped Manrope Light trial
-   beside the Instrument Sans statement; other site typography is unchanged.
+   beside the Instrument Sans statement, the site's shared editorial family.
 
    Tiles and mid columns are desktop-only; below 1025px the strip collapses
    to the mark + wordmark and the mobile MENU trigger, and the tiles become a
@@ -372,7 +364,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
             baseline of the wordmark */}
         <div className="flex flex-col justify-between gap-y-[clamp(28px,3.4vw,56px)] min-[1025px]:pt-[clamp(10px,1.4vw,26px)]">
           <p
-            className={`${riseIn} ${statementFont.className} ${styles.statement} [animation-delay:0.42s]`}
+            className={`${riseIn} ${styles.statement} [animation-delay:0.42s]`}
           >
             We are a digital studio making{" "}
             <span>websites, apps and agents</span> that carry real weight in your

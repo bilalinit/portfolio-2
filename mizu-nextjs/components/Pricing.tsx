@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { briefSteps, buildQuoteDraft, customPlan, quoteCopy, recurringPlans, serviceScopeOptions } from "@/data/pricing";
 import { gmailComposeUrl } from "@/lib/contact";
+import CustomSelect from "@/components/CustomSelect";
 
 /* Pricing section — ported from price.html (original gray palette) with
    the exact animation
@@ -73,13 +74,21 @@ export default function Pricing() {
   }, []);
 
   useEffect(() => {
+    const el = tab === "single" ? singleRef.current : recurringRef.current;
+    if (!el) return;
     const measure = () => {
-      const el = tab === "single" ? singleRef.current : recurringRef.current;
-      if (el) setMinH(Math.max(600, el.offsetHeight));
+      setMinH(Math.max(600, el.offsetHeight));
     };
     measure();
+    // Font loading and changed line wrapping can alter a panel's height
+    // without resizing the window. Keep the footer below the actual panel.
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
   }, [tab, revealed]);
 
   const setPick = (i: number, value: string) => {
@@ -108,16 +117,16 @@ export default function Pricing() {
         {/* Reserve the expanded navbar's full height even while it collapses,
             so this sticky column never jumps or slides behind the header. */}
         <div className="min-[901px]:sticky min-[901px]:top-[calc(var(--masthead-expanded-height)+16px)] min-[901px]:self-start">
-          <h2 className="mb-6 text-[clamp(48px,6.5vw,72px)] font-medium leading-[1.05] tracking-[-0.04em]">
+          <h2 className="mb-6 text-[clamp(48px,6.5vw,72px)] font-normal leading-[1.08] tracking-[-0.04em]">
             Simple
             <br />
             pricing
           </h2>
-          <p className="mb-4 max-w-[300px] text-[15px] leading-[1.6] text-[#666666]">
+          <p className="mb-4 max-w-[30ch] text-[16px] leading-[1.6] text-[#666666]">
             Most projects will be priced according to your needs, but we can
             still give a clear idea of timelines and budget.
           </p>
-          <p className="max-w-[300px] text-[15px] leading-[1.6] text-[#666666]">
+          <p className="max-w-[30ch] text-[16px] leading-[1.6] text-[#666666]">
             For ongoing demands, we can also offer monthly engagements.
           </p>
         </div>
@@ -161,6 +170,7 @@ export default function Pricing() {
             <div
               ref={singleRef}
               aria-hidden={!singleActive}
+              inert={!singleActive}
               className={`pr-panel ${singleActive ? "active" : ""}`}
             >
               <div className="rounded-[24px] bg-white p-10 shadow-[0_1px_3px_rgba(0,0,0,0.04)] max-[640px]:p-6">
@@ -188,19 +198,17 @@ export default function Pricing() {
                         {step.label}
                       </div>
                     </div>
-                    <select
-                      className="pr-select"
-                      aria-label={step.label}
+                    <CustomSelect
+                      label={step.label}
+                      placeholder={step.placeholder}
                       value={picks[i]}
+                      options={i === 1 ? scopeOptions : step.options}
+                      disabled={!singleActive}
+                      describedBy={step.hint ? `pricing-hint-${i}` : undefined}
                       onFocus={() => setActiveStep(i)}
-                      onChange={(e) => setPick(i, e.target.value)}
-                    >
-                      <option value="">{step.placeholder}</option>
-                      {(i === 1 ? scopeOptions : step.options).map((option) => (
-                        <option key={option}>{option}</option>
-                      ))}
-                    </select>
-                    {step.hint && <p className="mt-2 text-[12px] leading-[1.5] text-[#666666]">{step.hint}</p>}
+                      onChange={(value) => setPick(i, value)}
+                    />
+                    {step.hint && <p id={`pricing-hint-${i}`} className="mt-2 text-[12px] leading-[1.5] text-[#666666]">{step.hint}</p>}
                   </div>
                 ))}
 
@@ -252,6 +260,7 @@ export default function Pricing() {
             <div
               ref={recurringRef}
               aria-hidden={!recurringActive}
+              inert={!recurringActive}
               className={`pr-panel ${recurringActive ? "active" : ""}`}
             >
               <div className="mb-4 rounded-[24px] bg-white p-10 shadow-[0_1px_3px_rgba(0,0,0,0.04)] max-[640px]:p-6">

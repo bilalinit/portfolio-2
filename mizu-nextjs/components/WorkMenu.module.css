@@ -19,8 +19,8 @@
   .desktop { display: block; padding: 28px; }
   .heading { display: flex; justify-content: space-between; align-items: start; }
   .micro { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: #666; }
-  .heading h2 { font-family: var(--font-inter-tight),sans-serif; font-size: 58px; line-height: 1; letter-spacing: -.05em; margin-top: 9px; font-weight: 450; }
-  .heading sup { font-family: var(--font-inter),sans-serif; font-size: 10px; letter-spacing: .04em; vertical-align: top; display: inline-block; margin: 8px 0 0 14px; color: #666; }
+  .heading h2 { font-family: var(--font-sans); font-size: 58px; line-height: 1; letter-spacing: -.05em; margin-top: 9px; font-weight: 400; }
+  .heading sup { font-family: var(--font-sans); font-size: 10px; letter-spacing: .04em; vertical-align: top; display: inline-block; margin: 8px 0 0 14px; color: #666; }
   .close { display: inline-flex; align-items: center; gap: 12px; min-height: 44px; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
   .categories { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; margin: 24px 0; }
   .categories a { display: flex; align-items: center; justify-content: space-between; min-height: 43px; border-bottom: 1px solid #13100925; font-size: 14px; transition: color .3s ease; }

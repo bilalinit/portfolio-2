@@ -18,3 +18,5 @@
 - The navbar mark uses the user's original rounded M image, traced into public/mizu-mark.svg and MizuMark in icons.tsx. Preserve that silhouette; do not substitute an MZ redesign.
 - Main surfaces and navbar use neutral near-white (#fafafa) through the surface token; inverse text uses the separate on-dark token. Preserve white cards, neutral-gray pricing/footer sections, blue actions, and dark sections.
 - Use brand-ink (#081423) selectively for the brand wordmark/logo and primary navigation. Keep body copy, dark section backgrounds, and buttons on their existing colors.
+- Site copy, controls, headings, and credits use Instrument Sans with regular/medium/semibold roles. Preserve Manrope Light for the large MIZU wordmark. Skill sets keeps Inter and Inter Tight until its separate redesign.
+- Pricing brief fields use the shared CustomSelect. Keep keyboard navigation, type-to-select, Escape dismissal, dependent service/scope choices, independent popup scrolling, and the page scrollbar intact.
