@@ -29,7 +29,7 @@ const interTight = Inter_Tight({
 export const metadata: Metadata = {
   title: "MIZU — Beautiful. Useful. Autonomous.",
   description:
-    "MIZU builds AI-enabled websites, apps, and agents that carry real weight in your business.",
+    "I build AI-enabled websites, apps, and agents that carry real weight in your business.",
   icons: { icon: "/mizu-icon.svg" },
 };
 

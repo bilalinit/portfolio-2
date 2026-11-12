@@ -43,7 +43,7 @@ Get a key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 ## Configure
 
 All config lives in `.env` (see `.env.example`): `GEMINI_API_KEY`, `BASE_URL`,
-`MODEL_NAME` (default `gemini-3.6-flash`), `GUARDRAIL_MODEL` (classifier
+`MODEL_NAME` (default `gemini-3.5-flash-lite`), `GUARDRAIL_MODEL` (classifier
 model, defaults to `MODEL_NAME`), `ALLOWED_ORIGINS`, `HOST`, `PORT`.
 Because the model goes through the OpenAI-compatible client, swapping
 providers (GLM, DeepSeek, …) is just a `BASE_URL` + `MODEL_NAME` + key change.

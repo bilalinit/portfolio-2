@@ -56,14 +56,14 @@ export const serviceScopeOptions: Record<string, string[]> = {
 
 export const quoteCopy = {
   cta: "Let's discuss your project",
-  description: "Tell us what you need. We’ll review your brief and reply with an estimate and next steps.",
+  description: "Tell me what you need. I’ll review your brief and reply with an estimate and next steps.",
   otherServiceLabel: "What would you like help with?",
   otherServicePlaceholder: "An app, an AI assistant, or something else...",
   notesLabel: "Project details — optional",
-  notesPlaceholder: "Your goal, existing website, or anything else we should know",
-  draftHint: "Opens a draft in Gmail. Review the details, add any context, then send it to us.",
+  notesPlaceholder: "Your goal, existing website, or anything else I should know",
+  draftHint: "Opens a draft in Gmail. Review the details, add any context, then send it to me.",
   missingService: "Choose a service above. If you're unsure, select I'm not sure yet.",
-  missingCustomService: "Tell us briefly what you'd like help with above.",
+  missingCustomService: "Tell me briefly what you'd like help with above.",
   missingScope: "Choose a project scope above. You can select Not sure yet.",
   emailSuffix: "Sent from the project enquiry form on mizu.studio.",
 } as const;
@@ -74,7 +74,7 @@ export function buildQuoteDraft(picks: ProjectPicks, notes: string, customServic
   const lines = [
     "Hi MIZU,",
     "",
-    "I'd like to discuss a project with your studio. Here is the brief I put together on your website:",
+    "I'd like to work with you on a project. Here is the brief I put together on your website:",
     "",
     "PROJECT BRIEF",
     `Service: ${service || "To be discussed"}`,
@@ -115,7 +115,7 @@ export const recurringPlans: RecurringPlan[] = [
     features: [
       "Shared capacity",
       "One project at a time",
-      "One expert-level developer",
+      "Work directly with me",
       "Unlimited requests",
       "Dedicated communication channel",
     ],
@@ -130,8 +130,8 @@ export const recurringPlans: RecurringPlan[] = [
     desc: "Great for agencies handling multiple projects at once.",
     features: [
       "Dedicated capacity",
-      "Up to two concurrent projects",
-      "Two expert-level developers",
+      "Capacity for larger projects",
+      "Work directly with me",
       "Unlimited requests",
       "Dedicated communication channel",
     ],
@@ -145,8 +145,8 @@ export const recurringPlans: RecurringPlan[] = [
 /* third card — catches everyone the two fixed plans don't fit */
 export const customPlan = {
   name: "Custom flow",
-  desc: "Need something shaped differently — lighter, heavier, project-based retainer? Tell us your workload and we'll build the engagement around it.",
-  cta: "Tell us your flow",
+  desc: "Need something shaped differently — lighter, heavier, project-based retainer? Tell me your workload and I’ll shape the engagement around it.",
+  cta: "Tell me your flow",
   subject: "Recurring — custom engagement",
   bodyIntro:
     "I'm looking for a recurring setup that doesn't fit the fixed plans. A few lines about our needs:",

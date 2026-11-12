@@ -1,5 +1,7 @@
 # Local portfolio design workflow
 
+- MIZU is one independent developer’s brand, not a studio or agency. Use first-person singular for portfolio and contact copy. Nami is an AI assistant representing the developer, not a teammate. Preserve references to client teams and Warda’s teaching studio.
+
 - Follow the technical and design rules in AGENTS.md.
 - Current user instructions take precedence over older repository workflow rules.
 - Make the requested design changes locally and test them on localhost for the user to review.

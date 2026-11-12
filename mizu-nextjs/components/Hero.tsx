@@ -28,7 +28,7 @@ const LETTER_STEP = 0.07;
 /* hero copy — pulled out of the JSX so the layout below stays about layout */
 const tagline = ["Design that", "holds. Code", "that runs."];
 
-const aboutLinks = ["Company"];
+const aboutLinks = ["About"];
 
 /* The two destination tiles top-right.
 
@@ -196,7 +196,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
 
           <div className="flex items-center gap-[clamp(24px,3.4vw,64px)]">
             <div className="masthead-column">
-              <span className={`masthead-heading ${colHeading}`} aria-hidden={scrolled}>About us</span>
+              <span className={`masthead-heading ${colHeading}`} aria-hidden={scrolled}>About me</span>
               {aboutLinks.map((label) => (
                 <Link key={label} href="/about" className={plusLink}>
                   <span aria-hidden="true" className="text-[1.15em] leading-none">
@@ -214,7 +214,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
             />
 
             <div className="masthead-column">
-              <span className={`masthead-heading ${colHeading}`} aria-hidden={scrolled}>Our expertise</span>
+              <span className={`masthead-heading ${colHeading}`} aria-hidden={scrolled}>My expertise</span>
               <a
                 href="#work"
                 id="work-trigger"
@@ -366,7 +366,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
           <p
             className={`${riseIn} ${styles.statement} [animation-delay:0.42s]`}
           >
-            We are a digital studio making{" "}
+            I build{" "}
             <span>websites, apps and agents</span> that carry real weight in your
             business.
           </p>

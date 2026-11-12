@@ -1,4 +1,4 @@
-export const caseStudyCopy = { allWork: "All work", credit: "By MIZU Studio", overview: "The idea", capabilities: "Inside the product", technical: "How we built it", source: "View source", year: "Year", contribution: "Our contribution", example: "In practice", next: "Keep exploring", view: "View project" } as const;
+export const caseStudyCopy = { allWork: "All work", credit: "By MIZU", overview: "The idea", capabilities: "Inside the product", technical: "How I built it", source: "View source", year: "Year", contribution: "My contribution", example: "In practice", next: "Keep exploring", view: "View project" } as const;
 
 type CaseStudy = { tone: string; liveLabel: string; features: { title: string; text: string }[] };
 

@@ -68,7 +68,7 @@ const ASSISTANT_NAME = "Nami";
 
 const GREETING = AGENT_ENABLED
   ? "Hey — I'm Nami, MIZU's AI assistant. Anything catch your eye?"
-  : "Nami is temporarily unavailable. You can still browse our work or use the Contact tab to tell the studio about your project.";
+  : "Nami is temporarily unavailable. You can still browse MIZU’s work or use the Contact tab to get in touch with the developer about your project.";
 
 const SUGGESTIONS = [
   "Where should I start?",
@@ -414,6 +414,7 @@ export default function ChatWidget() {
   const panelFaceRef = useRef<HTMLElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
+  const followReplyRef = useRef(true);
 
   const later = useCallback((fn: () => void, ms: number) => {
     timers.current.push(window.setTimeout(fn, ms));
@@ -584,11 +585,10 @@ export default function ChatWidget() {
     }
   }, [stage, view]);
 
-  /* keep the log pinned to the newest message (and to the streaming reveal
-     as it grows) */
+  /* Follow new replies unless the visitor scrolls up to read earlier turns. */
   useEffect(() => {
     const el = logRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (el && followReplyRef.current) el.scrollTop = el.scrollHeight;
   }, [messages, thinking, smooth.revealed]);
 
   /* commit the finished reply only once the reveal has dripped out fully —
@@ -688,6 +688,7 @@ export default function ChatWidget() {
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
+    followReplyRef.current = true;
     setMessages((m) => [...m, { from: "user", text, time: now(), context: false }]);
     setInput("");
     setView("chat");
@@ -737,7 +738,7 @@ export default function ChatWidget() {
       const notice =
         retryAfter !== null
           ? `I need a breather — you've reached the chat limit. Try again in ${formatRetry(retryAfter)}.`
-          : `Sorry — I couldn't reach my brain just now. Give it another go in a moment, or email ${CONTACT_EMAIL}.`;
+          : `I couldn’t finish that reply just now. Please try again shortly, or email ${CONTACT_EMAIL}.`;
       smooth.reset();
       settledRef.current = notice;
       smooth.setFull(notice);
@@ -830,6 +831,11 @@ export default function ChatWidget() {
             stage === "open" ? "opacity-100" : "opacity-0"
           }`}
           style={{
+            /* Conversation length must not resize the floating panel.
+               Leave space above it for the navbar on short screens. */
+            height: view === "chat"
+              ? "min(560px, calc(100dvh - var(--masthead-expanded-height, 80px) - 32px))"
+              : undefined,
             /* room for the strip, which grows with the composer */
             paddingBottom: stage === "bar" || stage === "open" ? stripH : undefined,
           }}
@@ -938,8 +944,12 @@ export default function ChatWidget() {
                 role="log"
                 aria-live="polite"
                 aria-label="Conversation"
-                onScroll={hideMention}
-                className="chat-scroll flex-1 overflow-y-auto overscroll-contain px-6 pb-2 pt-3"
+                onScroll={(event) => {
+                  hideMention();
+                  const log = event.currentTarget;
+                  followReplyRef.current = log.scrollHeight - log.scrollTop - log.clientHeight <= 32;
+                }}
+                className="chat-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-2 pt-3"
               >
                 {messages.map((m, i) => (
                   <div key={i} className="mb-4">
@@ -959,11 +969,8 @@ export default function ChatWidget() {
                   </div>
                 ))}
 
-                {/* Nami at work: a shimmering activity label over the
-                    bouncing dots while nothing has streamed yet ("Thinking…"
-                    → "Reading up on our work…" when the tool fires), then
-                    the label row collapses and the reply reveals in place,
-                    dripping out as the stream arrives */}
+                {/* The activity label indicates progress until the reply
+                    starts streaming, then the reply reveals in place. */}
                 {thinking && !smooth.hasText && (
                   <div className="mb-4">
                     <p className="text-[13px]">
@@ -974,15 +981,6 @@ export default function ChatWidget() {
                         {activity ?? "Thinking…"}
                       </span>
                     </p>
-                    <div className="mt-1.5 flex gap-1.5">
-                      {[0, 1, 2].map((i) => (
-                        <span
-                          key={i}
-                          className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/60"
-                          style={{ animationDelay: `${i * 140}ms` }}
-                        />
-                      ))}
-                    </div>
                   </div>
                 )}
 
@@ -1014,7 +1012,7 @@ export default function ChatWidget() {
                   {CONTACT_EMAIL}
                 </a>
                 <p className="mt-3 text-[14px] leading-[1.5] text-white/60">
-                  We reply within one business day.
+                  I reply within one business day.
                 </p>
               </div>
             )}

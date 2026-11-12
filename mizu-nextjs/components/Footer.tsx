@@ -80,8 +80,7 @@ export default function Footer() {
           {/* statement + tagline */}
           <Cell>
             <p className="max-w-[440px] text-[clamp(26px,2.7vw,40px)] font-medium leading-[1.15] tracking-[-0.015em] text-[#1a1a1a]">
-              MIZU — a studio that builds digital employees and the products
-              they live in.
+              MIZU — websites, apps and AI agents, designed and built with care.
             </p>
             <p className="mt-[clamp(40px,5vw,80px)] text-[clamp(15px,1.15vw,18px)] leading-[1.5] text-[#8f8f8f]">
               Designed with intent.
@@ -100,7 +99,7 @@ export default function Footer() {
                   href={gmailComposeUrl()} target="_blank" rel="noopener noreferrer"
                   className="mt-[clamp(56px,7vw,128px)] inline-block text-[clamp(15px,1.15vw,18px)] text-[#1a1a1a] underline decoration-1 underline-offset-[6px] transition-colors duration-300 hover:text-[#8f8f8f]"
                 >
-                  Contact us
+                  Contact me
                 </a>
               )}
             </Cell>

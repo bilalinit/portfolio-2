@@ -74,10 +74,10 @@ export const allWork: WorkItem[] = [
     github: "https://github.com/AhmedSaeed4/dropsync",
     liveUrl: "https://drag-drop-app.vercel.app/",
     overview: [
-      "DropSync is a secure, temporary file-sharing and collaboration app we designed and built end to end. Drop files, text notes, voice memos and drawings into an encrypted space, then pick them up on any other device — or work together in shared workspaces. Everything in it is ephemeral by design: every drop carries an expiry you choose, from an hour to a full day, and when it's gone, it's gone.",
+      "DropSync is a secure, temporary file-sharing and collaboration app I designed and built end to end. Drop files, text notes, voice memos and drawings into an encrypted space, then pick them up on any other device — or work together in shared workspaces. Everything in it is ephemeral by design: every drop carries an expiry you choose, from an hour to a full day, and when it's gone, it's gone.",
       "Privacy is the product, not a feature. Text, files and drawings are encrypted in your browser with AES-256 before they ever leave your device, and they're only decrypted on the devices meant to see them — the server passes along ciphertext it can't read. Workspaces share a single encryption key that travels by six-character invite code, so bringing someone into a team's space is as simple as typing it in.",
       "Collaboration runs deep: an encrypted group chat with quote-replies, @mentions and read receipts; live calls for up to four people with screen sharing; reminders, locked and pinned drops; drag-and-drop organization with categories, bulk moves and a 30-second undo on every delete. Two layouts and three themes keep it feeling like yours, and everything syncs across devices in real time.",
-      "We built the AI inside it too. DropSync's assistant can search your drops, create and organize them on request, and answer questions about how the app works — with password-protected drops walled off behind a three-layer defense, and every request verified server-side so the model only ever acts as you.",
+      "I built the AI inside it too. DropSync's assistant can search your drops, create and organize them on request, and answer questions about how the app works — with password-protected drops walled off behind a three-layer defense, and every request verified server-side so the model only ever acts as you.",
     ],
     media: {
       src: "/dropsync-interface-screenshot.png",
@@ -99,7 +99,7 @@ export const allWork: WorkItem[] = [
        is the trial download, so this is the URL it should open. */
     liveUrl: "https://game-cam-six.vercel.app/",
     overview: [
-      "Game cam is an After Effects plugin we built that puts game-style camera control into motion design. Press WASD to fly through a 3D scene, drag the mouse to look around, and the flight is recorded as real keyframes on the timeline — ready to retime, offset and polish like any other animation. First-person camera moves become as intuitive as playing a game.",
+      "Game cam is an After Effects plugin I built that puts game-style camera control into motion design. Press WASD to fly through a 3D scene, drag the mouse to look around, and the flight is recorded as real keyframes on the timeline — ready to retime, offset and polish like any other animation. First-person camera moves become as intuitive as playing a game.",
       "Under the hood it's a genuine real-time system: a C++ plugin runs inside After Effects at the application's refresh rate and talks to a control panel over a shared-memory channel, so movement and mouse-look land with sub-microsecond latency instead of the lag of the scripting route. While you fly, the viewport drops to draft resolution to keep frame rates high, then restores the moment you stop.",
       "The output is deliberately clean. Camera moves are written to a parented chain of YAW and PITCH layers, so every motion stays independently editable — change speeds, retime keyframes, or chain a new move on top without breaking what came before. Whole flight segments undo in a single step, and auto-key mode records continuously while you steer.",
     ],
@@ -121,7 +121,7 @@ export const allWork: WorkItem[] = [
       image: { src: "/atlas-example.png", alt: "Atlas map of TechFlow's customer-support system, connecting agents, APIs, workers, databases and infrastructure" },
     },
     overview: [
-      "Atlas makes software architecture easier to understand. We designed and built a browser-based workspace that turns repository evidence into an interactive map of components and their relationships, whether the project is a website, backend, mobile app, desktop tool, library or mixed system.",
+      "Atlas makes software architecture easier to understand. I designed and built a browser-based workspace that turns repository evidence into an interactive map of components and their relationships, whether the project is a website, backend, mobile app, desktop tool, library or mixed system.",
       "Start with the coding agent already working in your repository: Atlas supplies a prompt for creating an evidence-grounded architecture file, which you import into the workspace. Atlas itself has no AI service and does not upload your source repository files. The map describes the software you already built; Atlas is the tool for exploring and refining that description.",
       "Pan, zoom and filter the map, inspect component details and source evidence, then edit nodes, connections and layout with undo and redo. A dependency-step timeline offers another way to follow the system. Export JSON for a reusable backup, or SVG and PNG for documentation and presentations.",
       "Local mode keeps maps in your browser without an account. Optional Google sign-in and Firestore workspaces add cloud storage and owner-controlled live sharing, while snapshot links let people explore independent copies. Built with HTML, CSS and JavaScript modules, Atlas pairs a dark and light interface with a focused visual language for complex systems.",
@@ -138,7 +138,7 @@ export const allWork: WorkItem[] = [
     tag: "Teaching studio",
     aliases: ["Wardah", "Ustadhah Wardah"],
     overview: [
-      "Warda is the online home of Wardah, a professional Quran and Tajweed teacher. We created a calm, welcoming website that introduces her teaching approach, explains the learning tracks and helps prospective students book a class through WhatsApp. An emerald palette, considered typography and subtle motion give the studio a clear, personal identity in both light and dark themes.",
+      "Warda is the online home of Wardah, a professional Quran and Tajweed teacher. I created a calm, welcoming website that introduces her teaching approach, explains the learning tracks and helps prospective students book a class through WhatsApp. An emerald palette, considered typography and subtle motion give the studio a clear, personal identity in both light and dark themes.",
       "The experience brings lessons, common questions and student stories together. Students can sign in with Google to share a review, see it appear live on the Wall of Love, and manage their own stories from a protected profile page. Firebase Authentication and Firestore support the experience behind the scenes.",
       "A purpose-built AI assistant answers course and scheduling questions in English or Roman Urdu. It keeps the conversation focused on the studio, directs booking and pricing enquiries to Wardah, and leaves religious rulings to the teacher herself. The website and assistant were built with Next.js, React, Firebase and a Python API using the OpenAI Agents SDK.",
     ],

@@ -128,11 +128,11 @@ export default function Pricing() {
             pricing
           </h2>
           <p className="mb-4 max-w-[30ch] text-[16px] leading-[1.6] text-[#666666]">
-            Most projects will be priced according to your needs, but we can
+            Most projects will be priced according to your needs, but I can
             still give a clear idea of timelines and budget.
           </p>
           <p className="max-w-[30ch] text-[16px] leading-[1.6] text-[#666666]">
-            For ongoing demands, we can also offer monthly engagements.
+            For ongoing needs, I also offer monthly engagements.
           </p>
         </div>
 

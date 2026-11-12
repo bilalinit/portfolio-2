@@ -1,6 +1,6 @@
 export const workPageCopy = {
   title: "All projects",
-  introduction: "A collection of things we’ve brought to life. Designed with care, built with purpose, and made to be used.",
+  introduction: "A collection of things I’ve brought to life. Designed with care, built with purpose, and made to be used.",
   projectsLabel: "Project archive",
   filterLabel: "Filter projects by discipline",
   all: "All projects",
