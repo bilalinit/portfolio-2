@@ -16,3 +16,5 @@
 - Keep the pricing sticky heading below the expanded navbar with a fixed gap; do not tie its top offset to the navbar animation. Pricing form controls use the same page-scroll smoothing as their surroundings.
 - Verify TypeScript and the local page before reporting completion.
 - The navbar mark uses the user's original rounded M image, traced into public/mizu-mark.svg and MizuMark in icons.tsx. Preserve that silhouette; do not substitute an MZ redesign.
+- Main surfaces and navbar use neutral near-white (#fafafa) through the surface token; inverse text uses the separate on-dark token. Preserve white cards, neutral-gray pricing/footer sections, blue actions, and dark sections.
+- Use brand-ink (#081423) selectively for the brand wordmark/logo and primary navigation. Keep body copy, dark section backgrounds, and buttons on their existing colors.

@@ -1,9 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { Instrument_Sans } from "next/font/google";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useMenus } from "@/components/MenuLayer";
 import { MizuMark } from "@/components/icons";
+import styles from "./Hero.module.css";
+
+// A scoped type trial: only the home hero statement uses this family.
+const statementFont = Instrument_Sans({
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+  preload: false,
+});
 
 /* shared load-in reveal (runs once on mount, pure CSS animation). Tagged
    `rise` so globals.css can switch it off under prefers-reduced-motion. */
@@ -77,7 +87,7 @@ const tileBox =
    icon, so it inherits the label's colour and size */
 const plusLink =
   "group inline-flex items-center gap-1.5 text-[clamp(13px,1.05vw,15px)] " +
-  "font-normal leading-none tracking-[-0.01em] text-ink no-underline " +
+  "font-normal leading-none tracking-[-0.01em] text-brand-ink no-underline " +
   "transition-opacity duration-300 ease-[cubic-bezier(0.22,0.61,0.36,1)] " +
   "hover:opacity-55";
 
@@ -166,7 +176,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
               menus.closeNav();
             }
           }}
-          className="masthead-logo no-underline inline-flex min-h-[44px] items-center gap-[0.42em] text-[clamp(17px,1.5vw,23px)] text-ink select-none max-[1024px]:relative max-[1024px]:z-[530]"
+          className="masthead-logo no-underline inline-flex min-h-[44px] items-center gap-[0.42em] text-[clamp(17px,1.5vw,23px)] text-brand-ink select-none max-[1024px]:relative max-[1024px]:z-[530]"
         >
           <MizuMark className="h-[0.68em] w-auto shrink-0 -translate-y-[0.04em]" />
           <span className="font-normal leading-none tracking-[-0.025em]">
@@ -251,7 +261,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
               "font-normal leading-none tracking-[-0.01em] transition-colors " +
               "duration-[520ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] " +
               (tile.tone === "primary" ? "text-white" : "text-ink") +
-              " group-hover:text-beige group-focus-visible:text-beige";
+              " group-hover:text-on-dark group-focus-visible:text-on-dark";
 
             /* the arrow leads on hover, pushed outward from its own corner */
             const arrowShift = flip
@@ -280,13 +290,10 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
               </>
             );
 
-            /* the neutral tile needs to sit clearly ON the ground, not
-               dissolve into it: at #d8d8d8 it was 1.25:1 against the old
-               beige and 1.11:1 against the new off-white, so the tile had no
-               visible edge at all. #c6c3bb restores 1.37:1 while staying
-               quiet beside the blue. */
+            /* A neutral gray keeps the secondary tile visible against the
+               near-white page without reintroducing a warm tint. */
             const className = `masthead-tile ${tileBox} ${
-              tile.tone === "primary" ? "bg-[#3149f5]" : "bg-[#c6c3bb]"
+              tile.tone === "primary" ? "bg-[#3149f5]" : "bg-[#e5e5e5]"
             } ${face}`;
 
             return tile.href.startsWith("/") ? (
@@ -311,7 +318,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
           aria-controls="mobile-menu"
           aria-expanded={menus.navOpen}
           onClick={menus.openNav}
-          className="masthead-menu-trigger min-[1025px]:hidden min-h-[44px] -mr-2 -my-2 px-2 py-2 text-[12px] font-medium uppercase tracking-[0.05em] text-ink"
+          className="masthead-menu-trigger min-[1025px]:hidden min-h-[44px] -mr-2 -my-2 px-2 py-2 text-[12px] font-medium uppercase tracking-[0.05em] text-brand-ink"
         >
           Menu <span aria-hidden="true" className="ml-1">[=]</span>
         </button>
@@ -352,7 +359,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
               it sits inside the h1 so it inherits, and it is the wordmark's
               only accessible text, so it stays selectable for anyone
               copying it. */}
-          <h1 className="m-0 select-none font-mark text-[41cqw] font-[280] uppercase leading-[0.74] tracking-[-0.03em] text-ink">
+          <h1 className="m-0 select-none font-mark text-[41cqw] font-[280] uppercase leading-[0.74] tracking-[-0.03em] text-brand-ink">
             <span className="sr-only select-text">Mizu</span>
             {WORDMARK.map((letter, i) => (
               <span
@@ -370,10 +377,11 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
             baseline of the wordmark */}
         <div className="flex flex-col justify-between gap-y-[clamp(28px,3.4vw,56px)] min-[1025px]:pt-[clamp(10px,1.4vw,26px)]">
           <p
-            className={`${riseIn} m-0 max-w-[22ch] text-[clamp(19px,1.9vw,32px)] font-normal leading-[1.16] tracking-[-0.022em] text-ink [animation-delay:0.42s]`}
+            className={`${riseIn} ${statementFont.className} ${styles.statement} [animation-delay:0.42s]`}
           >
-            We are a digital studio making websites, apps and agents that
-            carry real weight in your business.
+            We are a digital studio making{" "}
+            <span>websites, apps and agents</span> that carry real weight in your
+            business.
           </p>
 
           <p

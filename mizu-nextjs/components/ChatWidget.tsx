@@ -122,7 +122,7 @@ const now = () =>
    substring during streaming too, so a mention turns clickable the
    moment its last letter drips in. The mention is styled as a real link —
    accent colour plus a persistent underline, see the className below for why
-   it can't be the beige ground token — and on mouse hover the word brightens
+   it can't be the page surface token — and on mouse hover the word brightens
    while a preview pill rises above it (see the mention hover preview block in
    ChatWidget). */
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -899,7 +899,7 @@ export default function ChatWidget() {
                     portrait asset exists. Dots bloom outward on open. */}
                 <div className="relative h-[min(300px,38dvh)] w-full shrink-0">
                   <DotsIcon
-                    className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 text-beige/40"
+                    className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 text-on-dark/40"
                     bloom
                     bloomBase={350}
                   />
@@ -920,7 +920,7 @@ export default function ChatWidget() {
                       onClick={() => send(s)}
                       className={
                         i === 0
-                          ? `${chip} bg-beige text-ink hover:bg-white`
+                          ? `${chip} bg-surface text-ink hover:bg-white`
                           : `${chip} bg-[#2b2b2b] text-white/60 hover:bg-[#333333] hover:text-white/90`
                       }
                     >
@@ -1231,7 +1231,7 @@ export default function ChatWidget() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Open ${mention.name}`}
-                  className="-mx-[3px] flex shrink-0 items-center gap-px rounded-[6px] px-[3px] py-2 text-beige/80 transition-colors duration-200 hover:text-white"
+                  className="-mx-[3px] flex shrink-0 items-center gap-px rounded-[6px] px-[3px] py-2 text-on-dark/80 transition-colors duration-200 hover:text-white"
                   onFocus={clearMentionHide}
                   onBlur={hideMention}
                 >

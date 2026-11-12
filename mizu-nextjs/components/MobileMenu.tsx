@@ -27,7 +27,7 @@ const item = (delay: string, open: boolean) =>
 
 /* underline-on-hover, same language as the desktop nav */
 const menuLink =
-  "relative py-1 text-[clamp(28px,7.5vw,36px)] font-medium leading-[1.15] tracking-[-0.02em] text-ink no-underline " +
+  "relative py-1 text-[clamp(28px,7.5vw,36px)] font-medium leading-[1.15] tracking-[-0.02em] text-brand-ink no-underline " +
   "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-px after:bg-current " +
   "after:scale-x-0 after:origin-right after:transition-transform after:duration-[380ms] after:ease-[cubic-bezier(0.4,0,0.2,1)] " +
   "hover:after:scale-x-100 hover:after:origin-left";

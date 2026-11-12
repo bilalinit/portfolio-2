@@ -213,7 +213,7 @@ export default function WorkMenu({
             the category block is a compact two-column cluster now and the
             earlier roomy 34px gutters made it read as a separate section
             competing with the project list. */}
-        <div className="relative bg-beige pt-[clamp(34px,6cqw,56px)] px-[clamp(18px,3.4cqw,28px)] pb-4 max-[1025px]:px-5 max-[1025px]:pt-14 max-[1025px]:pb-4">
+        <div className="relative bg-surface pt-[clamp(34px,6cqw,56px)] px-[clamp(18px,3.4cqw,28px)] pb-4 max-[1025px]:px-5 max-[1025px]:pt-14 max-[1025px]:pb-4">
           {/* mobile-only: close everything */}
           <button
             type="button"
@@ -257,7 +257,7 @@ export default function WorkMenu({
         {/* folder tab */}
         <div className="bg-white flex">
           <div
-            className={`inline-flex items-center gap-2 h-[34px] pl-3.5 pr-8 bg-beige [clip-path:polygon(0_0,100%_0,calc(100%_-_15px)_100%,0_100%)] text-[11.5px] font-medium tracking-[0.08em] uppercase text-ink ${item(delays[1], phase)}`}
+            className={`inline-flex items-center gap-2 h-[34px] pl-3.5 pr-8 bg-surface [clip-path:polygon(0_0,100%_0,calc(100%_-_15px)_100%,0_100%)] text-[11.5px] font-medium tracking-[0.08em] uppercase text-ink ${item(delays[1], phase)}`}
           >
             <FolderIcon className="w-3.5 h-3.5 shrink-0" />
             <span>Featured projects</span>

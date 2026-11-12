@@ -19,7 +19,7 @@ const FRAME = { w: 1920, h: 1080 };
 const LOCKUP = { x: 153, y: 284, w: 608, h: 128 };
 
 /* Homepage onboarding: the brand lockup animation (PNG sequence encoded
-   as VP9-with-alpha WebM) plays over a beige cover, then the cover
+   as VP9-with-alpha WebM) plays over a page-colored cover, then the cover
    fades to reveal the page with the settled lockup already in place.
    Skips reduced-motion and Safari (no alpha in WebM video); replays
    only on a full reload — the window flag survives client-side route
@@ -127,7 +127,7 @@ export default function IntroSplash() {
     <div
       id="intro-cover"
       aria-hidden="true"
-      className={`fixed inset-0 z-[900] bg-beige transition-opacity duration-500 ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
+      className={`fixed inset-0 z-[900] bg-surface transition-opacity duration-500 ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
         lifting ? "pointer-events-none opacity-0" : ""
       }`}
     >

@@ -51,7 +51,7 @@
 .storyText { max-width: 51ch; }.storyText p { font-size: clamp(15px,1.2vw,19px); line-height: 1.75; margin-bottom: 24px; color: #666; }.storyText p:first-child { color: #1a1a1a; }
 .disciplineLine { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 85px; padding: 28px 0; border-top: 1px solid #13100925; font-family: var(--font-inter-tight),sans-serif; font-size: clamp(30px,6vw,100px); letter-spacing: -.05em; }
 .disciplineStar { color: #3149f5; display: block; animation: about-spin 28s linear infinite; }
-.chapters { background: var(--color-coal); color: var(--color-beige); padding: 85px clamp(24px,5vw,88px) 95px; }
+.chapters { background: var(--color-coal); color: var(--color-on-dark); padding: 85px clamp(24px,5vw,88px) 95px; }
 .chapterHeader { display: flex; justify-content: space-between; align-items: center; gap: 30px; margin-bottom: 60px; }.chapterHeader h2 { font-size: clamp(24px,2.5vw,40px); letter-spacing: -.04em; }
 .chapter { display: grid; grid-template-columns: .9fr 1.2fr 1fr auto; gap: 35px; padding: 46px 0; border-top: 1px solid #ffffff30; align-items: start; }.chapter:last-child { border-bottom: 1px solid #ffffff30; }
 .year { font-family: var(--font-inter-tight),sans-serif; font-size: clamp(46px,5.5vw,90px); letter-spacing: -.05em; line-height: 1; }.year sup { font-family: var(--font-inter),sans-serif; font-size: 10px; letter-spacing: 0; vertical-align: top; display: inline-block; margin: 6px 0 0 12px; }

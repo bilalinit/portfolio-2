@@ -15,17 +15,12 @@
 
 /* ============ DESIGN TOKENS ============ */
 @theme {
-  /* Page ground. Was #c9c1b1 — a warm, fairly saturated tan that read as
-     "beige" everywhere it appeared and made the whole site feel dusty.
-     Retuned to a near-neutral off-white so the ink has a clean field and the
-     palette's one warm accent (the hero Contact tile) carries the warmth on
-     its own. The token is still called `beige` so the 15 existing
-     `bg-beige` / `text-beige` call sites keep working — rename it in a
-     dedicated pass rather than folding a 15-site refactor into a look
-     change. On dark grounds (coal) it reads as a soft white, which is what
-     the chat and work-menu text always wanted anyway. */
-  --color-beige: #e5e3de;
+  /* Keep page surfaces separate from inverse text so future background
+     changes do not recolor labels on dark sections and buttons. */
+  --color-surface: #fafafa;
+  --color-on-dark: #ffffff;
   --color-ink: #131009;
+  --color-brand-ink: #081423;
   --color-dark: #1a120b;
   --color-coal: #121212;
 
@@ -49,7 +44,7 @@
   }
 
   body {
-    background: var(--color-beige);
+    background: var(--color-surface);
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -59,7 +54,7 @@
 
   ::selection {
     background: var(--color-ink);
-    color: var(--color-beige);
+    color: var(--color-on-dark);
   }
 }
 
@@ -93,7 +88,7 @@ html.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: hidden; }
   inset: 0 0 auto;
   z-index: 500;
   padding: clamp(10px, 0.9vw, 16px) clamp(18px, 2.4vw, 40px) 0;
-  background: var(--color-beige);
+  background: var(--color-surface);
   contain: layout paint;
   clip-path: inset(0 0 var(--masthead-collapse) 0);
   transition: clip-path var(--masthead-duration) var(--masthead-ease);

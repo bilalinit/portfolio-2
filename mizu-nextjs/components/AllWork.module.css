@@ -21,7 +21,7 @@
 .filters { position: relative; display: flex; flex-wrap: wrap; gap: 4px; width: fit-content; isolation: isolate; }
 .filters a { position: relative; display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 17px; border-radius: 2px; text-decoration: none; font-size: 12px; color: #666; white-space: nowrap; transition: color .35s var(--ease); }
 .filters sup { font-size: 9px; align-self: center; }
-.filters a[aria-current="page"] { color: var(--color-beige); }
+.filters a[aria-current="page"] { color: var(--color-on-dark); }
 .filters[data-ready="false"] a[aria-current="page"] { background: var(--color-ink); }
 .filterIndicator { position: absolute; top: 0; left: 0; height: 44px; background: var(--color-ink); border-radius: 2px; pointer-events: none; z-index: -1; transition: transform .45s var(--ease),width .45s var(--ease); }
 .filters[data-ready="false"] .filterIndicator { visibility: hidden; }
@@ -33,7 +33,7 @@
 .projectTop>span:first-child { color: var(--color-ink); }
 .artwork { position: relative; aspect-ratio: 1.2; overflow: hidden; isolation: isolate; container-type: inline-size; }
 .dropArt { background: #cbd1d5; }
-.gameArt { background: #202322; color: #e5e3de; }
+.gameArt { background: #202322; color: var(--color-on-dark); }
 .atlasArt { background: #191d16; color: #e5edb3; }
 .atlasScreenshot { position: absolute; width: 94%; height: 72%; top: 14%; left: 3%; object-fit: contain; border: 1px solid #e5edb323; border-radius: 3px; background: #171a14; box-shadow: 0 16px 28px #0004; }
 .atlasArt .artBottom { color: #b8c099; }
@@ -76,7 +76,7 @@
 .invitation { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 36px 0 48px; margin-top: 20px; }
 .invitation .micro { color: #666; }
 .invitation h2 { font-family: var(--font-inter-tight),sans-serif; font-size: clamp(28px,3vw,42px); letter-spacing: -.04em; font-weight: 450; margin-top: 8px; line-height: 1.1; }
-.contact { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; background: var(--color-ink); color: var(--color-beige); border-radius: 3px; font-size: 12px; text-decoration: none; transition: background .3s var(--ease); }
+.contact { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; background: var(--color-ink); color: var(--color-on-dark); border-radius: 3px; font-size: 12px; text-decoration: none; transition: background .3s var(--ease); }
 .page a:focus-visible { outline: 2px solid #3149f5; outline-offset: 5px; }
 .projectLink:focus-visible .caseLink::after { transform: scaleX(1); }
 .page [data-reveal] { transition: opacity .65s var(--ease),transform .65s var(--ease); }

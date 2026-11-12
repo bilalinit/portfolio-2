@@ -47,7 +47,7 @@ mizu-nextjs/
 
 ## Design system
 
-- **Palette tokens** (`@theme` in globals.css): `beige #c9c1b1`, `ink #131009`, `dark #1a120b`, `coal #121212`. Use tokens (`bg-beige`, `text-ink`) or the neutral grays for light sections (`#f0f0f0`, `#e7e7e7`, `#1a1a1a`, `#666666`)
+- **Palette tokens** (`@theme` in globals.css): `surface #fafafa`, `on-dark #ffffff`, `ink #131009`, `dark #1a120b`, `coal #121212`. Use `bg-surface` for main surfaces, `text-on-dark` for inverse text, and `text-ink` for dark text. Preserve white cards and neutral grays for distinct sections (`#f0f0f0`, `#e7e7e7`, `#1a1a1a`, `#666666`). Do not reuse the surface token as an inverse text color.
 - **Fonts:** `font-display` (Anton — huge, uppercase, brand moments) and Inter (everything else)
 - **Motion:** standard ease `cubic-bezier(0.22,0.61,0.36,1)`; the pricing section uses elastic `cubic-bezier(0.34,1.56,0.64,1)`. Keyframes live in globals.css
 - **Recurring motifs:** bracket labels (`[=]`, `[×]`, `[17]`), folder tabs with `clip-path` corners, uppercase ~11.5px micro labels, underline-draw-on-hover links (`after: scale-x-0 → 100`)
