@@ -56,7 +56,7 @@ export interface WorkCategory {
 }
 
 /* featured projects, in navbar-menu order — slugs point into allWork */
-export const featuredSlugs = ["dropsync", "game-cam"];
+export const featuredSlugs = ["dropsync", "atlas"];
 
 /* ============================================================================
    The projects. Real work only — no placeholders.
@@ -217,15 +217,15 @@ export const workCategories: WorkCategory[] = categoryDefs.map((def) => ({
 export const totalWork = allWork.length;
 
 export const workMenuCopy = {
-  label: "[=] Explore",
   title: "Work",
   categories: "Browse by discipline",
-  featured: "Selected projects",
   allWork: "View all work",
   close: "Close",
+  back: "Back",
 } as const;
 
 export interface FeaturedProject {
+  year: string;
   slug: string;
   name: string;
   blurb: string;
@@ -238,6 +238,7 @@ export const featuredProjects: FeaturedProject[] = featuredSlugs
   .filter((work): work is WorkItem => work !== undefined)
   .map((work) => ({
     slug: work.slug,
+    year: work.year,
     name: work.name,
     blurb: work.blurb,
     tag: work.tag,

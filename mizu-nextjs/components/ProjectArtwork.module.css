@@ -1,0 +1,34 @@
+.artTop, .artBottom { line-height: 1.5; letter-spacing: .075em; text-transform: uppercase; }
+.artwork { position: relative; aspect-ratio: 1.2; overflow: hidden; isolation: isolate; container-type: inline-size; }
+.dropArt { background: #cbd1d5; }
+.gameArt { background: #202322; color: var(--color-on-dark); }
+.atlasArt { background: #191d16; color: #e5edb3; }
+.atlasScreenshot { position: absolute; width: 94%; height: 72%; top: 14%; left: 3%; object-fit: contain; border: 1px solid #e5edb323; border-radius: 3px; background: #171a14; box-shadow: 0 16px 28px #0004; }
+.atlasArt .artBottom { color: #b8c099; }
+.illustratedArt { background: #e8e4f0; color: #292332; }
+.techflowArt { background: #ddd6c7; color: #5d5140; }
+.projectIllustration { display: block; width: 100%; height: 100%; object-fit: cover; }
+.wardaArt { background: #eee9dc; color: #174638; }
+.wardaArt .projectIllustration { position: absolute; top: 13%; height: 74%; object-position: 52% center; }
+.illustratedArt .artBottom { color: inherit; }
+.artTop,.artBottom { position: absolute; z-index: 3; display: flex; justify-content: space-between; align-items: center; left: 3cqw; right: 3cqw; font-size: clamp(6px,1.8cqw,9px); }
+.artTop { top: 2.7cqw; }
+.artBottom { bottom: 2.7cqw; color: #545b60; }
+.gameArt .artBottom { color: #a4aaa6; }
+.dropArt .artBottom { bottom: 0; left: 0; right: 0; padding: 2cqw 3cqw; background: #cbd1d5; }
+.dropBrand { position: absolute; top: 19%; left: 9%; font-size: 8cqw; letter-spacing: -.04em; z-index: 2; }
+.dropBrand span { font-size: .75em; margin-right: 4px; }
+.browserWindow { position: absolute; width: 91%; left: 9%; top: 37%; box-shadow: -15px 30px 45px #18283228; border: 1px solid #ffffff35; border-radius: 5px; overflow: hidden; transform: perspective(1200px) rotateY(-9deg) rotateZ(-3deg); z-index: 2; background: #0d0d0d; }
+.browserWindow img { display: block; width: 100%; height: auto; }
+.browserChrome { height: clamp(10px, 3.4cqw, 20px); padding: 0 1.5cqw; background: #202020; color: #929292; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: clamp(5px,1.4cqw,8px); }
+.browserChrome>span:first-child { letter-spacing: 2px; }
+.orbit { position: absolute; width: 80%; aspect-ratio: 1; border: 1px solid #ffffff45; border-radius: 50%; top: -30%; right: -25%; }
+.orbit::after { content: ""; position: absolute; inset: 25px; border: 1px solid #ffffff35; border-radius: 50%; }
+.gameBrand { position: absolute; top: 14%; left: 8%; font-family: var(--font-sans); font-weight: 700; letter-spacing: -.045em; font-size: 9cqw; line-height: 1.1; color: #ff2929; z-index: 2; }
+.gameBrand span { color: #fff; }
+.scene { position: absolute; width: 91%; left: -12%; bottom: 7%; color: #a0aaa2; transform: rotate(-8deg); }
+.scene svg { width: 100%; }
+.axis { position: absolute; left: 23%; bottom: 9%; font-size: 8px; color: #828c84; line-height: 1.8; }
+.gameInterface { position: absolute; height: 62%; width: auto; right: 7%; bottom: 11%; border: 1px solid #ffffff20; box-shadow: -15px 15px 35px #0006; transform: perspective(900px) rotateY(-12deg) rotateZ(5deg); }
+.fallback { aspect-ratio: 1.2; overflow: hidden; background: #121212; }
+.fallback img { width: 100%; height: 100%; object-fit: cover; }
