@@ -3,18 +3,19 @@
 @media (min-width:1025px) {
   .legacy { display: none; }
   .panel {
-    top: clamp(90px,7.5vw,118px);
+    top: var(--masthead-expanded-height, clamp(90px,7.5vw,118px));
+    translate: 0 calc(-1 * var(--masthead-collapse, 0px));
     right: clamp(18px,2.4vw,40px);
     width: clamp(540px,48vw,680px);
-    max-height: calc(100dvh - clamp(90px,7.5vw,118px) - 18px);
+    max-height: calc(100dvh - var(--masthead-height, clamp(90px,7.5vw,118px)) - 18px);
     background: var(--color-beige);
     border: 1px solid #13100920;
     box-shadow: 0 24px 60px #00000020;
     transform-origin: top right;
-    transition: opacity .28s ease, transform .45s cubic-bezier(.22,.61,.36,1), visibility 0s !important;
+    transition: translate var(--masthead-duration) var(--masthead-ease), opacity .28s ease, transform .45s cubic-bezier(.22,.61,.36,1), visibility 0s !important;
   }
   .panel[data-open="true"] { opacity: 1; transform: translateY(0) !important; }
-  .panel[data-open="false"] { opacity: 0; transform: translateY(-14px) !important; transition: opacity .2s ease, transform .35s cubic-bezier(.22,.61,.36,1), visibility 0s linear .35s !important; }
+  .panel[data-open="false"] { opacity: 0; transform: translateY(-14px) !important; transition: translate var(--masthead-duration) var(--masthead-ease), opacity .2s ease, transform .35s cubic-bezier(.22,.61,.36,1), visibility 0s linear .35s !important; }
   .desktop { display: block; padding: 28px; }
   .heading { display: flex; justify-content: space-between; align-items: start; }
   .micro { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: #666; }

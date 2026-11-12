@@ -1,6 +1,6 @@
 .page { --ease: cubic-bezier(.22,.61,.36,1); max-width: 1600px; margin: auto; padding: 0 clamp(20px,3vw,48px) 64px; color: var(--color-ink); }
 .nav { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; border-bottom: 1px solid #13100924; }
-.wordmark { font-family: var(--font-anton),sans-serif; font-size: 27px; text-transform: uppercase; text-decoration: none; }
+.wordmark { display: inline-flex; align-items: center; min-height: 44px; font-family: var(--font-inter),sans-serif; font-size: clamp(17px,1.5vw,23px); font-weight: 400; line-height: 1; letter-spacing: -.025em; text-decoration: none; }
 .back { display: flex; align-items: center; gap: 14px; min-height: 44px; font-size: 12px; text-decoration: none; }
 .back span { font-size: 9px; color: #666; }
 .hero { display: grid; grid-template-columns: minmax(0,.85fr) minmax(0,1.15fr); gap: clamp(28px,4vw,64px); align-items: center; padding: 40px 0 44px; }

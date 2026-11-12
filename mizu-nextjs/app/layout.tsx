@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Anton, Caveat, Inter, Inter_Tight } from "next/font/google";
 import localFont from "next/font/local";
 import MenuLayer from "@/components/MenuLayer";
+import SmoothScroll from "@/components/SmoothScroll";
 import "./globals.css";
 
 /* Helvetica Bold — hero wordmark ("Mizu"); a user-supplied file, so it
@@ -58,7 +59,7 @@ export default function RootLayout({
       className={`${anton.variable} ${inter.variable} ${interTight.variable} ${caveat.variable} ${helvetica.variable}`}
     >
       <body>
-        <MenuLayer>{children}</MenuLayer>
+        <MenuLayer><SmoothScroll />{children}</MenuLayer>
       </body>
     </html>
   );

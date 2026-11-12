@@ -88,6 +88,7 @@ export default function MobileMenu({ open, onClose, onOpenWork }: MobileMenuProp
       <div
         ref={rootRef}
         id="mobile-menu"
+        data-lenis-prevent
         aria-hidden={!open}
         className={
           open

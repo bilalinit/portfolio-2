@@ -105,7 +105,9 @@ export default function Pricing() {
     >
       <div className="mx-auto grid w-full max-w-[1100px] gap-10 min-[901px]:grid-cols-[320px_1fr] min-[901px]:gap-20">
         {/* ===== left column ===== */}
-        <div className="min-[901px]:sticky min-[901px]:top-20 min-[901px]:self-start">
+        {/* Reserve the expanded navbar's full height even while it collapses,
+            so this sticky column never jumps or slides behind the header. */}
+        <div className="min-[901px]:sticky min-[901px]:top-[calc(var(--masthead-expanded-height)+16px)] min-[901px]:self-start">
           <h2 className="mb-6 text-[clamp(48px,6.5vw,72px)] font-medium leading-[1.05] tracking-[-0.04em]">
             Simple
             <br />

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useMenus } from "@/components/MenuLayer";
 import { MizuMark } from "@/components/icons";
 
@@ -62,7 +63,7 @@ const tiles: Tile[] = [
    (the custom Cursor takes over) — without an explicit ring a keyboard user
    would have no focus indicator whatsoever. */
 const tileBox =
-  "tile group relative isolate flex h-[clamp(50px,4.4vw,74px)] w-[clamp(84px,7.6vw,132px)] " +
+  "tile group relative isolate flex shrink-0 w-[clamp(112px,8.8vw,160px)] " +
   "items-end overflow-hidden no-underline rounded-[2px] " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
@@ -103,11 +104,56 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
      route changes their own links trigger; this component only hosts the
      triggers (mobile MENU button, desktop WORK link) */
   const menus = useMenus();
+  const [scrolled, setScrolled] = useState(false);
+
+  // One CSS state controls every moving part, including the dropdown.
+  // Publish it before paint so labels and clipping cannot start a frame apart.
+  useLayoutEffect(() => {
+    document.documentElement.dataset.mastheadScrolled = String(scrolled);
+  }, [scrolled]);
+
+  useEffect(() => {
+    let lastY = Math.max(0, window.scrollY);
+    let travel = 0;
+    let collapsed = lastY > 48;
+    setScrolled(collapsed);
+
+    const onScroll = () => {
+      // The mobile menu temporarily fixes the body at the saved scroll offset.
+      if (document.body.style.position === "fixed") return;
+      const nextY = Math.max(0, window.scrollY);
+      const delta = nextY - lastY;
+      lastY = nextY;
+      // Accumulate small movements in one direction, ignoring trackpad jitter.
+      travel = delta * travel < 0 ? delta : travel + delta;
+      if (nextY <= 12) {
+        if (collapsed) setScrolled(false);
+        collapsed = false;
+        travel = 0;
+      } else if (Math.abs(travel) >= 6) {
+        const nextCollapsed = travel > 0 && nextY > 48;
+        if (nextCollapsed !== collapsed) {
+          collapsed = nextCollapsed;
+          setScrolled(collapsed);
+        }
+        travel = 0;
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      delete document.documentElement.dataset.mastheadScrolled;
+    };
+  }, []);
 
   return (
-    <section className="relative px-[clamp(18px,2.4vw,40px)] pt-[clamp(10px,0.9vw,16px)] pb-[clamp(22px,2.2vw,38px)]">
+    <section className="relative px-[clamp(18px,2.4vw,40px)] pb-[clamp(22px,2.2vw,38px)]">
+      {/* Reserve the expanded height so scrolling never shifts the hero. */}
+      <div className="masthead-space" aria-hidden="true" />
+      <header className="masthead" data-menu-open={menus.navOpen}>
       {/* ── masthead strip ───────────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-x-[clamp(16px,2vw,32px)]">
+      <nav aria-label="Primary" className="masthead-row flex items-center justify-between gap-x-[clamp(16px,2vw,32px)]">
         {/* mark + wordmark */}
         <a
           href="/"
@@ -120,10 +166,10 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
               menus.closeNav();
             }
           }}
-          className="no-underline inline-flex min-h-[44px] items-center gap-[0.42em] text-ink select-none max-[1024px]:relative max-[1024px]:z-[530]"
+          className="masthead-logo no-underline inline-flex min-h-[44px] items-center gap-[0.42em] text-[clamp(17px,1.5vw,23px)] text-ink select-none max-[1024px]:relative max-[1024px]:z-[530]"
         >
-          <MizuMark className="h-[clamp(17px,1.45vw,22px)] w-[clamp(17px,1.45vw,22px)] shrink-0" />
-          <span className="text-[clamp(17px,1.5vw,23px)] font-normal leading-none tracking-[-0.025em]">
+          <MizuMark className="h-[0.68em] w-auto shrink-0 -translate-y-[0.04em]" />
+          <span className="font-normal leading-none tracking-[-0.025em]">
             Mizu
           </span>
         </a>
@@ -141,8 +187,8 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
           </p>
 
           <div className="flex items-center gap-[clamp(24px,3.4vw,64px)]">
-            <div className="flex flex-col gap-[clamp(12px,1.2vw,20px)]">
-              <span className={colHeading}>About us</span>
+            <div className="masthead-column">
+              <span className={`masthead-heading ${colHeading}`} aria-hidden={scrolled}>About us</span>
               {aboutLinks.map((label) => (
                 <Link key={label} href="/about" className={plusLink}>
                   <span aria-hidden="true" className="text-[1.15em] leading-none">
@@ -156,11 +202,11 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
             {/* hairline divider — the only vertical rule in the strip */}
             <span
               aria-hidden="true"
-              className="h-[clamp(44px,4.4vw,76px)] w-px shrink-0 bg-ink/20"
+              className="masthead-divider w-px shrink-0 bg-ink/20"
             />
 
-            <div className="flex flex-col gap-[clamp(12px,1.2vw,20px)]">
-              <span className={colHeading}>Our expertise</span>
+            <div className="masthead-column">
+              <span className={`masthead-heading ${colHeading}`} aria-hidden={scrolled}>Our expertise</span>
               <a
                 href="#work"
                 id="work-trigger"
@@ -201,8 +247,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
             /* the face inverts to the ground colour as the ink wipe passes
                under it — same end state on both tones, different start */
             const face =
-              "relative z-10 flex w-full items-center justify-between gap-2 " +
-              "p-[clamp(9px,0.8vw,13px)] text-[clamp(12px,0.95vw,15px)] " +
+              "z-10 px-[clamp(14px,1vw,18px)] py-[14px] text-[clamp(12px,0.95vw,15px)] " +
               "font-normal leading-none tracking-[-0.01em] transition-colors " +
               "duration-[520ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] " +
               (tile.tone === "primary" ? "text-white" : "text-ink") +
@@ -220,7 +265,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
                   data-corner={tile.corner}
                   className="tile-wipe absolute inset-0 -z-10"
                 />
-                <span className="flex w-full items-center justify-between gap-2">
+                <span className="masthead-tile-content flex w-full items-center justify-between gap-2">
                   <span
                     aria-hidden="true"
                     className={
@@ -230,7 +275,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
                   >
                     {tile.external ? "↗" : "↘"}
                   </span>
-                  <span>{tile.label}</span>
+                  <span className="whitespace-nowrap">{tile.label}</span>
                 </span>
               </>
             );
@@ -240,7 +285,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
                beige and 1.11:1 against the new off-white, so the tile had no
                visible edge at all. #c6c3bb restores 1.37:1 while staying
                quiet beside the blue. */
-            const className = `${tileBox} ${
+            const className = `masthead-tile ${tileBox} ${
               tile.tone === "primary" ? "bg-[#3149f5]" : "bg-[#c6c3bb]"
             } ${face}`;
 
@@ -266,17 +311,18 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
           aria-controls="mobile-menu"
           aria-expanded={menus.navOpen}
           onClick={menus.openNav}
-          className="min-[1025px]:hidden min-h-[44px] -mr-2 -my-2 px-2 py-2 text-[12px] font-medium uppercase tracking-[0.05em] text-ink"
+          className="masthead-menu-trigger min-[1025px]:hidden min-h-[44px] -mr-2 -my-2 px-2 py-2 text-[12px] font-medium uppercase tracking-[0.05em] text-ink"
         >
           Menu <span aria-hidden="true" className="ml-1">[=]</span>
         </button>
-      </div>
+      </nav>
 
       {/* ── the strip's own rule ─────────────────────────────────── */}
       <span
         aria-hidden="true"
-        className="mt-[clamp(10px,0.9vw,15px)] block h-px w-full bg-ink/20"
+        className="masthead-rule block h-px w-full bg-ink/20"
       />
+      </header>
 
       {/* ── wordmark + statement ─────────────────────────────────── */}
       {!compact && <div className="mt-[clamp(20px,2vw,34px)] grid grid-cols-1 items-start gap-y-[clamp(26px,3vw,48px)] min-[1025px]:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] min-[1025px]:gap-x-[clamp(28px,3.4vw,72px)]">

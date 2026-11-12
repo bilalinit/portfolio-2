@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "lenis/dist/lenis.css";
 
 @keyframes work-panel-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -40,6 +41,7 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--masthead-height, 80px) + 16px);
     /* hard no-side-scroll rail for phones: `clip` (not `hidden`) never
        turns html into a scroll container, so overflowing content or
        font-boosted text can never open a horizontal pan on any device */
@@ -72,6 +74,105 @@
 }
 
 /* ============ KEYFRAMES ============ */
+html.lenis { scroll-behavior: auto; }
+/* Allow MenuLayer's programmatic scroll restoration while input is locked. */
+html.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: hidden; }
+/* Static layout, animated visual bounds: no per-frame reflow or geometry
+   reads. The dropdown and masthead share the same distance and timing. */
+:root {
+  --masthead-duration: 650ms;
+  --masthead-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --masthead-row-height: 44px;
+  --masthead-collapse: 0px;
+  --masthead-expanded-height: calc(var(--masthead-row-height) + clamp(10px, 0.9vw, 16px) + clamp(10px, 0.9vw, 15px) + 1px);
+  --masthead-height: calc(var(--masthead-expanded-height) - var(--masthead-collapse));
+}
+.masthead-space { height: var(--masthead-expanded-height); }
+.masthead {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 500;
+  padding: clamp(10px, 0.9vw, 16px) clamp(18px, 2.4vw, 40px) 0;
+  background: var(--color-beige);
+  contain: layout paint;
+  clip-path: inset(0 0 var(--masthead-collapse) 0);
+  transition: clip-path var(--masthead-duration) var(--masthead-ease);
+}
+.masthead-row {
+  height: var(--masthead-row-height);
+  transform: translateY(calc(var(--masthead-collapse) / -2));
+  transition: transform var(--masthead-duration) var(--masthead-ease);
+}
+.masthead-rule {
+  margin-top: clamp(10px, 0.9vw, 15px);
+  transform: translateY(calc(-1 * var(--masthead-collapse)));
+  transition: transform var(--masthead-duration) var(--masthead-ease);
+}
+.masthead-column {
+  --heading-space: calc(clamp(12px, 0.95vw, 14px) + clamp(12px, 1.2vw, 20px));
+  display: flex;
+  flex-direction: column;
+}
+.masthead-heading {
+  display: block;
+  margin-bottom: clamp(12px, 1.2vw, 20px);
+  white-space: nowrap;
+  transition: opacity var(--masthead-duration) var(--masthead-ease),
+    transform var(--masthead-duration) var(--masthead-ease);
+}
+.masthead-column > a {
+  transition: transform var(--masthead-duration) var(--masthead-ease), opacity 300ms ease;
+}
+.masthead-divider { height: clamp(44px, 4.4vw, 76px); }
+.masthead-tile { height: var(--masthead-row-height); }
+.masthead-tile:focus-visible { outline-offset: -3px; }
+.masthead-divider, .masthead-tile {
+  clip-path: inset(0 round 2px);
+  transition: clip-path var(--masthead-duration) var(--masthead-ease);
+}
+.masthead-tile-content {
+  transform: translateY(calc(var(--masthead-collapse) / -2));
+  transition: transform var(--masthead-duration) var(--masthead-ease);
+}
+@media (min-width: 1025px) {
+  :root { --masthead-row-height: clamp(60px, 4.4vw, 80px); }
+  /* Keep the brand near the top of the strip, like the reference. Cancel
+     the row's movement so the logo stays anchored while the nav collapses. */
+  .masthead-logo {
+    align-self: flex-start;
+    transform: translateY(calc(var(--masthead-collapse) / 2));
+    transition: transform var(--masthead-duration) var(--masthead-ease);
+  }
+  :root[data-masthead-scrolled="true"] {
+    --masthead-collapse: calc(var(--masthead-row-height) - 52px);
+  }
+  :root[data-masthead-scrolled="true"] .masthead-heading {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  :root[data-masthead-scrolled="true"] .masthead-column > a {
+    transform: translateY(calc(var(--heading-space) / -2));
+  }
+  :root[data-masthead-scrolled="true"] .masthead-divider {
+    clip-path: inset(calc((clamp(44px, 4.4vw, 76px) - 44px) / 2) 0);
+  }
+  :root[data-masthead-scrolled="true"] .masthead-tile {
+    clip-path: inset(calc(var(--masthead-collapse) / 2) 0 round 2px);
+  }
+}
+@media (max-width: 1024px) {
+  .masthead { z-index: 530; }
+  .masthead[data-menu-open="true"] { background: transparent; pointer-events: none; }
+  .masthead[data-menu-open="true"] .masthead-logo { pointer-events: auto; }
+  .masthead[data-menu-open="true"] .masthead-menu-trigger,
+  .masthead[data-menu-open="true"] .masthead-rule { visibility: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .masthead, .masthead-row, .masthead-logo, .masthead-rule, .masthead-heading,
+  .masthead-column > a, .masthead-divider, .masthead-tile,
+  .masthead-tile-content { transition: none; }
+}
+
 @keyframes riseIn {
   from {
     opacity: 0;

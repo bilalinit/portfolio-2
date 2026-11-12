@@ -163,6 +163,7 @@ export default function WorkMenu({
       <div
         ref={rootRef}
         id="work-menu"
+        data-lenis-prevent
         aria-hidden={!open}
         data-open={open}
         inert={!open}

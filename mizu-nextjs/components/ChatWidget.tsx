@@ -934,6 +934,7 @@ export default function ChatWidget() {
             {view === "chat" && (
               <div
                 ref={logRef}
+                data-lenis-prevent
                 role="log"
                 aria-live="polite"
                 aria-label="Conversation"
