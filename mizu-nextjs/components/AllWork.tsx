@@ -71,7 +71,7 @@ export default function AllWork() {
   }, [activeCategory]);
   return <><Hero compact /><main ref={root} className={styles.page}>
     <header className={styles.opening}>
-      <div className={styles.intro}><h1>{copy.title}</h1><p>{copy.introduction}</p></div>
+      <div className={styles.intro}><h1>{copy.title}</h1><p hidden>{copy.introduction}</p></div>
     </header>
     <section id="projects" aria-label={copy.projectsLabel}>
       <div className={styles.toolbar}><nav ref={filters} aria-label={copy.filterLabel} className={styles.filters} data-ready={indicator.ready} onClickCapture={(event) => {

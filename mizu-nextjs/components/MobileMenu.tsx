@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { AccessibilityIcon } from "@/components/icons";
+import { GitHubIcon } from "@/components/icons";
+import { GITHUB_URL } from "@/data/social";
 
 type MobileMenuProps = {
   open: boolean;
@@ -112,6 +113,7 @@ export default function MobileMenu({ open, onClose, onOpenWork }: MobileMenuProp
             {links.map((link, i) => (
               <a
                 key={link.label}
+                hidden={link.label === "Services"}
                 href={link.href ?? "#"}
                 onClick={(e) => {
                   e.preventDefault();
@@ -129,14 +131,17 @@ export default function MobileMenu({ open, onClose, onOpenWork }: MobileMenuProp
             ))}
           </nav>
 
-          <div className={`mt-10 ${item(delays[6], open)}`}>
-            <button
-              type="button"
-              aria-label="Accessibility options"
-              className="inline-flex h-[38px] w-[38px] items-center justify-center border border-ink text-ink transition-colors duration-300 hover:bg-ink hover:text-white"
+          <div className={`mt-10 ${item(delays[5], open)}`}>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={onClose}
+              aria-label="Visit AhmedSaeed4 on GitHub"
+              className="inline-flex h-11 w-11 items-center justify-center border border-ink text-ink transition-colors duration-300 hover:bg-ink hover:text-white"
             >
-              <AccessibilityIcon className="h-4 w-4" />
-            </button>
+              <GitHubIcon className="h-4 w-4" />
+            </a>
           </div>
         </div>
       </div>
