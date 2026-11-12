@@ -421,6 +421,15 @@ html.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: hidden; }
   animation-delay: 0.3s;
 }
 
+/* Newly revealed words settle to their normal text or project-link color. */
+.chat-stream-word {
+  animation: chatWordSettle 800ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+@keyframes chatWordSettle {
+  from { color: #b49aff; }
+  to { color: inherit; }
+}
+
 /* avatar dots bloom outward from the center */
 .chat-dot {
   transform-box: fill-box;

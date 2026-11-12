@@ -144,22 +144,38 @@ interface MentionHandlers {
   leave: () => void;
 }
 
-function withProjectLinks(text: string, mention?: MentionHandlers): ReactNode {
+const STREAM_SETTLE_MS = 800;
+
+/* Stable word offsets keep an existing word's fade running as the reveal
+   adds characters. Only newly revealed words start purple. */
+function streamingWords(text: string, offset: number): ReactNode {
+  return Array.from(text.matchAll(/\S+\s*|\s+/g), (match) => (
+    <span key={offset + match.index} className="chat-stream-word" style={{ animationDuration: `${STREAM_SETTLE_MS}ms` }}>
+      {match[0]}
+    </span>
+  ));
+}
+
+function withProjectLinks(text: string, mention?: MentionHandlers, renderText = (value: string, _offset: number): ReactNode => value): ReactNode {
   PROJECT_LINK_RE.lastIndex = 0;
   const parts: ReactNode[] = [];
+  const appendText = (value: string, offset: number) => {
+    const rendered = renderText(value, offset);
+    parts.push(...(Array.isArray(rendered) ? rendered : [rendered]));
+  };
   let last = 0;
   for (
     let m = PROJECT_LINK_RE.exec(text);
     m !== null;
     m = PROJECT_LINK_RE.exec(text)
   ) {
-    if (m.index > last) parts.push(text.slice(last, m.index));
+    if (m.index > last) appendText(text.slice(last, m.index), last);
     const mentioned = m[0];
     const item = PROJECT_LINKS.get(mentioned.toLowerCase());
     parts.push(
       item ? (
         <Link
-          key={parts.length}
+          key={`project-${m.index}`}
           href={`/work/${item.slug}`}
           onPointerEnter={(e) => {
             /* hover-driven UI is mouse-only (touch taps fire compat mouse
@@ -187,16 +203,15 @@ function withProjectLinks(text: string, mention?: MentionHandlers): ReactNode {
              toward white. */
           className="text-[#8a8a8a] underline decoration-[#8a8a8a]/60 decoration-1 underline-offset-[3px] transition-colors duration-200 hover:text-[#d4d4d4] hover:decoration-[#d4d4d4]"
         >
-          {mentioned}
+          {renderText(mentioned, m.index)}
         </Link>
       ) : (
-        mentioned
+        renderText(mentioned, m.index)
       ),
     );
     last = m.index + mentioned.length;
   }
-  if (parts.length === 0) return text;
-  if (last < text.length) parts.push(text.slice(last));
+  if (last < text.length) appendText(text.slice(last), last);
   return parts;
 }
 
@@ -598,17 +613,27 @@ export default function ChatWidget() {
      render this effect needs — otherwise thinking sticks forever */
   useEffect(() => {
     if (settledRef.current === null || !smooth.isDone) return;
-    const text = settledRef.current;
-    settledRef.current = null;
-    setMessages((m) => [
-      ...m.map((item, index) => index === m.length - 1 && item.from === "user"
-        ? { ...item, context: successfulRef.current } : item),
-      { from: "agent", text, time: pendingTimeRef.current, context: successfulRef.current },
-    ]);
-    sendingRef.current = false;
-    setThinking(false);
-    setActivity(null);
-    smooth.reset();
+    const commit = () => {
+      const text = settledRef.current;
+      if (text === null) return;
+      settledRef.current = null;
+      setMessages((m) => [
+        ...m.map((item, index) => index === m.length - 1 && item.from === "user"
+          ? { ...item, context: successfulRef.current } : item),
+        { from: "agent", text, time: pendingTimeRef.current, context: successfulRef.current },
+      ]);
+      sendingRef.current = false;
+      setThinking(false);
+      setActivity(null);
+      smooth.reset();
+    };
+    // Let the final words settle before replacing the streaming bubble.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      commit();
+      return;
+    }
+    const timer = window.setTimeout(commit, STREAM_SETTLE_MS);
+    return () => window.clearTimeout(timer);
   }, [smooth.isDone, smooth.doneTick]);
 
   /* ===== mention hover preview =====
@@ -831,9 +856,9 @@ export default function ChatWidget() {
             stage === "open" ? "opacity-100" : "opacity-0"
           }`}
           style={{
-            /* Conversation length must not resize the floating panel.
-               Leave space above it for the navbar on short screens. */
-            height: view === "chat"
+            /* Hug a short exchange, then scroll internally at the cap.
+               Leave space above the panel for the navbar on short screens. */
+            maxHeight: view === "chat"
               ? "min(560px, calc(100dvh - var(--masthead-expanded-height, 80px) - 32px))"
               : undefined,
             /* room for the strip, which grows with the composer */
@@ -995,7 +1020,7 @@ export default function ChatWidget() {
                       </span>
                     </p>
                     <p className="mt-0.5 min-h-6 text-[15px] leading-[1.5] text-white/85 [overflow-wrap:anywhere]">
-                      {withProjectLinks(smooth.revealed, mentionApi)}
+                      {withProjectLinks(smooth.revealed, mentionApi, streamingWords)}
                     </p>
                   </div>
                 )}
