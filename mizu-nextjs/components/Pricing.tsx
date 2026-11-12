@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { briefSteps, buildQuoteDraft, customPlan, quoteCopy, recurringPlans, serviceScopeOptions } from "@/data/pricing";
+import { briefSteps, buildQuoteDraft, customPlan, quoteCopy, recurringPlans, serviceChoices, serviceScopeOptions, type ProjectPicks } from "@/data/pricing";
 import { gmailComposeUrl } from "@/lib/contact";
 import CustomSelect from "@/components/CustomSelect";
 
@@ -14,7 +14,7 @@ import CustomSelect from "@/components/CustomSelect";
    - pricing cards: staggered cardIn (80ms steps)
    - form steps dim to 40% until focused or filled
 
-   The section is functional: the Single tab is a four-question brief that
+   The section is functional: the Single tab is a short service-and-scope brief that
    assembles itself into a pre-filled Gmail draft as the visitor
    picks options — we read the email and answer with a real number. The
    Recurring cards open plan-specific drafts the same way. */
@@ -30,10 +30,16 @@ export default function Pricing() {
   /* focused form step (the reference starts with step 1 lit) */
   const [activeStep, setActiveStep] = useState(0);
 
-  /* the brief — four required picks + one optional notes line */
-  const [picks, setPicks] = useState<string[]>(["", "", "", ""]);
+  /* Two selections and optional details; custom services get a text field. */
+  const [picks, setPicks] = useState<ProjectPicks>(["", ""]);
+  const [customService, setCustomService] = useState("");
   const [notes, setNotes] = useState("");
-  const ready = picks.every(Boolean);
+  const [attemptedQuote, setAttemptedQuote] = useState(false);
+  const otherService = picks[0] === serviceChoices.other;
+  const ready = picks.every(Boolean) && (!otherService || Boolean(customService.trim()));
+  const quoteError = !picks[0] ? quoteCopy.missingService
+    : otherService && !customService.trim() ? quoteCopy.missingCustomService
+    : !picks[1] ? quoteCopy.missingScope : "";
   const scopeOptions = serviceScopeOptions[picks[0]] || briefSteps[1].options;
 
   /* the demo page had this section above the fold, so its entrance
@@ -92,15 +98,14 @@ export default function Pricing() {
   }, [tab, revealed]);
 
   const setPick = (i: number, value: string) => {
-    setPicks((prev) => prev.map((p, j) => {
-      if (j === i) return value;
-      if (i === 0 && j === 1 && value !== prev[0]) return "";
-      return p;
-    }));
+    if (i === 0 && value !== picks[0]) setCustomService("");
+    setPicks((prev) => i === 0
+      ? [value, value !== prev[0] ? "" : prev[1]]
+      : [prev[0], value]);
   };
 
   /* the assembled draft */
-  const draft = useMemo(() => buildQuoteDraft(picks, notes), [picks, notes]);
+  const draft = useMemo(() => buildQuoteDraft(picks, notes, customService), [picks, notes, customService]);
   const briefHref = gmailComposeUrl(draft.subject, draft.body);
 
   const singleActive = revealed && tab === "single";
@@ -208,6 +213,15 @@ export default function Pricing() {
                       onFocus={() => setActiveStep(i)}
                       onChange={(value) => setPick(i, value)}
                     />
+                    {i === 0 && otherService && <div className="mt-4">
+                      <label htmlFor="pricing-other-service" className="mb-2 block text-[14px] font-medium">
+                        {quoteCopy.otherServiceLabel} <span aria-hidden="true">*</span>
+                      </label>
+                      <input id="pricing-other-service" type="text" className="pr-input" required
+                        placeholder={quoteCopy.otherServicePlaceholder} maxLength={120}
+                        value={customService} onFocus={() => setActiveStep(0)}
+                        onChange={(event) => setCustomService(event.target.value)} />
+                    </div>}
                     {step.hint && <p id={`pricing-hint-${i}`} className="mt-2 text-[12px] leading-[1.5] text-[#666666]">{step.hint}</p>}
                   </div>
                 ))}
@@ -215,12 +229,12 @@ export default function Pricing() {
                 {/* optional notes */}
                 <div
                   className={`pr-step mb-8 opacity-40 transition-opacity duration-300 ${
-                    activeStep === 4 || notes ? "opacity-100" : ""
+                    activeStep === briefSteps.length || notes ? "opacity-100" : ""
                   }`}
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f0f0f0] text-[12px] font-semibold">
-                      5
+                      {briefSteps.length + 1}
                     </div>
                     <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#aaaaaa]">
                       {quoteCopy.notesLabel}
@@ -233,24 +247,36 @@ export default function Pricing() {
                     placeholder={quoteCopy.notesPlaceholder}
                     maxLength={300}
                     value={notes}
-                    onFocus={() => setActiveStep(4)}
+                    onFocus={() => setActiveStep(briefSteps.length)}
                     onChange={(e) => setNotes(e.target.value)}
                   />
                 </div>
 
                 {/* single CTA — opens the pre-filled email draft */}
                 {ready ? (
-                  <a href={briefHref} target="_blank" rel="noopener noreferrer" className={`${ctaClass} block`}>
-                    Get a quote
+                  <a href={briefHref} className={`${ctaClass} block`}>
+                    {quoteCopy.cta}
                   </a>
                 ) : (
                   <button
                     type="button"
-                    disabled
-                    className={`${ctaClass} cursor-not-allowed opacity-40`}
+                    onClick={() => {
+                      setAttemptedQuote(true);
+                      const missingStep = !picks[0] || (otherService && !customService.trim()) ? 0 : 1;
+                      setActiveStep(missingStep);
+                      const panel = singleRef.current;
+                      const control = picks[0] && otherService && !customService.trim()
+                        ? panel?.querySelector<HTMLInputElement>("#pricing-other-service")
+                        : panel?.querySelectorAll<HTMLButtonElement>('[role="combobox"]')[missingStep];
+                      control?.focus();
+                    }}
+                    className={ctaClass}
                   >
-                    Get a quote
+                    {quoteCopy.cta}
                   </button>
+                )}
+                {attemptedQuote && quoteError && (
+                  <p role="alert" className="mt-3 text-center text-[14px] leading-[1.5] text-[#9f2727]">{quoteError}</p>
                 )}
                 <p className="mt-3 text-center text-[12px] leading-[1.5] text-[#666666]">{quoteCopy.draftHint}</p>
               </div>

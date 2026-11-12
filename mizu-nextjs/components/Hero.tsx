@@ -176,9 +176,9 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
           }}
           className="masthead-logo no-underline inline-flex min-h-[44px] items-center gap-[0.42em] text-[clamp(17px,1.5vw,23px)] text-brand-ink select-none max-[1024px]:relative max-[1024px]:z-[530]"
         >
-          <MizuMark className="h-[0.68em] w-auto shrink-0 -translate-y-[0.04em]" />
-          <span className="font-normal leading-none tracking-[-0.025em]">
-            Mizu
+          <span className="inline-flex items-center gap-[0.42em] leading-none">
+            <MizuMark className="h-[0.68em] w-auto shrink-0 -translate-y-[0.04em]" />
+            <span className="font-normal tracking-[-0.025em]">Mizu</span>
           </span>
         </a>
 

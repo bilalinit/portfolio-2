@@ -130,13 +130,14 @@ html.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: hidden; }
 }
 @media (min-width: 1025px) {
   :root { --masthead-row-height: clamp(60px, 4.4vw, 80px); }
-  /* Keep the brand near the top of the strip, like the reference. Cancel
-     the row's movement so the logo stays anchored while the nav collapses. */
+  /* Align the brand with the tagline's first line. Let the shared row
+     carry both together during the collapse animation. */
   .masthead-logo {
     align-self: flex-start;
-    transform: translateY(calc(var(--masthead-collapse) / 2));
-    transition: transform var(--masthead-duration) var(--masthead-ease);
+    /* Match the original, centered tagline's first line. */
+    padding-top: calc((var(--masthead-row-height) - clamp(12px, 0.95vw, 15px) * 3 * 1.18) / 2);
   }
+  .masthead-logo { align-items: flex-start; }
   :root[data-masthead-scrolled="true"] {
     --masthead-collapse: calc(var(--masthead-row-height) - 52px);
   }

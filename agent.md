@@ -20,3 +20,4 @@
 - Use brand-ink (#081423) selectively for the brand wordmark/logo and primary navigation. Keep body copy, dark section backgrounds, and buttons on their existing colors.
 - Site copy, controls, headings, and credits use Instrument Sans with regular/medium/semibold roles. Preserve Manrope Light for the large MIZU wordmark. Skill sets keeps Inter and Inter Tight until its separate redesign.
 - Pricing brief fields use the shared CustomSelect. Keep keyboard navigation, type-to-select, Escape dismissal, dependent service/scope choices, independent popup scrolling, and the page scrollbar intact.
+- The single-project brief has three steps: service, scope, optional details. Service supports Something else with a required custom description and I'm not sure yet. Do not reintroduce design level or preferred start questions into the UI or email draft.
