@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Instrument_Sans } from "next/font/google";
+import { Instrument_Sans, Manrope } from "next/font/google";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useMenus } from "@/components/MenuLayer";
 import { MizuMark } from "@/components/icons";
@@ -11,6 +11,13 @@ import styles from "./Hero.module.css";
 const statementFont = Instrument_Sans({
   subsets: ["latin"],
   weight: "400",
+  display: "swap",
+  preload: false,
+});
+
+const wordmarkFont = Manrope({
+  subsets: ["latin"],
+  weight: "300",
   display: "swap",
   preload: false,
 });
@@ -102,9 +109,8 @@ const colHeading =
    language label hard right. Below the strip's own rule, the wordmark is set
    enormous in the light display cut so it spans its column edge to edge,
    with the brand statement and a small note in a right-hand column that
-   spans the same baseline. The type is Inter Tight rather than Anton: Anton
-   is far too heavy at this size, and the reference reads as a light
-   grotesque sitting on a lot of air.
+   spans the same baseline. The wordmark uses a scoped Manrope Light trial
+   beside the Instrument Sans statement; other site typography is unchanged.
 
    Tiles and mid columns are desktop-only; below 1025px the strip collapses
    to the mark + wordmark and the mobile MENU trigger, and the tiles become a
@@ -339,27 +345,16 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
             against the NEAREST ancestor container, which is why @container
             sits on this wrapper and not on the h1 itself. */}
         <div className="@container m-0">
-          {/* 41cqw against a 1.5fr column, and the two are a matched pair.
-              An earlier pass fixed the wordmark's width by dropping the type
-              to 33cqw while leaving the column at 2.05fr — which just moved
-              the empty space inside the cell: the letters shrank to 48% of
-              the viewport and 14% of it became dead slack before the
-              statement column even started. Sizing the type back up and
-              narrowing the COLUMN instead keeps the big wordmark and spends
-              the width on the text. Measured at 1440: word 53%, statement
-              column 37%, gap 5%.
-
-              "MIZU" is ~2.35em of advance (M .87 / I .28 / Z .60 / U .72,
-              less .03em tracking × 4), so 41cqw of this column lands the word
-              at ~97% of the cell with ~2% slack. Re-measure both numbers
-              together if the tracking or the fr ratio changes. */}
+          {/* Container-relative sizing preserves the existing hero grid.
+              Manrope Light at 41cqw occupies about 91% of this column at
+              1440px; recheck letter bounds when changing font or tracking. */}
           {/* select-none: at 41cqw a stray drag across the masthead would
               otherwise paint a selection block over a third of the screen.
               user-select is deliberately NOT "none" on the sr-only copy —
               it sits inside the h1 so it inherits, and it is the wordmark's
               only accessible text, so it stays selectable for anyone
               copying it. */}
-          <h1 className="m-0 select-none font-mark text-[41cqw] font-[280] uppercase leading-[0.74] tracking-[-0.03em] text-brand-ink">
+          <h1 className={`${wordmarkFont.className} m-0 select-none text-[41cqw] uppercase leading-[0.74] tracking-[-0.03em] text-brand-ink`}>
             <span className="sr-only select-text">Mizu</span>
             {WORDMARK.map((letter, i) => (
               <span
