@@ -4,6 +4,8 @@
 
 - Follow the technical and design rules in AGENTS.md.
 - Keep the Work dropdown visually simple: no bracketed counters, eyebrow labels or introductory paragraphs. Use clear project cards, plain category links and one all-work destination.
+- All Projects follows the same visual direction: no eyebrow labels or numeric counters; keep shared project artwork, subtle 4px image corners, and 2px controls.
+- All Projects uses the live mizu-studio.pages.dev/work layout: three equal desktop columns, 30px column gaps and 46px row gaps, up to 1920px page width, and the same horizontal gutters as the navbar so the heading starts beneath the logo. Tablet uses two columns and mobile uses one, with normal top-to-bottom scrolling. Preserve the current card artwork, corners, titles and View project beneath images, descriptions and service tags; keep project order and filter animations. Do not restore staggered sizing, pinned horizontal scrolling or fade masks.
 - Current user instructions take precedence over older repository workflow rules.
 - Make the requested design changes locally and test them on localhost for the user to review.
 - Stay on the current branch for this review. Do not create or switch branches until the user approves.

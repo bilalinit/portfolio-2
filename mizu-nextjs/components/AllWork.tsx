@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { allWork, totalWork, workCategories, type WorkItem } from "@/data/projects";
+import { allWork, workCategories } from "@/data/projects";
 import { workPageCopy as copy, workPresentations } from "@/data/work";
 import { gmailComposeUrl } from "@/lib/contact";
 import Hero from "@/components/Hero";
@@ -32,6 +32,12 @@ export default function AllWork() {
     return () => observer.disconnect();
   }, [pathname]);
   useEffect(() => {
+    // Filtering can move an already-hidden card above the fold. Clear its
+    // old reveal state before deciding which cards still need observing.
+    root.current?.querySelectorAll<HTMLElement>("[data-reveal]").forEach((element) => {
+      element.removeAttribute("data-pending");
+      element.removeAttribute("data-visible");
+    });
     if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.setAttribute("data-visible", "true"); observer.unobserve(entry.target); } });
@@ -43,7 +49,7 @@ export default function AllWork() {
   }, [activeCategory]);
   return <><Hero compact /><main ref={root} className={styles.page}>
     <header className={styles.opening}>
-      <div className={styles.intro}><h1>{copy.title}</h1><p hidden>{copy.introduction}</p></div>
+      <h1>{copy.title}</h1>
     </header>
     <section id="projects" aria-label={copy.projectsLabel}>
       <div className={styles.toolbar}><nav ref={filters} aria-label={copy.filterLabel} className={styles.filters} data-ready={indicator.ready} onClickCapture={(event) => {
@@ -53,20 +59,24 @@ export default function AllWork() {
         if (link.pathname !== pathname) window.history.pushState(null, '', link.pathname);
       }}>
         <span className={styles.filterIndicator} aria-hidden="true" style={{ width: indicator.width, transform: `translate(${indicator.left}px, ${indicator.top}px)` }} />
-        <Link href="/work" aria-current={!activeCategory ? "page" : undefined}>{copy.all}<sup>{String(totalWork).padStart(2, "0")}</sup></Link>
-        {workCategories.filter((category) => category.count > 0 || category.label === activeCategory).map((category) => <Link key={category.slug} href={`/work/category/${category.slug}`} aria-current={activeCategory === category.label ? "page" : undefined}>{category.label}<sup>{String(category.count).padStart(2, "0")}</sup></Link>)}
-      </nav><span className={styles.indexLabel}>{String(items.length).padStart(2, "0")} {copy.indexLabel}</span></div>
+        <Link href="/work" aria-current={!activeCategory ? "page" : undefined}><span>{copy.all}</span></Link>
+        {workCategories.filter((category) => category.count > 0 || category.label === activeCategory).map((category) => <Link key={category.slug} href={`/work/category/${category.slug}`} aria-current={activeCategory === category.label ? "page" : undefined}><span>{category.label}</span></Link>)}
+      </nav></div>
       <div className={styles.projects}>{items.map((item) => <article key={item.slug} className={styles.project} data-reveal>
         <Link href={`/work/${item.slug}`} className={styles.projectLink} aria-label={`${copy.view} — ${item.name}`}>
-          <div className={styles.projectTop}><span>[{String(allWork.findIndex((project) => project.slug === item.slug) + 1).padStart(2, "0")}]</span><span>{item.category} / {item.tag}</span></div>
           <ProjectArtwork item={item} />
-          <div className={styles.projectHeading}><h2>{item.name}</h2><span className={styles.caseLink}>{copy.view}</span></div>
+          <div className={styles.projectHeading}>
+            <h2>{item.name}</h2>
+            <span className={styles.viewProject}>{copy.view}</span>
+          </div>
           <p className={styles.description}>{item.blurb}</p>
-          <div className={styles.projectFoot}>{(workPresentations[item.slug]?.services || [item.category]).map((service) => <span className={styles.serviceTag} key={service}>{service}</span>)}</div>
+          <ul className={styles.services} aria-label="Project services">
+            {workPresentations[item.slug]?.services.map((service) => <li key={service}>{service}</li>)}
+          </ul>
         </Link>
       </article>)}</div>
       {items.length === 0 && <div className={styles.empty}><p>{copy.empty}</p><Link href="/work">{copy.showAll}</Link></div>}
     </section>
-    <section className={styles.invitation} data-reveal><div><span className={styles.micro}>{copy.nextLabel}</span><h2>{copy.nextTitle}</h2></div><a href={gmailComposeUrl()} target="_blank" rel="noopener noreferrer" className={styles.contact}>{copy.contact}</a></section>
+    <section className={styles.invitation} data-reveal><h2>{copy.nextTitle}</h2><a href={gmailComposeUrl()} target="_blank" rel="noopener noreferrer" className={styles.contact}>{copy.contact}</a></section>
   </main><Footer /></>;
 }
