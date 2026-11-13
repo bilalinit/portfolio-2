@@ -6,7 +6,7 @@ import About from "@/components/About";
 
 export const metadata: Metadata = {
   title: "About — MIZU",
-  description: "A designer’s eye. A builder’s mind. The story behind MIZU, from graphic and motion design to development and agent-assisted workflows.",
+  description: "Meet the person behind Mizu: a background in visual design and motion, now building websites, desktop and mobile apps, and AI agents.",
 };
 
 export default function AboutPage() {

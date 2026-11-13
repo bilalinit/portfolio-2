@@ -1,0 +1,2 @@
+.brand,.symbol { display: inline-block; width: 16px; height: 16px; flex: 0 0 16px; color: var(--color-brand-ink); }
+.brand { background: var(--color-brand-ink); mask: var(--icon) center / contain no-repeat; -webkit-mask: var(--icon) center / contain no-repeat; }

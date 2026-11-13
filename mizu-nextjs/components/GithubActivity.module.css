@@ -1,0 +1,26 @@
+.activity { display: grid; grid-template-columns: minmax(0,3fr) minmax(0,2fr); align-items: center; gap: 28px clamp(28px,4vw,64px); padding: 0 var(--gutter); }
+.heading { grid-column: 1 / -1; border-top: 1px solid rgb(8 20 35 / .16); padding-top: var(--section-space); }
+.heading h2 { color: var(--color-brand-ink); font-size: clamp(28px,2.6vw,40px); font-weight: 400; line-height: 1.15; letter-spacing: -.035em; }
+.card { min-width: 0; padding: 20px; border: 1px solid rgb(8 20 35 / .1); border-radius: 4px; background: var(--color-surface,#fafafa); }
+.calendarScroll { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: #ccc transparent; }
+.calendar { display: block; width: 100%; max-width: 760px; height: auto; margin-inline: auto; }
+.calendar text { fill: #777; font-family: inherit; font-size: 9px; }
+.day { fill: #e8e8ec; background: #e8e8ec; }
+.day[data-level="1"] { fill: #d2ccf7; background: #d2ccf7; }
+.day[data-level="2"] { fill: #aea1ef; background: #aea1ef; }
+.day[data-level="3"] { fill: #8b77e4; background: #8b77e4; }
+.day[data-level="4"] { fill: #6951d3; background: #6951d3; }
+.caption { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 14px; font-size: 11px; color: #777; }
+.legend { display: flex; align-items: center; gap: 4px; font-size: 11px; }
+.legend span:first-child { margin-right: 4px; }.legend span:last-child { margin-left: 4px; }
+.legend i { width: 9px; height: 9px; border-radius: 2px; }
+.details { min-width: 0; max-width: 40ch; }
+.details h3 { font-size: clamp(24px,2.2vw,34px); font-weight: 400; line-height: 1.2; letter-spacing: -.03em; color: var(--color-brand-ink); }
+.details p { margin-top: 12px; font-size: 15px; line-height: 1.6; color: #666; }
+.details .period { font-size: 13px; margin-top: 10px; }
+.details a { display: inline-flex; align-items: center; min-height: 44px; margin-top: 12px; font-size: 13px; color: var(--color-brand-ink); text-underline-offset: 4px; }
+.updated { display: block; margin-top: 4px; font-size: 11px; color: #777; }
+.calendarScroll:focus-visible { outline: 2px solid #3149f5; outline-offset: 4px; }
+@media (hover:hover) and (pointer:fine) { .details a:hover { text-decoration: underline; } }
+@media (max-width:1024px) { .activity { grid-template-columns: 1fr; gap: 24px; }.details { max-width: none; }.details h3 { font-size: 26px; } }
+@media (max-width:860px) { .card { padding: 18px; }.calendar { min-width: 620px; }.details p { font-size: 14px; } }

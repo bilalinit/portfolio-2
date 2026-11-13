@@ -1,7 +1,24 @@
 export const about = {
   eyebrow: "[01] Behind Mizu",
-  title: ["A designer’s eye.", "A builder’s mind."],
-  introduction: "I started with images in motion. Now I build things you can move through.",
+  title: "I'm the person behind Mizu.",
+  introduction: [
+    "I design and build websites, apps and AI agents. Mizu is the name I give that work.",
+    "My background is in graphic design and motion. I started there before moving into development, and I still care just as much about how something looks and feels as how it works.",
+    "Today, I work across web, desktop and mobile apps, with AI agents where they make sense. I stay involved from the first idea through the design, code and deployment."
+  ],
+  background: ["Graphic design", "Motion", "2D & 3D", "Development"],
+  experienceTitle: "Where it started.",
+  experienceIntroduction: "From visual design to working software. Each step has added another way to bring an idea to life.",
+  expertiseTitle: "What I work with.",
+  expertiseIntroduction: "The skills and tools I use across my projects, from the first visual idea to a working app.",
+  expertise: [
+    { title: "Design & motion", skills: ["Graphic design", "Motion graphics", "2D & 3D animation", "Composition & typography", "Compositing & VFX"] },
+    { title: "Web development", skills: ["Next.js & React", "TypeScript & JavaScript", "HTML & CSS", "APIs & real-time features"] },
+    { title: "AI & backend", skills: ["Python & FastAPI", "OpenAI Agents SDK", "Agent frameworks & workflows", "Integrations & automation"] },
+    { title: "Desktop & mobile", skills: ["Kotlin & Android", "Python & PyQt6", "Desktop applications", "Voice & transcription tools"] },
+    { title: "Tools & workflow", skills: ["Claude Code", "Codex", "Git & GitHub"] },
+    { title: "Deployment", skills: ["Docker & Docker Compose", "Kubernetes & Helm", "Vercel", "Cloudflare Pages"] }
+  ],
   description: "MIZU is where my background in visual design meets the craft of development. A practice shaped by curiosity, built around making digital things feel as good as they work.",
   study: {
     label: "Type in motion",

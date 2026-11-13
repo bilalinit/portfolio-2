@@ -7,7 +7,8 @@
     "build": "next build",
     "build:cloudflare": "next build && node scripts/prepare-pages.mjs",
     "start": "next start",
-    "test": "node --test tests/*.test.cjs"
+    "test": "node --test tests/*.test.cjs",
+    "refresh:github": "node scripts/refresh-github-activity.mjs"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.3",
