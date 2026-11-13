@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:pages": "wrangler pages dev out --ip 0.0.0.0 --port 3000",
     "build": "next build",
     "build:cloudflare": "next build && node scripts/prepare-pages.mjs",
     "start": "next start",
@@ -23,7 +24,8 @@
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.4",
     "@types/react-dom": "^19.0.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "wrangler": "^4.161.0"
   },
   "overrides": {
     "postcss": "$postcss"

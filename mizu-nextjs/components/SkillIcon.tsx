@@ -5,7 +5,7 @@ const brands: Record<string, string> = {
   "Next.js & React": "nextdotjs", "TypeScript & JavaScript": "typescript", "HTML & CSS": "html5",
   "Python & FastAPI": "python", "Kotlin & Android": "kotlin", "Python & PyQt6": "qt",
   "Claude Code": "claude", Codex: "openai", "OpenAI Agents SDK": "openai", "Git & GitHub": "github", "Docker & Docker Compose": "docker",
-  "Kubernetes & Helm": "kubernetes", Vercel: "vercel", "Cloudflare Pages": "cloudflare",
+  "Kubernetes & Helm": "kubernetes", Vercel: "vercel", Cloudflare: "cloudflare",
 };
 const symbols: Record<string, string> = {
   "Graphic design": "m4 20 4-1 12-12-5-5L3 14l1 6Zm8-15 5 5M3 14l5 5",

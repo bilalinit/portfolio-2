@@ -17,7 +17,7 @@ export const about = {
     { title: "AI & backend", skills: ["Python & FastAPI", "OpenAI Agents SDK", "Agent frameworks & workflows", "Integrations & automation"] },
     { title: "Desktop & mobile", skills: ["Kotlin & Android", "Python & PyQt6", "Desktop applications", "Voice & transcription tools"] },
     { title: "Tools & workflow", skills: ["Claude Code", "Codex", "Git & GitHub"] },
-    { title: "Deployment", skills: ["Docker & Docker Compose", "Kubernetes & Helm", "Vercel", "Cloudflare Pages"] }
+    { title: "Deployment", skills: ["Docker & Docker Compose", "Kubernetes & Helm", "Vercel", "Cloudflare"] }
   ],
   description: "MIZU is where my background in visual design meets the craft of development. A practice shaped by curiosity, built around making digital things feel as good as they work.",
   study: {

@@ -1,4 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import snapshot from "@/data/github-activity.json";
+import { isGithubActivity } from "@/lib/github-contributions.mjs";
 import styles from "./GithubActivity.module.css";
 
 const levels = ["NONE", "FIRST_QUARTILE", "SECOND_QUARTILE", "THIRD_QUARTILE", "FOURTH_QUARTILE"];
@@ -6,7 +10,37 @@ const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 const formatDate = (date: string) => new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(date));
 
 export default function GithubActivity() {
-  const profile = snapshot.profiles[0];
+  const [activity, setActivity] = useState(snapshot);
+  useEffect(() => {
+    const interval = 60 * 60 * 1000;
+    let disposed = false;
+    let lastAttempt = 0;
+    let activeRequest: AbortController | null = null;
+    const refresh = async () => {
+      if (disposed || activeRequest || Date.now() - lastAttempt < interval) return;
+      lastAttempt = Date.now();
+      const controller = new AbortController();
+      activeRequest = controller;
+      const timeout = window.setTimeout(() => controller.abort(), 10000);
+      try {
+        const response = await fetch('/api/github-activity', { signal: controller.signal });
+        if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) return;
+        const data = await response.json();
+        if (!disposed && isGithubActivity(data) && Date.parse(data.refreshedAt) >= Date.parse(snapshot.refreshedAt)) setActivity(data as typeof snapshot);
+      } catch {
+        // Keep the last successful counts and their actual refresh date.
+      } finally {
+        window.clearTimeout(timeout);
+        activeRequest = null;
+      }
+    };
+    const whenVisible = () => { if (document.visibilityState === 'visible') void refresh(); };
+    void refresh();
+    const timer = window.setInterval(whenVisible, interval);
+    document.addEventListener('visibilitychange', whenVisible);
+    return () => { disposed = true; activeRequest?.abort(); window.clearInterval(timer); document.removeEventListener('visibilitychange', whenVisible); };
+  }, []);
+  const profile = activity.profiles[0];
   const width = profile.weeks.length * 14 + 32;
   const summary = `${profile.total.toLocaleString("en-US")} contributions on GitHub`;
   return <section className={styles.activity} aria-labelledby="activity-title">
@@ -34,7 +68,7 @@ export default function GithubActivity() {
       <p>Code, experiments and projects in progress.</p>
       <p className={styles.period}>{formatDate(profile.start)} – {formatDate(profile.end)}</p>
       <a href={`https://github.com/${profile.login}`} target="_blank" rel="noopener noreferrer">View GitHub profile ↗</a>
-      <span className={styles.updated}>Updated {formatDate(snapshot.refreshedAt)}</span>
+      <time dateTime={activity.refreshedAt} className={styles.updated}>Updated {formatDate(activity.refreshedAt)}</time>
     </div>
   </section>;
 }
