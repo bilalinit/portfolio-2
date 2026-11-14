@@ -1,8 +1,8 @@
 .artwork { position: relative; aspect-ratio: var(--project-artwork-ratio,1.2); border-radius: 4px; overflow: hidden; isolation: isolate; container-type: inline-size; }
 .dropArt { background: #cbd1d5; }
 .gameArt { background: #202322; color: var(--color-on-dark); }
-.atlasArt { background: #191d16; color: #e5edb3; }
-.atlasScreenshot { position: absolute; width: 94%; height: 72%; top: 14%; left: 3%; object-fit: contain; border: 1px solid #e5edb323; border-radius: 3px; background: #171a14; box-shadow: 0 16px 28px #0004; }
+.atlasArt { background: #dedfd7; color: #25291f; }
+.atlasScreenshot { position: absolute; width: 94%; height: 72%; top: 14%; left: 3%; object-fit: contain; border: 1px solid #25291f26; border-radius: 3px; background: #dedfd7; box-shadow: 0 16px 28px #0002; }
 .illustratedArt { background: #e8e4f0; color: #292332; }
 .techflowArt { background: #ddd6c7; color: #5d5140; }
 .projectIllustration { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -10,7 +10,7 @@
 .wardaArt .projectIllustration { position: absolute; top: 13%; height: 74%; object-position: 52% center; }
 .dropBrand { position: absolute; top: 19%; left: 9%; font-size: 8cqw; letter-spacing: -.04em; z-index: 2; }
 .dropBrand span { font-size: .75em; margin-right: 4px; }
-.browserWindow { position: absolute; width: 91%; left: 9%; top: 37%; box-shadow: -15px 30px 45px #18283228; border: 1px solid #ffffff35; border-radius: 5px; overflow: hidden; transform: perspective(1200px) rotateY(-9deg) rotateZ(-3deg); z-index: 2; background: #0d0d0d; }
+.browserWindow { position: absolute; width: 91%; left: 9%; top: 37%; box-shadow: -15px 30px 45px #18283228; border: 1px solid #ffffff35; border-radius: 5px; overflow: hidden; z-index: 2; background: #0d0d0d; }
 .browserWindow img { display: block; width: 100%; height: auto; }
 .browserChrome { height: clamp(10px, 3.4cqw, 20px); padding: 0 1.5cqw; background: #202020; color: #929292; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: clamp(5px,1.4cqw,8px); }
 .browserChrome>span:first-child { letter-spacing: 2px; }

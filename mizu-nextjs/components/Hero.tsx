@@ -194,18 +194,18 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
             ))}
           </p>
 
-          <div className="flex items-center gap-[clamp(24px,3.4vw,64px)]">
-            <div className="masthead-column">
+          <div className="masthead-columns">
+            <Link href="/about" aria-label="About me" className="masthead-column masthead-control">
               <span className={`masthead-heading ${colHeading}`} aria-hidden={scrolled}>About me</span>
               {aboutLinks.map((label) => (
-                <Link key={label} href="/about" className={plusLink}>
+                <span key={label} className={`masthead-link ${plusLink}`}>
                   <span aria-hidden="true" className="text-[1.15em] leading-none">
                     +
                   </span>
                   {label}
-                </Link>
+                </span>
               ))}
-            </div>
+            </Link>
 
             {/* hairline divider — the only vertical rule in the strip */}
             <span
@@ -213,17 +213,15 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
               className="masthead-divider w-px shrink-0 bg-ink/20"
             />
 
-            <div className="masthead-column">
-              <span className={`masthead-heading ${colHeading}`} aria-hidden={scrolled}>My expertise</span>
-              <a
-                href="#work"
+              <button
+                type="button"
                 id="work-trigger"
-                className={plusLink}
+                className="masthead-column masthead-control"
+                aria-label="Work"
                 aria-controls="work-menu"
                 aria-expanded={menus.workOpen}
                 aria-haspopup="true"
-                onClick={(e) => {
-                  e.preventDefault();
+                onClick={() => {
                   menus.toggleWork();
                 }}
                 onPointerEnter={(e) => {
@@ -236,12 +234,14 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
                   if (e.pointerType === "mouse") menus.scheduleWorkClose();
                 }}
               >
+              <span className={`masthead-heading ${colHeading}`} aria-hidden={scrolled}>My expertise</span>
+              <span className={`masthead-link ${plusLink}`}>
                 <span aria-hidden="true" className="text-[1.15em] leading-none">
                   +
                 </span>
                 Work
-              </a>
-            </div>
+              </span>
+              </button>
           </div>
         </div>
 

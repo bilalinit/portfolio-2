@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Caveat } from "next/font/google";
 import { notFound } from "next/navigation";
 import Cursor from "@/components/Cursor";
 import Footer from "@/components/Footer";
@@ -8,6 +9,8 @@ import { allWork } from "@/data/projects";
 import { workPresentations } from "@/data/work";
 import { caseStudies, projectBuilds, caseStudyCopy as copy } from "@/data/caseStudies";
 import styles from "./project.module.css";
+
+const creditFont = Caveat({ subsets: ["latin"], variable: "--font-caveat", display: "swap" });
 
 interface ProjectProps { params: Promise<{ slug: string }> }
 export function generateStaticParams() { return allWork.map((work) => ({ slug: work.slug })); }
@@ -39,7 +42,7 @@ export default async function ProjectPage({ params }: ProjectProps) {
           <div className={styles.intro}>
             <p className={styles.eyebrow}>{work.category} / {work.tag}</p>
             <h1 id="project-title">{work.name}</h1>
-            <p className={styles.credit}>{copy.credit}</p>
+            <p className={`${styles.credit} ${creditFont.variable}`}>{copy.credit}</p>
             <p className={styles.lead}>{work.blurb}</p>
             {(work.liveUrl || work.github || work.demo) && <div className={styles.actions}>
               {work.liveUrl && <a className={styles.primary} href={work.liveUrl} target="_blank" rel="noopener noreferrer">{study.liveLabel}</a>}

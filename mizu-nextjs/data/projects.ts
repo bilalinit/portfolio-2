@@ -80,8 +80,8 @@ export const allWork: WorkItem[] = [
       "I built the AI inside it too. DropSync's assistant can search your drops, create and organize them on request, and answer questions about how the app works — with password-protected drops walled off behind a three-layer defense, and every request verified server-side so the model only ever acts as you.",
     ],
     media: {
-      src: "/dropsync-interface-screenshot.png",
-      alt: "DropSync — the drops workspace with the AI assistant open",
+      src: "/dropsync-workspace.svg",
+      alt: "DropSync workspace illustration with sample drops and the AI assistant open",
     },
   },
   {
@@ -126,7 +126,7 @@ export const allWork: WorkItem[] = [
       "Pan, zoom and filter the map, inspect component details and source evidence, then edit nodes, connections and layout with undo and redo. A dependency-step timeline offers another way to follow the system. Export JSON for a reusable backup, or SVG and PNG for documentation and presentations.",
       "Local mode keeps maps in your browser without an account. Optional Google sign-in and Firestore workspaces add cloud storage and owner-controlled live sharing, while snapshot links let people explore independent copies. Built with HTML, CSS and JavaScript modules, Atlas pairs a dark and light interface with a focused visual language for complex systems.",
     ],
-    media: { src: "/atlas-homepage.png", alt: "Atlas homepage with a dark olive palette, lime accents and connected software-window illustration" },
+    media: { src: "/atlas-homepage-light.png", alt: "Atlas light-theme homepage showing its software architecture introduction, lime actions and connected software-window illustration" },
   },
   {
     slug: "warda",

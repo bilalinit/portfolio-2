@@ -9,8 +9,8 @@ import type { ThumbKind } from "@/data/projects";
    projects.ts. */
 export const THUMB_SRC: Record<ThumbKind, string> = {
   "digital-fte": "/techflow-card.svg",
-  atlas: "/atlas-homepage.png",
-  dropsync: "/dropsync-card.svg",
+  atlas: "/atlas-homepage-light.png",
+  dropsync: "/dropsync-workspace.svg",
   gamecam: "/gamecam-card.svg",
   warda: "/warda-site.jpg",
   promptly: "/promptly-card.svg",
@@ -20,7 +20,7 @@ export const THUMB_SRC: Record<ThumbKind, string> = {
 const THUMB_ALT: Record<ThumbKind, string> = {
   "digital-fte": "TechFlow connected customer-support artwork",
   atlas: "Atlas software architecture mapping tool",
-  dropsync: "DropSync logo",
+  dropsync: "DropSync workspace with file sharing and an AI assistant",
   gamecam: "Game cam logo",
   warda: "Warda teaching studio website",
   promptly: "Promptly voice recording artwork",

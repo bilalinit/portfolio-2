@@ -6,7 +6,7 @@
 .hero { display: grid; grid-template-columns: minmax(0,.85fr) minmax(0,1.15fr); gap: clamp(28px,4vw,64px); align-items: center; padding: 40px 0 44px; }
 .eyebrow { display: block; font-size: 10px; line-height: 1.5; font-weight: 500; text-transform: uppercase; letter-spacing: .09em; color: #666; }
 .intro h1 { font-family: var(--font-sans); font-size: clamp(52px,6.6vw,100px); font-weight: 500; line-height: .99; letter-spacing: -.04em; margin-top: 20px; overflow-wrap: anywhere; }
-.credit { font-family: var(--font-sans); color: #df4a28; font-size: 14px; font-weight: 500; line-height: 1.5; margin-top: 12px; }
+.credit { font-family: var(--font-caveat), cursive; color: #df4a28; font-size: 25px; margin-top: 10px; }
 .lead { font-size: clamp(18px,1.65vw,24px); line-height: 1.45; max-width: 30ch; margin-top: 24px; letter-spacing: -.025em; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
 .primary,.secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 20px; font-size: 12px; text-decoration: none; border-radius: 2px; transition: background .3s var(--ease),color .3s var(--ease); }
