@@ -11,10 +11,10 @@ export interface SkillGroup {
 
 /* shared intro copy */
 export const skillsIntro =
-  "A product needs three things to work: design that makes sense, code that holds up, and more and more often AI that does part of the job. We cover all three.";
+  "A product needs three things to work: design that makes sense, code that holds up, and more and more often AI that does part of the job. I bring all three together.";
 
 export const skillsContent = {
-  label: "[03] Our capabilities",
+  label: "[03] My capabilities",
   title: "Skill sets",
   note: "Three disciplines. One considered product.",
   chapters: [
@@ -32,7 +32,7 @@ export const skillGroups: SkillGroup[] = [
       {
         name: "Visual direction",
         detail:
-          "We set the overall look before anything gets built: references, mood, and art direction that keep the whole product consistent.",
+          "I set the overall look before anything gets built: references, mood, and art direction that keep the whole product consistent.",
       },
       {
         name: "Design concept",

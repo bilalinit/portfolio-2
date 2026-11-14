@@ -36,7 +36,7 @@ const GENERATING_LABEL = "Thinking…";
 
 /* raw tool names from the backend → what the visitor sees */
 const TOOL_ACTIVITY_LABELS: Record<string, string> = {
-  get_project_details: "Reading up on our work…",
+  get_project_details: "Exploring MIZU’s work…",
 };
 
 export function activityLabelFor(phase: string, tool?: string): string | null {

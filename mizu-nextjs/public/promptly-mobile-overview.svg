@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="960" viewBox="0 0 1440 960" fill="none">
+  <title>Promptly Mobile — your voice, within reach</title>
+  <desc>A conceptual Android illustration showing Promptly Mobile's floating recording control over a notes app, a voice waveform, and a clipboard-ready result. The phone, notes app and sample text are illustrative.</desc>
+  <defs>
+    <style>text{font-family:Arial,Helvetica,sans-serif;font-weight:400;fill:#081423}.muted{fill:#677078}</style>
+    <radialGradient id="canvas" cx="49%" cy="43%" r="68%"><stop stop-color="#f5f5f5"/><stop offset="1" stop-color="#e6e6e6"/></radialGradient>
+    <filter id="shadow" x="-25%" y="-20%" width="160%" height="160%"><feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#081423" flood-opacity=".14"/></filter>
+    <filter id="control-shadow" x="-50%" y="-40%" width="200%" height="210%"><feDropShadow dx="0" dy="12" stdDeviation="15" flood-color="#081423" flood-opacity=".2"/></filter>
+    <linearGradient id="wave" x2="1"><stop stop-color="#081423" stop-opacity=".25"/><stop offset=".5" stop-color="#081423"/><stop offset="1" stop-color="#081423" stop-opacity=".2"/></linearGradient>
+  </defs>
+  <rect width="1440" height="960" fill="url(#canvas)"/>
+  <text x="80" y="146" font-size="78" letter-spacing="-4">Promptly</text>
+  <text x="84" y="198" font-size="27" class="muted">Mobile. Your voice, within reach.</text>
+  <path d="M80 246h1280" stroke="#c9cdcf"/>
+
+  <circle cx="190" cy="410" r="72" fill="#081423" filter="url(#control-shadow)"/>
+  <circle cx="190" cy="410" r="63" stroke="#42505b"/>
+  <rect x="171" y="391" width="38" height="38" rx="7" fill="#e75858"/>
+  <g stroke="url(#wave)" stroke-width="7" stroke-linecap="round"><path d="M319 401v18M344 385v50M369 364v92M394 343v134M419 373v74M444 357v106M469 381v58M494 391v38M519 380v60M544 393v34M569 402v16"/></g>
+  <text x="118" y="533" font-size="30" letter-spacing="-.8">One floating button.</text>
+  <text x="118" y="575" font-size="22" class="muted">Available over the app you're using.</text>
+
+  <rect x="98" y="634" width="576" height="178" rx="14" fill="#d6dadd" stroke="#c3c9cd"/>
+  <rect x="80" y="616" width="576" height="178" rx="14" fill="#fff" stroke="#bdc5cb" filter="url(#shadow)"/>
+  <g stroke="#081423" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="112" y="648" width="24" height="30" rx="4"/><rect x="118" y="643" width="12" height="8" rx="2" fill="#fff"/><path d="m117 664 4 4 9-10"/></g>
+  <text x="155" y="671" font-size="28" letter-spacing="-.7">Ready for your clipboard.</text>
+  <text x="112" y="718" font-size="21" class="muted">Copy the text, then paste where you need it.</text>
+  <path d="M112 749h512" stroke="#e1e4e6"/>
+  <text x="112" y="777" font-size="17" class="muted">Voice to text on Android</text>
+
+  <rect x="867" y="276" width="430" height="610" rx="47" fill="#d6dadd"/>
+  <rect x="850" y="258" width="430" height="610" rx="47" fill="#081423" stroke="#34414d" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="862" y="270" width="406" height="586" rx="37" fill="#fafafa"/>
+  <circle cx="1065" cy="289" r="5" fill="#081423"/>
+  <text x="888" y="306" font-size="16">9:41</text>
+  <path d="M1205 302v-5m5 5v-9m5 9v-13" stroke="#677078" stroke-width="2"/>
+  <rect x="1228" y="291" width="21" height="11" rx="3" stroke="#677078"/><path d="M1250 294v5" stroke="#677078" stroke-width="2"/>
+  <text x="893" y="369" font-size="31" letter-spacing="-1">Notes</text>
+  <path d="M862 393h406" stroke="#dde1e4"/>
+  <text x="893" y="445" font-size="23" letter-spacing="-.5">An idea for later</text>
+  <text x="893" y="496" font-size="22" class="muted">A little less typing.</text>
+  <text x="893" y="532" font-size="22" class="muted">A little more room</text>
+  <text x="893" y="568" font-size="22" class="muted">for the next idea.</text>
+  <path d="M1058 546v27" stroke="#081423" stroke-width="2"/>
+  <path d="M893 625h264m-264 24h211m-211 24h241" stroke="#e1e5e8" stroke-width="5" stroke-linecap="round"/>
+  <rect x="892" y="727" width="148" height="44" rx="8" fill="#eef0f2" stroke="#d3d9dd"/>
+  <g stroke="#677078" stroke-width="1.5"><rect x="907" y="740" width="14" height="17" rx="2"/><path d="M911 737h14v16"/></g>
+  <text x="932" y="755" font-size="17" class="muted">Paste text</text>
+  <rect x="1019" y="831" width="92" height="4" rx="2" fill="#081423"/>
+
+  <circle cx="1263" cy="519" r="45" fill="#fff" stroke="#bcc5cc" filter="url(#control-shadow)"/>
+  <circle cx="1263" cy="519" r="34" fill="#081423"/>
+  <rect x="1252" y="508" width="22" height="22" rx="4" fill="#e75858"/>
+</svg>

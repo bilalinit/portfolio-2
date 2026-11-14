@@ -26,7 +26,7 @@ import {
   streamAgentChat,
 } from "@/lib/agentStream";
 
-/* Chat widget (home page) — pill ⇄ panel morph (ported from
+/* Shared chat widget — pill ⇄ panel morph (ported from
    animation_refrance_chat.html) built around ONE persistent strip:
 
      [ dots icon | prompt slot ]      ← never unmounts, never fades
@@ -68,7 +68,7 @@ const ASSISTANT_NAME = "Nami";
 
 const GREETING = AGENT_ENABLED
   ? "Hey — I'm Nami, MIZU's AI assistant. Anything catch your eye?"
-  : "Nami is temporarily unavailable. You can still browse our work or use the Contact tab to tell the studio about your project.";
+  : "Nami is temporarily unavailable. You can still browse MIZU’s work or use the Contact tab to get in touch with the developer about your project.";
 
 const SUGGESTIONS = [
   "Where should I start?",
@@ -122,7 +122,7 @@ const now = () =>
    substring during streaming too, so a mention turns clickable the
    moment its last letter drips in. The mention is styled as a real link —
    accent colour plus a persistent underline, see the className below for why
-   it can't be the beige ground token — and on mouse hover the word brightens
+   it can't be the page surface token — and on mouse hover the word brightens
    while a preview pill rises above it (see the mention hover preview block in
    ChatWidget). */
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -144,22 +144,38 @@ interface MentionHandlers {
   leave: () => void;
 }
 
-function withProjectLinks(text: string, mention?: MentionHandlers): ReactNode {
+const STREAM_SETTLE_MS = 800;
+
+/* Stable word offsets keep an existing word's fade running as the reveal
+   adds characters. Only newly revealed words start purple. */
+function streamingWords(text: string, offset: number): ReactNode {
+  return Array.from(text.matchAll(/\S+\s*|\s+/g), (match) => (
+    <span key={offset + match.index} className="chat-stream-word" style={{ animationDuration: `${STREAM_SETTLE_MS}ms` }}>
+      {match[0]}
+    </span>
+  ));
+}
+
+function withProjectLinks(text: string, mention?: MentionHandlers, renderText = (value: string, _offset: number): ReactNode => value): ReactNode {
   PROJECT_LINK_RE.lastIndex = 0;
   const parts: ReactNode[] = [];
+  const appendText = (value: string, offset: number) => {
+    const rendered = renderText(value, offset);
+    parts.push(...(Array.isArray(rendered) ? rendered : [rendered]));
+  };
   let last = 0;
   for (
     let m = PROJECT_LINK_RE.exec(text);
     m !== null;
     m = PROJECT_LINK_RE.exec(text)
   ) {
-    if (m.index > last) parts.push(text.slice(last, m.index));
+    if (m.index > last) appendText(text.slice(last, m.index), last);
     const mentioned = m[0];
     const item = PROJECT_LINKS.get(mentioned.toLowerCase());
     parts.push(
       item ? (
         <Link
-          key={parts.length}
+          key={`project-${m.index}`}
           href={`/work/${item.slug}`}
           onPointerEnter={(e) => {
             /* hover-driven UI is mouse-only (touch taps fire compat mouse
@@ -187,16 +203,15 @@ function withProjectLinks(text: string, mention?: MentionHandlers): ReactNode {
              toward white. */
           className="text-[#8a8a8a] underline decoration-[#8a8a8a]/60 decoration-1 underline-offset-[3px] transition-colors duration-200 hover:text-[#d4d4d4] hover:decoration-[#d4d4d4]"
         >
-          {mentioned}
+          {renderText(mentioned, m.index)}
         </Link>
       ) : (
-        mentioned
+        renderText(mentioned, m.index)
       ),
     );
     last = m.index + mentioned.length;
   }
-  if (parts.length === 0) return text;
-  if (last < text.length) parts.push(text.slice(last));
+  if (last < text.length) appendText(text.slice(last), last);
   return parts;
 }
 
@@ -414,6 +429,7 @@ export default function ChatWidget() {
   const panelFaceRef = useRef<HTMLElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
+  const followReplyRef = useRef(true);
 
   const later = useCallback((fn: () => void, ms: number) => {
     timers.current.push(window.setTimeout(fn, ms));
@@ -584,11 +600,10 @@ export default function ChatWidget() {
     }
   }, [stage, view]);
 
-  /* keep the log pinned to the newest message (and to the streaming reveal
-     as it grows) */
+  /* Follow new replies unless the visitor scrolls up to read earlier turns. */
   useEffect(() => {
     const el = logRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (el && followReplyRef.current) el.scrollTop = el.scrollHeight;
   }, [messages, thinking, smooth.revealed]);
 
   /* commit the finished reply only once the reveal has dripped out fully —
@@ -598,17 +613,27 @@ export default function ChatWidget() {
      render this effect needs — otherwise thinking sticks forever */
   useEffect(() => {
     if (settledRef.current === null || !smooth.isDone) return;
-    const text = settledRef.current;
-    settledRef.current = null;
-    setMessages((m) => [
-      ...m.map((item, index) => index === m.length - 1 && item.from === "user"
-        ? { ...item, context: successfulRef.current } : item),
-      { from: "agent", text, time: pendingTimeRef.current, context: successfulRef.current },
-    ]);
-    sendingRef.current = false;
-    setThinking(false);
-    setActivity(null);
-    smooth.reset();
+    const commit = () => {
+      const text = settledRef.current;
+      if (text === null) return;
+      settledRef.current = null;
+      setMessages((m) => [
+        ...m.map((item, index) => index === m.length - 1 && item.from === "user"
+          ? { ...item, context: successfulRef.current } : item),
+        { from: "agent", text, time: pendingTimeRef.current, context: successfulRef.current },
+      ]);
+      sendingRef.current = false;
+      setThinking(false);
+      setActivity(null);
+      smooth.reset();
+    };
+    // Let the final words settle before replacing the streaming bubble.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      commit();
+      return;
+    }
+    const timer = window.setTimeout(commit, STREAM_SETTLE_MS);
+    return () => window.clearTimeout(timer);
   }, [smooth.isDone, smooth.doneTick]);
 
   /* ===== mention hover preview =====
@@ -688,6 +713,7 @@ export default function ChatWidget() {
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
+    followReplyRef.current = true;
     setMessages((m) => [...m, { from: "user", text, time: now(), context: false }]);
     setInput("");
     setView("chat");
@@ -737,7 +763,7 @@ export default function ChatWidget() {
       const notice =
         retryAfter !== null
           ? `I need a breather — you've reached the chat limit. Try again in ${formatRetry(retryAfter)}.`
-          : `Sorry — I couldn't reach my brain just now. Give it another go in a moment, or email ${CONTACT_EMAIL}.`;
+          : `I couldn’t finish that reply just now. Please try again shortly, or email ${CONTACT_EMAIL}.`;
       smooth.reset();
       settledRef.current = notice;
       smooth.setFull(notice);
@@ -830,6 +856,11 @@ export default function ChatWidget() {
             stage === "open" ? "opacity-100" : "opacity-0"
           }`}
           style={{
+            /* Hug a short exchange, then scroll internally at the cap.
+               Leave space above the panel for the navbar on short screens. */
+            maxHeight: view === "chat"
+              ? "min(560px, calc(100dvh - var(--masthead-expanded-height, 80px) - 32px))"
+              : undefined,
             /* room for the strip, which grows with the composer */
             paddingBottom: stage === "bar" || stage === "open" ? stripH : undefined,
           }}
@@ -899,7 +930,7 @@ export default function ChatWidget() {
                     portrait asset exists. Dots bloom outward on open. */}
                 <div className="relative h-[min(300px,38dvh)] w-full shrink-0">
                   <DotsIcon
-                    className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 text-beige/40"
+                    className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 text-on-dark/40"
                     bloom
                     bloomBase={350}
                   />
@@ -920,7 +951,7 @@ export default function ChatWidget() {
                       onClick={() => send(s)}
                       className={
                         i === 0
-                          ? `${chip} bg-beige text-ink hover:bg-white`
+                          ? `${chip} bg-surface text-ink hover:bg-white`
                           : `${chip} bg-[#2b2b2b] text-white/60 hover:bg-[#333333] hover:text-white/90`
                       }
                     >
@@ -934,11 +965,16 @@ export default function ChatWidget() {
             {view === "chat" && (
               <div
                 ref={logRef}
+                data-lenis-prevent
                 role="log"
                 aria-live="polite"
                 aria-label="Conversation"
-                onScroll={hideMention}
-                className="chat-scroll flex-1 overflow-y-auto overscroll-contain px-6 pb-2 pt-3"
+                onScroll={(event) => {
+                  hideMention();
+                  const log = event.currentTarget;
+                  followReplyRef.current = log.scrollHeight - log.scrollTop - log.clientHeight <= 32;
+                }}
+                className="chat-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-2 pt-3"
               >
                 {messages.map((m, i) => (
                   <div key={i} className="mb-4">
@@ -958,11 +994,8 @@ export default function ChatWidget() {
                   </div>
                 ))}
 
-                {/* Nami at work: a shimmering activity label over the
-                    bouncing dots while nothing has streamed yet ("Thinking…"
-                    → "Reading up on our work…" when the tool fires), then
-                    the label row collapses and the reply reveals in place,
-                    dripping out as the stream arrives */}
+                {/* The activity label indicates progress until the reply
+                    starts streaming, then the reply reveals in place. */}
                 {thinking && !smooth.hasText && (
                   <div className="mb-4">
                     <p className="text-[13px]">
@@ -973,15 +1006,6 @@ export default function ChatWidget() {
                         {activity ?? "Thinking…"}
                       </span>
                     </p>
-                    <div className="mt-1.5 flex gap-1.5">
-                      {[0, 1, 2].map((i) => (
-                        <span
-                          key={i}
-                          className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/60"
-                          style={{ animationDelay: `${i * 140}ms` }}
-                        />
-                      ))}
-                    </div>
                   </div>
                 )}
 
@@ -996,7 +1020,7 @@ export default function ChatWidget() {
                       </span>
                     </p>
                     <p className="mt-0.5 min-h-6 text-[15px] leading-[1.5] text-white/85 [overflow-wrap:anywhere]">
-                      {withProjectLinks(smooth.revealed, mentionApi)}
+                      {withProjectLinks(smooth.revealed, mentionApi, streamingWords)}
                     </p>
                   </div>
                 )}
@@ -1013,7 +1037,7 @@ export default function ChatWidget() {
                   {CONTACT_EMAIL}
                 </a>
                 <p className="mt-3 text-[14px] leading-[1.5] text-white/60">
-                  We reply within one business day.
+                  I reply within one business day.
                 </p>
               </div>
             )}
@@ -1230,7 +1254,7 @@ export default function ChatWidget() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Open ${mention.name}`}
-                  className="-mx-[3px] flex shrink-0 items-center gap-px rounded-[6px] px-[3px] py-2 text-beige/80 transition-colors duration-200 hover:text-white"
+                  className="-mx-[3px] flex shrink-0 items-center gap-px rounded-[6px] px-[3px] py-2 text-on-dark/80 transition-colors duration-200 hover:text-white"
                   onFocus={clearMentionHide}
                   onBlur={hideMention}
                 >

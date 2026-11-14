@@ -91,7 +91,7 @@ export default function NavRow({
       <div className="ml-auto flex gap-2">
         <a
           href="#"
-          className="inline-flex items-center justify-center h-[34px] px-4 border border-ink bg-transparent text-ink text-[11px] font-medium tracking-[0.06em] uppercase no-underline transition-colors duration-300 hover:bg-ink hover:text-beige max-[1024px]:h-9 max-[1024px]:px-3.5 max-[1024px]:text-[11.5px]"
+          className="inline-flex items-center justify-center h-[34px] px-4 border border-ink bg-transparent text-ink text-[11px] font-medium tracking-[0.06em] uppercase no-underline transition-colors duration-300 hover:bg-ink hover:text-on-dark max-[1024px]:h-9 max-[1024px]:px-3.5 max-[1024px]:text-[11.5px]"
         >
           Contact
         </a>
@@ -100,7 +100,7 @@ export default function NavRow({
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Visit AhmedSaeed4 on GitHub"
-          className="inline-flex items-center justify-center w-11 h-11 border border-ink bg-transparent text-ink transition-colors duration-300 hover:bg-ink hover:text-beige"
+          className="inline-flex items-center justify-center w-11 h-11 border border-ink bg-transparent text-ink transition-colors duration-300 hover:bg-ink hover:text-on-dark"
         >
           <GitHubIcon />
         </a>

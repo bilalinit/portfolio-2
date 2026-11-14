@@ -1,5 +1,5 @@
 /* Pricing section content — copy lives here, not in the JSX (AGENTS.md).
-   The Single-project tab is a four-question brief: the picks are assembled
+   The Single-project tab is a short service-and-scope brief: the picks are assembled
    into a pre-filled email draft, so "pricing" ends in a real conversation
    (we read it and answer with a real number) instead of a dead form or a
    fake instant price. */
@@ -19,15 +19,19 @@ export type BriefStep = {
   hint?: string;
 };
 
-/* The four required questions, in the brief's narrative order:
-   what it is → how big → how good → how soon. Scope (deliverables, not
-   duration) is the real size signal; start-and-urgency carries the rush
-   factor. Both replaced the old overlapping Size/Timeline duration pairs. */
+export const serviceChoices = {
+  other: "Something else",
+  unsure: "I'm not sure yet",
+} as const;
+
+export type ProjectPicks = [service: string, scope: string];
+
+/* Only service and scope are required; visitors can explicitly be unsure. */
 export const briefSteps: BriefStep[] = [
   {
     label: "Service",
     placeholder: "What do you need?*",
-    options: ["Web Development", "Web Design", "Branding", "E-commerce"],
+    options: ["Web Development", "Web Design", "Branding", "E-commerce", serviceChoices.other, serviceChoices.unsure],
   },
   {
     label: "Project scope",
@@ -40,49 +44,41 @@ export const briefSteps: BriefStep[] = [
       "Not sure yet",
     ],
   },
-  {
-    label: "Design level",
-    placeholder: "Choose a design level*",
-    options: ["Standard", "High-end"],
-    hint: "Standard: a clear, polished design. High-end: more bespoke visual design and interactions.",
-  },
-  {
-    label: "Preferred start",
-    placeholder: "When would you like to start?*",
-    options: [
-      "ASAP (rush)",
-      "In 1–2 months",
-      "Flexible — best availability",
-    ],
-  },
 ];
 
 /** Service-specific scope choices; website design and development use the page sizes above. */
 export const serviceScopeOptions: Record<string, string[]> = {
   Branding: ["Logo & visual identity", "Brand guidelines", "Full brand identity", "Not sure yet"],
   "E-commerce": ["New online store", "Store redesign", "Store features / integrations", "Not sure yet"],
+  [serviceChoices.other]: ["Small project", "Larger project", "Not sure yet"],
+  [serviceChoices.unsure]: ["Small project", "Larger project", "Not sure yet"],
 };
 
 export const quoteCopy = {
-  description: "Tell us what you need. We’ll review your brief and reply with an estimate and next steps.",
+  cta: "Let's discuss your project",
+  description: "Tell me what you need. I’ll review your brief and reply with an estimate and next steps.",
+  otherServiceLabel: "What would you like help with?",
+  otherServicePlaceholder: "An app, an AI assistant, or something else...",
   notesLabel: "Project details — optional",
-  notesPlaceholder: "Your goal, existing website, or anything else we should know",
-  draftHint: "Opens a draft in Gmail. Review the details, add any context, then send it to us.",
+  notesPlaceholder: "Your goal, existing website, or anything else I should know",
+  draftHint: "Opens a draft in Gmail. Review the details, add any context, then send it to me.",
+  missingService: "Choose a service above. If you're unsure, select I'm not sure yet.",
+  missingCustomService: "Tell me briefly what you'd like help with above.",
+  missingScope: "Choose a project scope above. You can select Not sure yet.",
   emailSuffix: "Sent from the project enquiry form on mizu.studio.",
 } as const;
 
-export function buildQuoteDraft(picks: string[], notes: string) {
-  const [service, scope, design, start] = picks;
+export function buildQuoteDraft(picks: ProjectPicks, notes: string, customService = "") {
+  const [choice, scope] = picks;
+  const service = choice === serviceChoices.other ? customService.trim() || serviceChoices.other : choice;
   const lines = [
     "Hi MIZU,",
     "",
-    "I'd like to discuss a project with your studio. Here is the brief I put together on your website:",
+    "I'd like to work with you on a project. Here is the brief I put together on your website:",
     "",
     "PROJECT BRIEF",
     `Service: ${service || "To be discussed"}`,
     `Scope: ${scope || "To be discussed"}`,
-    `Design level: ${design || "To be discussed"}`,
-    `Preferred start: ${start || "To be discussed"}`,
   ];
   if (notes.trim()) lines.push("", "PROJECT DETAILS", notes.trim());
   lines.push(
@@ -119,7 +115,7 @@ export const recurringPlans: RecurringPlan[] = [
     features: [
       "Shared capacity",
       "One project at a time",
-      "One expert-level developer",
+      "Work directly with me",
       "Unlimited requests",
       "Dedicated communication channel",
     ],
@@ -134,8 +130,8 @@ export const recurringPlans: RecurringPlan[] = [
     desc: "Great for agencies handling multiple projects at once.",
     features: [
       "Dedicated capacity",
-      "Up to two concurrent projects",
-      "Two expert-level developers",
+      "Capacity for larger projects",
+      "Work directly with me",
       "Unlimited requests",
       "Dedicated communication channel",
     ],
@@ -149,8 +145,8 @@ export const recurringPlans: RecurringPlan[] = [
 /* third card — catches everyone the two fixed plans don't fit */
 export const customPlan = {
   name: "Custom flow",
-  desc: "Need something shaped differently — lighter, heavier, project-based retainer? Tell us your workload and we'll build the engagement around it.",
-  cta: "Tell us your flow",
+  desc: "Need something shaped differently — lighter, heavier, project-based retainer? Tell me your workload and I’ll shape the engagement around it.",
+  cta: "Tell me your flow",
   subject: "Recurring — custom engagement",
   bodyIntro:
     "I'm looking for a recurring setup that doesn't fit the fixed plans. A few lines about our needs:",

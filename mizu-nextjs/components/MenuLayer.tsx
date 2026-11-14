@@ -87,6 +87,14 @@ export default function MenuLayer({ children }: { children: ReactNode }) {
   const openNav = useCallback(() => setNavOpen(true), []);
   const closeNav = useCallback(() => setNavOpen(false), []);
 
+  // Warm primary routes immediately, including direct All work tile clicks
+  // that never open a menu and therefore miss the menu-only prefetch below.
+  useEffect(() => {
+    router.prefetch("/work");
+    router.prefetch("/about");
+    router.prefetch("/");
+  }, [router]);
+
   /* Warm every destination the menus can link to while a menu is open, so
      a tap swaps routes near-instantly: the slide-away then uncovers the
      destination, not home. Needed because the panel's links sit off-viewport

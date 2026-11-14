@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="960" viewBox="0 0 1440 960" fill="none">
+  <title>Promptly — your voice, in your workflow</title>
+  <desc>A conceptual illustration of Promptly's desktop dictation workflow. A voice waveform leads to a writing surface, with a compact recording overlay in front. The writing surface and sample text are illustrative.</desc>
+  <defs>
+    <style>text{font-family:Arial,Helvetica,sans-serif;font-weight:400;fill:#081423}.muted{fill:#677078}</style>
+    <radialGradient id="canvas" cx="49%" cy="43%" r="68%"><stop stop-color="#f5f5f5"/><stop offset="1" stop-color="#e6e6e6"/></radialGradient>
+    <filter id="paper-shadow" x="-15%" y="-15%" width="140%" height="150%"><feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#081423" flood-opacity=".08"/></filter>
+    <filter id="overlay-shadow" x="-15%" y="-60%" width="130%" height="250%"><feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#081423" flood-opacity=".19"/></filter>
+    <linearGradient id="wave" x2="1"><stop stop-color="#081423" stop-opacity=".25"/><stop offset=".45" stop-color="#081423"/><stop offset="1" stop-color="#081423" stop-opacity=".2"/></linearGradient>
+  </defs>
+  <rect width="1440" height="960" fill="url(#canvas)"/>
+  <text x="80" y="146" font-size="78" letter-spacing="-4">Promptly</text>
+  <text x="84" y="198" font-size="27" class="muted">Speak naturally. Keep working.</text>
+  <path d="M80 246h1280" stroke="#c9cdcf"/>
+  <g stroke="url(#wave)" stroke-width="7" stroke-linecap="round">
+    <path d="M108 453v22M131 435v58M154 405v118M177 420v88M200 377v174M223 352v224M246 402v124M269 417v94M292 312v304M315 365v198M338 389v150M361 332v264M384 385v158M407 427v74M430 374v180M453 415v98M476 438v52M499 443v42M522 454v20"/>
+  </g>
+  <path d="M94 464h478" stroke="#081423" stroke-opacity=".07"/>
+  <text x="108" y="679" font-size="27" letter-spacing="-.6">A thought, spoken.</text>
+  <text x="108" y="716" font-size="20" class="muted">No need to leave your window.</text>
+  <rect x="718" y="316" width="594" height="420" rx="14" fill="#d6dadd" stroke="#c3c9cd"/>
+  <rect x="700" y="298" width="594" height="420" rx="14" fill="#fff" stroke="#bdc5cb" filter="url(#paper-shadow)"/>
+  <path d="M700 356h594" stroke="#e1e4e6"/>
+  <circle cx="730" cy="327" r="4" fill="#adb5bb"/><circle cx="747" cy="327" r="4" fill="#c4cace"/><circle cx="764" cy="327" r="4" fill="#d8dcdf"/>
+  <text x="1264" y="334" text-anchor="end" font-size="16" class="muted">Your active app</text>
+  <text x="748" y="420" font-size="34" letter-spacing="-1">Here's the idea.</text>
+  <text x="748" y="476" font-size="26" class="muted">Build something useful.</text>
+  <text x="748" y="517" font-size="26" class="muted">Keep it simple.</text>
+  <text x="748" y="558" font-size="26" class="muted">Make it feel right.</text>
+  <path d="M951 536v28" stroke="#081423" stroke-width="2"/>
+  <path d="M748 613h253m-253 22h196" stroke="#e5e8ea" stroke-width="5" stroke-linecap="round"/>
+  <g filter="url(#overlay-shadow)">
+    <rect x="272" y="769" width="896" height="112" rx="56" fill="#081423"/>
+    <rect x="281" y="778" width="878" height="94" rx="47" stroke="#35414d"/>
+    <circle cx="331" cy="825" r="23" fill="#e75858"/>
+    <rect x="323" y="817" width="16" height="16" rx="3" fill="#fff"/>
+    <g stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M389 817v16m15-27v38m15-51v64m15-45v26m15-18v10"/></g>
+    <path d="M482 798v54" stroke="#42505b"/>
+    <text x="510" y="823" font-size="23" style="fill:#fff">Listening...</text>
+    <text x="510" y="850" font-size="16" style="fill:#a7b0b8">Your words, ready to use.</text>
+    <rect x="967" y="801" width="157" height="48" rx="9" fill="#182532" stroke="#42505b"/>
+    <path d="M990 818h16v12h-16Z" stroke="#d7dde2" stroke-width="1.2"/><path d="M993 822h2m3 0h2m3 0h1m-11 4h11" stroke="#d7dde2" stroke-width="1.2"/>
+    <text x="1020" y="831" font-size="16" style="fill:#d7dde2">Your shortcut</text>
+  </g>
+</svg>

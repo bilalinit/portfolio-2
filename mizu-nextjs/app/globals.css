@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "lenis/dist/lenis.css";
 
 @keyframes work-panel-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -14,32 +15,27 @@
 
 /* ============ DESIGN TOKENS ============ */
 @theme {
-  /* Page ground. Was #c9c1b1 — a warm, fairly saturated tan that read as
-     "beige" everywhere it appeared and made the whole site feel dusty.
-     Retuned to a near-neutral off-white so the ink has a clean field and the
-     palette's one warm accent (the hero Contact tile) carries the warmth on
-     its own. The token is still called `beige` so the 15 existing
-     `bg-beige` / `text-beige` call sites keep working — rename it in a
-     dedicated pass rather than folding a 15-site refactor into a look
-     change. On dark grounds (coal) it reads as a soft white, which is what
-     the chat and work-menu text always wanted anyway. */
-  --color-beige: #e5e3de;
+  /* Keep page surfaces separate from inverse text so future background
+     changes do not recolor labels on dark sections and buttons. */
+  --color-surface: #fafafa;
+  --color-on-dark: #ffffff;
   --color-ink: #131009;
+  --color-brand-ink: #081423;
   --color-dark: #1a120b;
   --color-coal: #121212;
 
-  --font-sans: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
-  --font-display: var(--font-anton), "Arial Black", sans-serif;
-  --font-hand: var(--font-caveat), "Segoe Script", cursive;
-  --font-brand: var(--font-helvetica), "Helvetica Neue", Arial, sans-serif;
-  --font-mark: var(--font-inter-tight), var(--font-inter), "Helvetica Neue",
-    Arial, sans-serif;
+  --font-sans: var(--font-instrument), "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-sans);
+  --font-hand: var(--font-sans);
+  --font-brand: var(--font-sans);
+  --font-mark: var(--font-sans);
 }
 
 /* ============ BASE ============ */
 @layer base {
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--masthead-height, 80px) + 16px);
     /* hard no-side-scroll rail for phones: `clip` (not `hidden`) never
        turns html into a scroll container, so overflowing content or
        font-boosted text can never open a horizontal pan on any device */
@@ -47,7 +43,7 @@
   }
 
   body {
-    background: var(--color-beige);
+    background: var(--color-surface);
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -57,7 +53,7 @@
 
   ::selection {
     background: var(--color-ink);
-    color: var(--color-beige);
+    color: var(--color-on-dark);
   }
 }
 
@@ -72,6 +68,175 @@
 }
 
 /* ============ KEYFRAMES ============ */
+html.lenis { scroll-behavior: auto; }
+/* Allow MenuLayer's programmatic scroll restoration while input is locked. */
+html.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: hidden; }
+/* Static layout, animated visual bounds: no per-frame reflow or geometry
+   reads. The dropdown and masthead share the same distance and timing. */
+:root {
+  --masthead-duration: 650ms;
+  --masthead-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --masthead-row-height: 44px;
+  --masthead-collapse: 0px;
+  --masthead-expanded-height: calc(var(--masthead-row-height) + clamp(10px, 0.9vw, 16px) + clamp(10px, 0.9vw, 15px) + 1px);
+  --masthead-height: calc(var(--masthead-expanded-height) - var(--masthead-collapse));
+}
+.masthead-space { height: var(--masthead-expanded-height); }
+.masthead {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 500;
+  padding: clamp(10px, 0.9vw, 16px) clamp(18px, 2.4vw, 40px) 0;
+  background: var(--color-surface);
+  contain: layout paint;
+  clip-path: inset(0 0 var(--masthead-collapse) 0);
+  transition: clip-path var(--masthead-duration) var(--masthead-ease);
+}
+.masthead-row {
+  height: var(--masthead-row-height);
+  transform: translateY(calc(var(--masthead-collapse) / -2));
+  transition: transform var(--masthead-duration) var(--masthead-ease);
+}
+.masthead-rule {
+  margin-top: clamp(10px, 0.9vw, 15px);
+  transform: translateY(calc(-1 * var(--masthead-collapse)));
+  transition: transform var(--masthead-duration) var(--masthead-ease);
+}
+.masthead-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(20px, 2vw, 32px);
+  width: clamp(290px, 32vw, 600px);
+  flex-shrink: 0;
+}
+.masthead-column {
+  --heading-space: calc(clamp(12px, 0.95vw, 14px) + clamp(12px, 1.2vw, 20px));
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+}
+.masthead-column::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 50% -12px auto -16px;
+  height: var(--masthead-row-height);
+  transform: translateY(-50%);
+  border-radius: 3px;
+  background: #eeeff1;
+  opacity: 0;
+  pointer-events: none;
+  clip-path: inset(calc(var(--masthead-collapse) / 2) 0 round 3px);
+  transition: opacity 240ms var(--masthead-ease),
+    clip-path var(--masthead-duration) var(--masthead-ease);
+}
+.masthead-control {
+  height: var(--masthead-row-height);
+  margin-inline: -16px -12px;
+  padding: 0 12px 0 16px;
+  justify-content: center;
+  align-items: flex-start;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  clip-path: inset(calc(var(--masthead-collapse) / 2) 0 round 3px);
+  transition: clip-path var(--masthead-duration) var(--masthead-ease);
+}
+.masthead-control::before { inset-inline: 0; }
+.masthead-control:focus-visible { outline: 2px solid var(--color-brand-ink); outline-offset: -3px; }
+.masthead-column:focus-within::before { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .masthead-column:hover::before { opacity: 1; }
+}
+.masthead-heading {
+  display: block;
+  margin-bottom: clamp(12px, 1.2vw, 20px);
+  white-space: nowrap;
+  transition: opacity var(--masthead-duration) var(--masthead-ease),
+    transform var(--masthead-duration) var(--masthead-ease);
+}
+.masthead-link {
+  transition: transform var(--masthead-duration) var(--masthead-ease), opacity 300ms ease;
+}
+.masthead-divider { height: clamp(44px, 4.4vw, 76px); }
+.masthead-tile { height: var(--masthead-row-height); }
+.masthead-tile:focus-visible { outline-offset: -3px; }
+.masthead-divider, .masthead-tile {
+  clip-path: inset(0 round 2px);
+  transition: clip-path var(--masthead-duration) var(--masthead-ease);
+}
+.masthead-tile-content {
+  transform: translateY(calc(var(--masthead-collapse) / -2));
+  transition: transform var(--masthead-duration) var(--masthead-ease);
+}
+@media (min-width: 1025px) {
+  :root { --masthead-row-height: clamp(60px, 4.4vw, 80px); }
+  /* Align the brand with the tagline's first line. Let the shared row
+     carry both together during the collapse animation. */
+  .masthead-logo {
+    align-self: flex-start;
+    /* Match the original, centered tagline's first line. */
+    padding-top: calc((var(--masthead-row-height) - clamp(12px, 0.95vw, 15px) * 3 * 1.18) / 2);
+  }
+  .masthead-logo { align-items: flex-start; }
+  :root[data-masthead-scrolled="true"] {
+    --masthead-collapse: calc(var(--masthead-row-height) - 52px);
+  }
+  :root[data-masthead-scrolled="true"] .masthead-heading {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  :root[data-masthead-scrolled="true"] .masthead-link {
+    transform: translateY(calc(var(--heading-space) / -2));
+  }
+  :root[data-masthead-scrolled="true"] .masthead-divider {
+    clip-path: inset(calc((clamp(44px, 4.4vw, 76px) - 44px) / 2) 0);
+  }
+  :root[data-masthead-scrolled="true"] .masthead-tile {
+    clip-path: inset(calc(var(--masthead-collapse) / 2) 0 round 2px);
+  }
+}
+@media (max-width: 1024px) {
+  .masthead { z-index: 530; }
+  .masthead[data-menu-open="true"] { background: transparent; pointer-events: none; }
+  .masthead[data-menu-open="true"] .masthead-logo { pointer-events: auto; }
+  .masthead[data-menu-open="true"] .masthead-menu-trigger,
+  .masthead[data-menu-open="true"] .masthead-rule { visibility: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .masthead, .masthead-row, .masthead-logo, .masthead-rule, .masthead-heading,
+  .masthead-link, .masthead-control, .masthead-column::before, .masthead-divider, .masthead-tile,
+  .masthead-tile-content { transition: none; }
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.page-enter { animation: pageEnter 300ms cubic-bezier(0.22,0.61,0.36,1) both; }
+[data-scroll-reveal] {
+  --reveal-delay: 0ms;
+  transition: opacity 650ms cubic-bezier(.22,.61,.36,1), transform 750ms cubic-bezier(.22,.61,.36,1);
+}
+[data-scroll-reveal][data-reveal-state="pending"] { opacity: 0; transform: translateY(18px); transition: none; }
+[data-scroll-reveal="fade"][data-reveal-state="pending"] { transform: none; }
+[data-scroll-reveal="image"][data-reveal-state="pending"] { transform: translateY(10px); }
+[data-scroll-reveal][data-reveal-state="visible"] { opacity: 1; transform: none; transition-delay: var(--reveal-delay); }
+[data-reveal-step="1"] { --reveal-delay: 55ms; }
+[data-reveal-step="2"] { --reveal-delay: 110ms; }
+[data-scroll-reveal]:focus-within { opacity: 1; transform: none; transition: none; }
+@media (max-width:860px) { [data-scroll-reveal] { --reveal-delay: 0ms; } }
+@media (prefers-reduced-motion:reduce) {
+  [data-scroll-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
+@media (prefers-reduced-motion: reduce) { .page-enter { animation: none; } }
+
 @keyframes riseIn {
   from {
     opacity: 0;
@@ -325,6 +490,15 @@
   animation-delay: 0.3s;
 }
 
+/* Newly revealed words settle to their normal text or project-link color. */
+.chat-stream-word {
+  animation: chatWordSettle 800ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+@keyframes chatWordSettle {
+  from { color: #b49aff; }
+  to { color: inherit; }
+}
+
 /* avatar dots bloom outward from the center */
 .chat-dot {
   transform-box: fill-box;
@@ -529,24 +703,7 @@
   }
 }
 
-/* select box (chevron drawn via background SVG, like the source) */
-.pr-select {
-  width: 100%;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid #e5e5e5;
-  background-color: #f0f0f0;
-  font-family: inherit;
-  font-size: 15px;
-  color: #666666;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 16px center;
-}
-
-/* one-line text field matching .pr-select, minus the dropdown chevron */
+/* One-line text field matching the CustomSelect trigger. */
 .pr-input {
   width: 100%;
   padding: 14px 16px;
@@ -554,7 +711,7 @@
   border: 1px solid #e5e5e5;
   background-color: #f0f0f0;
   font-family: inherit;
-  font-size: 15px;
+  font-size: 16px;
   color: #1a1a1a;
   cursor: text;
   appearance: none;

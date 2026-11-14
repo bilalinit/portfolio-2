@@ -23,18 +23,18 @@ export default function PrivacyPolicyPage() {
       </header>
       <section className={styles.summary} aria-labelledby="privacy-essentials">
         <h2 id="privacy-essentials" className={styles.eyebrow}>{copy.summaryTitle}</h2>
-        <div className={styles.summaryGrid}>{copy.summary.map((item) => <div key={item.title}><h3>{item.title}</h3><p>{item.text}</p></div>)}</div>
+        <div className={styles.summaryGrid}>{copy.summary.map((item, index) => <div key={item.title} data-scroll-reveal="fade" data-reveal-step={index % 3}><h3>{item.title}</h3><p>{item.text}</p></div>)}</div>
       </section>
       <div className={styles.document}>
         <aside className={styles.index}><nav aria-label={copy.index}><p className={styles.eyebrow}>{copy.index}</p><ol>{privacySections.map((section, index) => <li key={section.id}><a href={`#${section.id}`}><span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>{section.title}</a></li>)}</ol><a className={styles.indexContact} href="#privacy-contact">{copy.contactLabel}</a></nav></aside>
         <div className={styles.content}>
-          {privacySections.map((section, index) => <section key={section.id} id={section.id} className={styles.section} aria-labelledby={`${section.id}-title`}>
+          {privacySections.map((section, index) => <section key={section.id} id={section.id} className={styles.section} aria-labelledby={`${section.id}-title`} data-scroll-reveal="fade">
             <span className={styles.sectionNumber} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
             <h2 id={`${section.id}-title`}>{section.title}</h2>
             {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             {"links" in section && section.links.map((link) => <a key={link.href} className={styles.sourceLink} href={link.href} target="_blank" rel="noopener noreferrer">{link.label}</a>)}
           </section>)}
-          <section id="privacy-contact" className={styles.contact} aria-labelledby="privacy-contact-title"><p className={styles.eyebrow}>{copy.contactLabel}</p><h2 id="privacy-contact-title">{copy.contactTitle}</h2><p>{copy.contactText}</p><a href={gmailComposeUrl("Privacy enquiry")} target="_blank" rel="noopener noreferrer">{CONTACT_EMAIL}</a></section>
+          <section id="privacy-contact" className={styles.contact} aria-labelledby="privacy-contact-title" data-scroll-reveal="fade"><p className={styles.eyebrow}>{copy.contactLabel}</p><h2 id="privacy-contact-title">{copy.contactTitle}</h2><p>{copy.contactText}</p><a href={gmailComposeUrl("Privacy enquiry")} target="_blank" rel="noopener noreferrer">{CONTACT_EMAIL}</a></section>
         </div>
       </div>
     </main>
