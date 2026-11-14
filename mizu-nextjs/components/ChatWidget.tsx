@@ -26,7 +26,7 @@ import {
   streamAgentChat,
 } from "@/lib/agentStream";
 
-/* Chat widget (home page) — pill ⇄ panel morph (ported from
+/* Shared chat widget — pill ⇄ panel morph (ported from
    animation_refrance_chat.html) built around ONE persistent strip:
 
      [ dots icon | prompt slot ]      ← never unmounts, never fades

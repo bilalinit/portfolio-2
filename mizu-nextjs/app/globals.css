@@ -220,6 +220,21 @@ html.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: hidden; }
   to { opacity: 1; transform: none; }
 }
 .page-enter { animation: pageEnter 300ms cubic-bezier(0.22,0.61,0.36,1) both; }
+[data-scroll-reveal] {
+  --reveal-delay: 0ms;
+  transition: opacity 650ms cubic-bezier(.22,.61,.36,1), transform 750ms cubic-bezier(.22,.61,.36,1);
+}
+[data-scroll-reveal][data-reveal-state="pending"] { opacity: 0; transform: translateY(18px); transition: none; }
+[data-scroll-reveal="fade"][data-reveal-state="pending"] { transform: none; }
+[data-scroll-reveal="image"][data-reveal-state="pending"] { transform: translateY(10px); }
+[data-scroll-reveal][data-reveal-state="visible"] { opacity: 1; transform: none; transition-delay: var(--reveal-delay); }
+[data-reveal-step="1"] { --reveal-delay: 55ms; }
+[data-reveal-step="2"] { --reveal-delay: 110ms; }
+[data-scroll-reveal]:focus-within { opacity: 1; transform: none; transition: none; }
+@media (max-width:860px) { [data-scroll-reveal] { --reveal-delay: 0ms; } }
+@media (prefers-reduced-motion:reduce) {
+  [data-scroll-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
 @media (prefers-reduced-motion: reduce) { .page-enter { animation: none; } }
 
 @keyframes riseIn {

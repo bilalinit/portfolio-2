@@ -57,26 +57,26 @@ export default async function ProjectPage({ params }: ProjectProps) {
           </figure>
         </section>
         <section className={styles.story} aria-labelledby="idea-title">
-          <h2 id="idea-title">{presentation.label}</h2>
-          <p>{work.overview[0]}</p>
+          <h2 id="idea-title" data-scroll-reveal="text">{presentation.label}</h2>
+          <p data-scroll-reveal="fade" data-reveal-step="1">{work.overview[0]}</p>
         </section>
         <section className={styles.features} aria-labelledby="features-title">
-          <h2 id="features-title">{copy.capabilities}</h2>
-          <div className={styles.featureGrid}>{study.features.map((feature) => <article key={feature.title}>
+          <h2 id="features-title" data-scroll-reveal="text">{copy.capabilities}</h2>
+          <div className={styles.featureGrid}>{study.features.map((feature, index) => <article key={feature.title} data-scroll-reveal="text" data-reveal-step={index % 2}>
             <h3>{feature.title}</h3><p>{feature.text}</p>
           </article>)}</div>
         </section>
         {work.demo && <section className={styles.demo} aria-labelledby="example-title">
-          <div><h2 id="example-title">{work.demo.label}</h2><p>{work.demo.description}</p><a className={styles.primary} href={work.demo.url} target="_blank" rel="noopener noreferrer">{work.demo.label}</a></div>
-          {work.demo.image && <a className={styles.demoImage} href={work.demo.url} target="_blank" rel="noopener noreferrer" aria-label={work.demo.label}><img src={work.demo.image.src} alt={work.demo.image.alt} loading="lazy" /></a>}
+          <div data-scroll-reveal="text"><h2 id="example-title">{work.demo.label}</h2><p>{work.demo.description}</p><a className={styles.primary} href={work.demo.url} target="_blank" rel="noopener noreferrer">{work.demo.label}</a></div>
+          {work.demo.image && <a className={styles.demoImage} href={work.demo.url} target="_blank" rel="noopener noreferrer" aria-label={work.demo.label} data-scroll-reveal="image" data-reveal-step="1"><img src={work.demo.image.src} alt={work.demo.image.alt} loading="lazy" /></a>}
         </section>}
         <section className={styles.technical} aria-labelledby="build-title">
-          <h2 id="build-title">{copy.technical}</h2>
-          <div><p>{build.summary}</p><ul className={styles.buildTools}>{build.tools.map((tool) => <li key={tool}>{tool}</li>)}</ul></div>
+          <h2 id="build-title" data-scroll-reveal="text">{copy.technical}</h2>
+          <div data-scroll-reveal="fade" data-reveal-step="1"><p>{build.summary}</p><ul className={styles.buildTools}>{build.tools.map((tool) => <li key={tool}>{tool}</li>)}</ul></div>
         </section>
         <section className={styles.next} aria-labelledby="next-project-title">
-          <div><span className={styles.nextLabel}>{copy.next}</span><h2 id="next-project-title">{next.name}</h2><p>{next.blurb}</p></div>
-          <Link href={`/work/${next.slug}`} className={styles.nextButton} aria-label={`${copy.view}: ${next.name}`}>
+          <div data-scroll-reveal="text"><span className={styles.nextLabel}>{copy.next}</span><h2 id="next-project-title">{next.name}</h2><p>{next.blurb}</p></div>
+          <Link href={`/work/${next.slug}`} className={styles.nextButton} aria-label={`${copy.view}: ${next.name}`} data-scroll-reveal="fade" data-reveal-step="1">
             <span>{copy.view}</span>
           </Link>
         </section>

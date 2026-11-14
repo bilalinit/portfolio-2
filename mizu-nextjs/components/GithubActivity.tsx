@@ -44,8 +44,8 @@ export default function GithubActivity() {
   const width = profile.weeks.length * 14 + 32;
   const summary = `${profile.total.toLocaleString("en-US")} contributions on GitHub`;
   return <section className={styles.activity} aria-labelledby="activity-title">
-    <header className={styles.heading}><h2 id="activity-title">GitHub activity</h2></header>
-    <div className={styles.card}>
+    <header className={styles.heading} data-scroll-reveal="text"><h2 id="activity-title">GitHub activity</h2></header>
+    <div className={styles.card} data-scroll-reveal="fade">
       <div className={styles.calendarScroll} tabIndex={0} role="region" aria-label={`Contribution calendar for ${profile.login}. Scroll horizontally to view the full year.`}>
         <svg className={styles.calendar} viewBox={`0 0 ${width} 135`} width={width} height="135" role="img" aria-label={`${summary} for ${profile.login}, ${formatDate(profile.start)} to ${formatDate(profile.end)}.`}>
           {[{ label: "Mon", day: 1 }, { label: "Wed", day: 3 }, { label: "Fri", day: 5 }].map(({ label, day }) => <text key={label} x="0" y={35 + day * 14}>{label}</text>)}
@@ -63,7 +63,7 @@ export default function GithubActivity() {
         <div className={styles.legend} aria-label="Contribution intensity, less to more"><span>Less</span>{levels.map((level, index) => <i key={level} className={styles.day} data-level={index} aria-hidden="true" />)}<span>More</span></div>
       </div>
     </div>
-    <div className={styles.details}>
+    <div className={styles.details} data-scroll-reveal="text" data-reveal-step="1">
       <h3>{summary}</h3>
       <p>Code, experiments and projects in progress.</p>
       <p className={styles.period}>{formatDate(profile.start)} – {formatDate(profile.end)}</p>

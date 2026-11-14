@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Instrument_Sans, Inter, Inter_Tight } from "next/font/google";
 import MenuLayer from "@/components/MenuLayer";
 import SmoothScroll from "@/components/SmoothScroll";
+import ScrollReveals from "@/components/ScrollReveals";
+import ChatWidget from "@/components/ChatWidget";
 import "./globals.css";
 
 // One variable family for site copy, controls, and editorial headings.
@@ -42,7 +44,7 @@ export default function RootLayout({
       className={`${instrument.variable} ${inter.variable} ${interTight.variable}`}
     >
       <body>
-        <MenuLayer><SmoothScroll />{children}</MenuLayer>
+        <MenuLayer><SmoothScroll /><ScrollReveals />{children}<ChatWidget /></MenuLayer>
       </body>
     </html>
   );

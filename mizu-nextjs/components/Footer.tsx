@@ -6,7 +6,7 @@ import styles from "./Footer.module.css";
 
 export default function Footer() {
   return <footer className={styles.footer}>
-    <div className={styles.main}>
+    <div className={styles.main} data-scroll-reveal="fade">
       <div className={styles.identity}>
         <Link href="/" className={styles.brand} aria-label="Mizu home">
           <MizuMark className={styles.mark} /><span>Mizu</span>
@@ -17,7 +17,7 @@ export default function Footer() {
         <a href={gmailComposeUrl()} target="_blank" rel="noopener noreferrer" className={styles.link}><span>{footerCopy.contact}</span></a>
       </nav>
     </div>
-    <div className={styles.bottom}>
+    <div className={styles.bottom} data-scroll-reveal="fade" data-reveal-step="1">
       <div className={styles.legal}>
         <p>© {new Date().getUTCFullYear()} Mizu</p>
         <Link href="/privacy-policy" className={styles.link}><span>{footerCopy.privacy}</span></Link>

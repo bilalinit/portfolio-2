@@ -38,9 +38,6 @@
 .projectHeading .textLink { font-size: 13px; white-space: nowrap; }
 .showcase a:focus-visible,.projectChoice:focus-visible { outline: 2px solid #3149f5; outline-offset: 5px; }
 .textLink:focus-visible::after,.projectLink:focus-visible .textLink::after { transform: scaleX(1); transform-origin: left; }
-.showcase [data-home-reveal] { transition: opacity .7s var(--ease),transform .7s var(--ease); }
-.showcase [data-pending="true"] { opacity: 0; transform: translateY(18px); }
-.showcase [data-visible="true"] { opacity: 1; transform: none; }
 @media (hover:hover) and (pointer:fine) { .textLink:hover::after,.projectLink:hover .textLink::after { transform: scaleX(1); transform-origin: left; }.allWork:hover { background: #3149f5; }.projectLink:hover h3 { color: #3149f5; } }
 @media (max-width:860px) { .showcase { --space: 48px; }.introduction { grid-template-columns: 1fr; gap: 36px; padding-block: 64px; }.introStatement { font-size: clamp(24px,5.2vw,32px); max-width: 46ch; }.introCopy>.textLink { margin-top: 16px; }.capabilities { max-width: 440px; width: 100%; }.capabilities ul { gap: 0 28px; }.work { grid-template-columns: 1fr; }.workDetails,.workVisual { grid-column: auto; grid-row: auto; padding-block: 32px; }.workDetails { border-left: 0; border-bottom: 1px solid rgb(8 20 35 / .16); gap: 24px; }.workVisual { gap: 28px; --project-artwork-ratio: 1.2; }.workDetails h2 { font-size: clamp(34px,7vw,48px); }.choiceDescription { font-size: 14px; }.allWork { min-height: 76px; }.projectHeading h3 { font-size: 28px; } }
 @media (prefers-reduced-motion:reduce) { .showcase *, .showcase *::after { animation: none !important; transition: none !important; }.showcase [data-pending="true"] { opacity: 1; transform: none; } }

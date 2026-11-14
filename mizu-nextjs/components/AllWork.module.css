@@ -72,9 +72,6 @@
 .page a:focus-visible { outline: 2px solid #3149f5; outline-offset: 5px; }
 .projectLink:focus-visible .viewProject::after,
 .filters a:not([aria-current]):focus-visible > span::after { transform: scaleX(1); transform-origin: left; }
-.page [data-reveal] { transition: opacity .65s var(--ease),transform .65s var(--ease); }
-.page [data-pending="true"] { opacity: 0; transform: translateY(18px); }
-.page [data-visible="true"] { opacity: 1; transform: none; }
 @media (hover:hover) and (pointer:fine) {
   .filters a:not([aria-current]):hover { color: var(--color-ink); }
   .filters a:not([aria-current]):hover > span::after,

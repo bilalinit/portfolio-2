@@ -42,9 +42,6 @@
 .invitation>div { display: flex; flex-direction: column; justify-content: end; gap: 28px; }
 .invitation p { max-width: 35ch; font-size: 18px; line-height: 1.6; }
 .contact { background: #3149f5; max-width: 420px; }
-.page [data-reveal] { transition: opacity .75s var(--ease),transform .75s var(--ease); }
-.page [data-pending="true"] { opacity: 0; transform: translateY(24px); }
-.page [data-visible="true"] { opacity: 1; transform: none; }
 @media (hover:hover) and (pointer:fine) { .textLink:hover::after { transform: scaleX(1); }.workLink:hover { background: #3149f5; }.contact:hover { background: var(--color-brand-ink); } }
 @media (min-width:861px) and (max-width:1024px) { .opening,.practice,.invitation { gap: 36px; }.expertiseGrid { gap: 32px; }.journeyDetails { gap: 28px; }.chapter { grid-template-columns: 1fr; gap: 10px; } }
 @media (max-width:860px) {
