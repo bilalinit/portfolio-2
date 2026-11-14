@@ -1,3 +1,11 @@
+.wordmark[data-font-ready="false"] { visibility: hidden; }
+.wordmark[data-font-ready="true"] { animation: fadeIn 350ms ease both; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@media (scripting: none) {
+  .wordmark[data-font-ready="false"] { visibility: visible; }
+}
+@media (prefers-reduced-motion: reduce) { .wordmark { animation: none !important; } }
+
 .statement {
   margin: 0;
   max-width: 25ch;

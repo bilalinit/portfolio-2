@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { preload } from "react-dom";
 import { usePathname } from "next/navigation";
 import { allWork, workCategories } from "@/data/projects";
 import { workPageCopy as copy, workPresentations } from "@/data/work";
@@ -15,6 +16,10 @@ export default function AllWork() {
   const pathname = usePathname();
   const activeCategory = workCategories.find((category) => pathname === `/work/category/${category.slug}`)?.label;
   const items = activeCategory ? allWork.filter((item) => item.category === activeCategory) : allWork;
+  for (const item of items.slice(0, 3)) {
+    const image = workPresentations[item.slug]?.image;
+    if (image) preload(image, { as: "image" });
+  }
   const root = useRef<HTMLElement>(null);
   const filters = useRef<HTMLElement>(null);
   const [indicator, setIndicator] = useState({ left: 0, top: 0, width: 0, ready: false });
@@ -47,7 +52,7 @@ export default function AllWork() {
     });
     return () => observer.disconnect();
   }, [activeCategory]);
-  return <><Hero compact /><main ref={root} className={styles.page}>
+  return <><Hero compact /><main ref={root} className={`${styles.page} page-enter`}>
     <header className={styles.opening}>
       <h1>{copy.title}</h1>
     </header>
@@ -62,9 +67,9 @@ export default function AllWork() {
         <Link href="/work" aria-current={!activeCategory ? "page" : undefined}><span>{copy.all}</span></Link>
         {workCategories.filter((category) => category.count > 0 || category.label === activeCategory).map((category) => <Link key={category.slug} href={`/work/category/${category.slug}`} aria-current={activeCategory === category.label ? "page" : undefined}><span>{category.label}</span></Link>)}
       </nav></div>
-      <div className={styles.projects}>{items.map((item) => <article key={item.slug} className={styles.project} data-reveal>
+      <div className={styles.projects}>{items.map((item, index) => <article key={item.slug} className={styles.project} data-reveal>
         <Link href={`/work/${item.slug}`} className={styles.projectLink} aria-label={`${copy.view} — ${item.name}`}>
-          <ProjectArtwork item={item} />
+          <ProjectArtwork item={item} priority={index < 3} />
           <div className={styles.projectHeading}>
             <h2>{item.name}</h2>
             <span className={styles.viewProject}>{copy.view}</span>

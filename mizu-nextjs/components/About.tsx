@@ -30,7 +30,7 @@ export default function About() {
     return () => observer.disconnect();
   }, []);
 
-  return <main ref={root} className={styles.page}>
+  return <main ref={root} className={`${styles.page} page-enter`}>
     <section className={styles.opening} aria-labelledby="about-title">
       <h1 id="about-title">{about.title}</h1>
       <div className={styles.introduction}>

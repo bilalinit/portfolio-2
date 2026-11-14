@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Manrope } from "next/font/google";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useMenus } from "@/components/MenuLayer";
 import { MizuMark } from "@/components/icons";
 import styles from "./Hero.module.css";
@@ -10,20 +10,12 @@ import styles from "./Hero.module.css";
 const wordmarkFont = Manrope({
   subsets: ["latin"],
   weight: "300",
-  display: "swap",
-  preload: false,
+  display: "block",
+  preload: true,
 });
 
-/* shared load-in reveal (runs once on mount, pure CSS animation). Tagged
-   `rise` so globals.css can switch it off under prefers-reduced-motion. */
-const riseIn =
-  "rise animate-[riseIn_0.9s_cubic-bezier(0.22,0.61,0.36,1)_both]";
-
-/* the four letters, so each can rise on its own beat */
-const WORDMARK = ["M", "i", "z", "u"];
-
-/* stagger step between letters, in seconds */
-const LETTER_STEP = 0.07;
+/* Preserve the existing entrance for supporting hero copy. */
+const riseIn = "rise animate-[riseIn_0.9s_cubic-bezier(0.22,0.61,0.36,1)_both]";
 
 /* hero copy — pulled out of the JSX so the layout below stays about layout */
 const tagline = ["Design that", "holds. Code", "that runs."];
@@ -113,6 +105,19 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
      triggers (mobile MENU button, desktop WORK link) */
   const menus = useMenus();
   const [scrolled, setScrolled] = useState(false);
+  const wordmark = useRef<HTMLHeadingElement>(null);
+  const [wordmarkReady, setWordmarkReady] = useState(false);
+
+  useLayoutEffect(() => {
+    if (compact || !wordmark.current) return;
+    let active = true;
+    const family = getComputedStyle(wordmark.current).fontFamily.split(",")[0];
+    const reveal = () => { if (active) setWordmarkReady(true); };
+    // Start the existing entrance only after its actual glyphs are available.
+    // A fallback font has different advances at this size and shifts MIZU sideways.
+    document.fonts.load(`300 1em ${family}`).then(reveal, reveal);
+    return () => { active = false; };
+  }, [compact]);
 
   // One CSS state controls every moving part, including the dropdown.
   // Publish it before paint so labels and clipping cannot start a frame apart.
@@ -163,7 +168,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
       {/* ── masthead strip ───────────────────────────────────────── */}
       <nav aria-label="Primary" className="masthead-row flex items-center justify-between gap-x-[clamp(16px,2vw,32px)]">
         {/* mark + wordmark */}
-        <a
+        <Link
           href="/"
           aria-label="MIZU — home"
           onClick={(e) => {
@@ -180,7 +185,7 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
             <MizuMark className="h-[0.68em] w-auto shrink-0 -translate-y-[0.04em]" />
             <span className="font-normal tracking-[-0.025em]">Mizu</span>
           </span>
-        </a>
+        </Link>
 
         {/* mid band: three stacked columns. Hidden on tablet and below —
             the hairline rule that separates them needs the width. */}
@@ -346,17 +351,9 @@ export default function Hero({ compact = false }: { compact?: boolean }) {
               it sits inside the h1 so it inherits, and it is the wordmark's
               only accessible text, so it stays selectable for anyone
               copying it. */}
-          <h1 className={`${wordmarkFont.className} m-0 select-none text-[41cqw] uppercase leading-[0.74] tracking-[-0.03em] text-brand-ink`}>
+          <h1 ref={wordmark} data-font-ready={wordmarkReady} className={`${wordmarkFont.className} ${styles.wordmark} m-0 select-none text-[41cqw] uppercase leading-[0.74] tracking-[-0.03em] text-brand-ink`}>
             <span className="sr-only select-text">Mizu</span>
-            {WORDMARK.map((letter, i) => (
-              <span
-                key={`${letter}-${i}`}
-                aria-hidden="true"
-                className={`${riseIn} inline-block [animation-delay:${0.05 + i * LETTER_STEP}s]`}
-              >
-                {letter}
-              </span>
-            ))}
+            <span aria-hidden="true">Mizu</span>
           </h1>
         </div>
 

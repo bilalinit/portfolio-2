@@ -21,4 +21,14 @@ export const homeContent = {
     { title: "Make it tangible.", description: "I turn the direction into an interface and working software, sharing progress so you can try it and give feedback along the way." },
     { title: "Get it ready to use.", description: "I test the details, prepare the deployment and walk you through the finished work, so you know how to use what we've built." },
   ],
+  servicesTitle: "Services",
+  services: [
+    { title: "Websites & web applications", description: "Business websites and custom web tools, designed and built for the people using them." },
+    { title: "E-commerce", description: "Online stores with product browsing, checkout and payment integration." },
+    { title: "AI-powered SaaS", description: "AI-powered web products with accounts, dashboards and subscription billing." },
+    { title: "AI agents & automation", description: "Assistants and workflows that connect your tools and handle routine tasks." },
+    { title: "Desktop & Android apps", description: "Focused applications for Windows and Android, built around your workflow." },
+    { title: "Product & interface design", description: "Clear layouts, thoughtful interactions and interfaces that work across screens." },
+    { title: "Technical consultation", description: "Help choosing the approach, defining the scope or reviewing an existing product." },
+  ],
 } as const;

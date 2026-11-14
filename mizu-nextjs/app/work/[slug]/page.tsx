@@ -33,7 +33,7 @@ export default async function ProjectPage({ params }: ProjectProps) {
   return <>
     <Cursor />
     <Hero compact />
-    <div className={styles.page}>
+    <div className={`${styles.page} page-enter`}>
       <main>
         <section className={styles.hero} aria-labelledby="project-title">
           <div className={styles.intro}>

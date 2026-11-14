@@ -62,5 +62,10 @@ export default function Showcase() {
       <header className={styles.processHeading} data-home-reveal><h2 id="home-process-title">{homeContent.processTitle}</h2><p>{homeContent.processIntroduction}</p></header>
       <div className={styles.steps}>{homeContent.steps.map((step) => <article key={step.title} data-home-reveal><h3>{step.title}</h3><p>{step.description}</p></article>)}</div>
     </section>
+
+    <section id="services" className={styles.services} aria-labelledby="home-services-title">
+      <h2 id="home-services-title" data-home-reveal>{homeContent.servicesTitle}</h2>
+      <ul className={styles.serviceList}>{homeContent.services.map((service) => <li key={service.title} data-home-reveal><h3>{service.title}</h3><p>{service.description}</p></li>)}</ul>
+    </section>
   </div>;
 }
