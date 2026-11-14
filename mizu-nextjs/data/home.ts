@@ -14,13 +14,11 @@ export const homeContent = {
   viewProject: "View project",
   projectChoiceLabel: "Choose a project to preview",
   projects: ["dropsync", "atlas"],
-  processTitle: "From your idea to a working product.",
-  processIntroduction: "You can bring a clear brief or just a problem to solve. I'll help shape the plan, then take it through design, development and testing.",
-  steps: [
-    { title: "Work out what matters.", description: "We talk through what you need, who it's for and what a useful first version should do. Scope, timing and cost come before the build." },
-    { title: "Make it tangible.", description: "I turn the direction into an interface and working software, sharing progress so you can try it and give feedback along the way." },
-    { title: "Get it ready to use.", description: "I test the details, prepare the deployment and walk you through the finished work, so you know how to use what we've built." },
-  ],
+  nextProjectTitle: "Start with what you have.",
+  nextProjectEmphasis: "I'll help with the rest.",
+  nextProjectDescription: "A clear brief or a rough idea. We can work out what matters, what to build and where to begin—before getting into the details.",
+  nextProjectPrompts: ["Bring an idea.", "Ask a question.", "Show me what isn't working."],
+  nextProjectAction: "Tell me about your idea",
   servicesTitle: "Services",
   services: [
     { title: "Websites & web applications", description: "Business websites and custom web tools, designed and built for the people using them." },

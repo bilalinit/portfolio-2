@@ -58,9 +58,13 @@ export default function Showcase() {
       </div>
     </section>
 
-    <section className={styles.process} aria-labelledby="home-process-title">
-      <header className={styles.processHeading} data-home-reveal><h2 id="home-process-title">{homeContent.processTitle}</h2><p>{homeContent.processIntroduction}</p></header>
-      <div className={styles.steps}>{homeContent.steps.map((step) => <article key={step.title} data-home-reveal><h3>{step.title}</h3><p>{step.description}</p></article>)}</div>
+    <section className={styles.nextProject} aria-labelledby="home-next-project-title">
+      <h2 id="home-next-project-title" data-home-reveal>{homeContent.nextProjectTitle}<span>{homeContent.nextProjectEmphasis}</span></h2>
+      <div className={styles.conversation} data-home-reveal>
+        <p>{homeContent.nextProjectDescription}</p>
+        <ul className={styles.conversationPrompts}>{homeContent.nextProjectPrompts.map((prompt) => <li key={prompt}>{prompt}</li>)}</ul>
+        <Link href="#pricing" className={`${styles.textLink} ${styles.conversationLink}`}>{homeContent.nextProjectAction}</Link>
+      </div>
     </section>
 
     <section id="services" className={styles.services} aria-labelledby="home-services-title">

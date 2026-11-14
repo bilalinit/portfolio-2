@@ -41,14 +41,14 @@
 @media (max-width:860px) { .showcase { --space: 48px; }.introduction { grid-template-columns: 1fr; gap: 36px; padding-block: 64px; }.introStatement { font-size: clamp(24px,5.2vw,32px); max-width: 46ch; }.introCopy>.textLink { margin-top: 16px; }.capabilities { max-width: 440px; width: 100%; }.capabilities ul { gap: 0 28px; }.work { grid-template-columns: 1fr; }.workDetails,.workVisual { grid-column: auto; grid-row: auto; padding-block: 32px; }.workDetails { border-left: 0; border-bottom: 1px solid rgb(8 20 35 / .16); gap: 24px; }.workVisual { gap: 28px; --project-artwork-ratio: 1.2; }.workDetails h2 { font-size: clamp(34px,7vw,48px); }.choiceDescription { font-size: 14px; }.allWork { min-height: 76px; }.projectHeading h3 { font-size: 28px; } }
 @media (prefers-reduced-motion:reduce) { .showcase *, .showcase *::after { animation: none !important; transition: none !important; }.showcase [data-pending="true"] { opacity: 1; transform: none; } }
 
-.process { padding: var(--space) var(--gutter); }
-.processHeading h2 { max-width: 22ch; }
-.processHeading p { max-width: 64ch; margin-top: 24px; font-size: clamp(16px,1.3vw,20px); line-height: 1.65; color: #666; }
-.steps { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: clamp(28px,4vw,64px); margin-top: 40px; }
-.steps article { border-top: 1px solid rgb(8 20 35 / .16); padding-top: 24px; }
-.steps h3 { font-size: clamp(23px,2.1vw,32px); font-weight: 400; line-height: 1.2; letter-spacing: -.03em; }
-.steps p { max-width: 43ch; margin-top: 18px; font-size: 15px; line-height: 1.7; color: #666; }
-@media (max-width:860px) { .processHeading p { font-size: 16px; margin-top: 20px; }.steps { grid-template-columns: 1fr; gap: 28px; margin-top: 32px; }.steps article { padding-top: 20px; }.steps p { max-width: 52ch; margin-top: 12px; } }
+.nextProject { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,.85fr); gap: clamp(48px,9vw,172px); padding: clamp(80px,9vw,144px) var(--gutter); }
+.nextProject h2 { max-width: 14ch; font-size: clamp(42px,5vw,80px); line-height: 1.08; }
+.nextProject h2 span { display: block; margin-top: .18em; color: #929a9d; }
+.conversation { padding-top: clamp(48px,8vw,128px); min-width: 0; }
+.conversation > p { max-width: 44ch; margin-bottom: 32px; font-size: clamp(16px,1.3vw,20px); line-height: 1.65; color: #666; }
+.conversationPrompts { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; font-size: clamp(22px,2vw,30px); line-height: 1.4; letter-spacing: -.025em; color: var(--color-brand-ink); }
+.conversationLink { margin-top: 28px; font-size: 16px; }
+@media (max-width:860px) { .nextProject { grid-template-columns: 1fr; gap: 36px; padding-block: 64px; }.nextProject h2 { max-width: 18ch; font-size: clamp(42px,7vw,60px); }.conversation { padding-top: 0; max-width: 580px; } }
 .services { display: grid; grid-template-columns: minmax(0,.65fr) minmax(0,1.35fr); gap: clamp(40px,6vw,100px); padding: var(--space) var(--gutter); border-top: 1px solid rgb(8 20 35 / .16); scroll-margin-top: 140px; }
 .serviceList { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 32px clamp(28px,4vw,64px); list-style: none; margin: 0; padding: 0; }
 .serviceList li { border-top: 1px solid rgb(8 20 35 / .16); padding-top: 20px; min-width: 0; }
