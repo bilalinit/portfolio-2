@@ -53,7 +53,7 @@ export default function GithubActivity() {
             const labelDay = week.find((day) => day.date.endsWith("-01")) || (column === 0 ? week[0] : undefined);
             return <g key={week[0].date}>
               {labelDay && <text x={32 + column * 14} y="12">{months[Number(labelDay.date.slice(5, 7)) - 1]}</text>}
-              {week.map((day) => <rect key={day.date} x={32 + column * 14} y={25 + day.weekday * 14} width="11" height="11" rx="2" className={styles.day} data-level={levels.indexOf(day.contributionLevel)}><title>{day.contributionCount} {day.contributionCount === 1 ? "contribution" : "contributions"} on {formatDate(day.date)}</title></rect>)}
+              {week.map((day) => <rect key={day.date} x={32 + column * 14} y={25 + day.weekday * 14} width="11" height="11" rx="2" className={styles.day} data-level={levels.indexOf(day.contributionLevel)}><title>{`${day.contributionCount} ${day.contributionCount === 1 ? "contribution" : "contributions"} on ${formatDate(day.date)}`}</title></rect>)}
             </g>;
           })}
         </svg>
