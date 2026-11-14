@@ -16,8 +16,8 @@ export const workPageCopy = {
 export const workPresentations: Record<string, { label: string; image: string; alt: string; caption: string; services: string[] }> = {
   "digital-fte": {
     label: "Support that stays connected.",
-    image: "/techflow-card.svg",
-    alt: "TechFlow artwork connecting Email, WhatsApp and web forms to triage, support and escalation agents",
+    image: "/techflow-overview-navy.svg",
+    alt: "TechFlow illustration connecting email, WhatsApp and web forms to triage, support and escalation agents with a shared CRM",
     caption: "Three channels / One support workflow",
     services: ["Agent design", "Development", "AI"],
   },
@@ -51,15 +51,15 @@ export const workPresentations: Record<string, { label: string; image: string; a
   },
   promptly: {
     label: "Your voice, in your workflow.",
-    image: "/promptly-card.svg",
-    alt: "Promptly voice recording concept with a waveform and desktop overlay",
+    image: "/promptly-overview.svg",
+    alt: "Promptly voice-to-text illustration with a waveform, a writing surface and a compact recording overlay",
     caption: "Speak / Transcribe / Paste",
     services: ["Product design", "Desktop development", "AI"],
   },
   "promptly-mobile": {
     label: "A little button. A lot less typing.",
-    image: "/promptly-mobile-card.svg",
-    alt: "Promptly Mobile concept with a floating recording button on a phone",
+    image: "/promptly-mobile-overview.svg",
+    alt: "Promptly Mobile illustration with an Android phone, floating recording control and clipboard-ready text",
     caption: "Voice to text / Android",
     services: ["Interface design", "Android development", "AI"],
   },

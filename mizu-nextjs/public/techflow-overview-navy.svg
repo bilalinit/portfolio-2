@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="960" viewBox="0 0 1440 960" fill="none">
+  <title>TechFlow — connected customer support</title>
+  <desc>A conceptual illustration of TechFlow. Email, WhatsApp and web forms connect to a triage agent, support and escalation agents, and shared customer and ticket records. This is an illustration, not a live dashboard.</desc>
+  <defs>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#081423;font-weight:400}
+      .muted{fill:#666}.card{fill:#fff;stroke:#b8b8b8;stroke-width:1.5;filter:url(#card-shadow)}
+      .icon{stroke:#081423;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+      .wire{stroke:#929292;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+    <radialGradient id="canvas" cx="52%" cy="43%" r="65%"><stop stop-color="#f4f4f4"/><stop offset="1" stop-color="#e6e6e6"/></radialGradient>
+    <filter id="card-shadow" x="-15%" y="-25%" width="130%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#081423" flood-opacity=".07"/></filter>
+    <marker id="direction" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto"><path d="m1 1 4.5 2.5L1 6" stroke="#777" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <symbol id="mail" viewBox="0 0 32 32"><rect x="3" y="6" width="26" height="20" rx="4" class="icon"/><path d="m4 8 12 10L28 8" class="icon"/></symbol>
+    <symbol id="message" viewBox="0 0 32 32"><path d="M27 15a11 11 0 0 1-15 10L5 27l2-7a11 11 0 1 1 20-5Z" class="icon"/><path d="M11 10c0 5 3 8 8 10l3-3-4-2-2 2-3-4 1-2Z" class="icon"/></symbol>
+    <symbol id="web" viewBox="0 0 32 32"><rect x="3" y="4" width="26" height="24" rx="4" class="icon"/><path d="M3 11h26M8 8h1m3 0h1M9 17h14M9 22h9" class="icon"/></symbol>
+    <symbol id="reply" viewBox="0 0 32 32"><path d="M5 5h22v18H15l-7 5v-5H5Z" class="icon"/><path d="M10 11h12M10 16h8" class="icon"/></symbol>
+    <symbol id="person" viewBox="0 0 32 32"><circle cx="16" cy="10" r="5" class="icon"/><path d="M6 28v-3a10 10 0 0 1 20 0v3" class="icon"/></symbol>
+    <symbol id="database" viewBox="0 0 32 32"><ellipse cx="16" cy="7" rx="11" ry="4" class="icon"/><path d="M5 7v18c0 5 22 5 22 0V7M5 16c0 5 22 5 22 0" class="icon"/></symbol>
+  </defs>
+  <rect width="1440" height="960" fill="url(#canvas)"/>
+  <text x="72" y="137" font-size="66" letter-spacing="-3">TechFlow</text>
+  <text x="74" y="186" font-size="25" class="muted">One conversation. Every channel.</text>
+  <path d="M72 228h1296" stroke="#c5c5c5"/>
+  <text x="1368" y="131" text-anchor="end" font-size="18" class="muted">Customer support, connected.</text>
+
+  <g class="wire">
+    <path d="M352 370h57q18 0 18 18v114q0 18 18 18h59" marker-end="url(#direction)"/>
+    <path d="M352 520h152" marker-end="url(#direction)"/>
+    <path d="M352 670h57q18 0 18-18V538q0-18 18-18"/>
+    <path d="M790 520h32q18 0 18-18V398q0-18 18-18h26" marker-end="url(#direction)"/>
+    <path d="M840 520v122q0 18 18 18h26" marker-end="url(#direction)"/>
+    <path d="M650 612v190M1115 744v58M1115 464v42q0 18 18 18h245q18 0 18 18v285q0 18-18 18h-10" stroke-dasharray="5 8" stroke="#ababab"/>
+  </g>
+  <circle cx="427" cy="520" r="5" fill="#666"/>
+  <circle cx="840" cy="520" r="5" fill="#666"/>
+
+  <rect x="72" y="318" width="280" height="104" rx="12" class="card"/>
+  <rect x="94" y="342" width="56" height="56" rx="10" fill="#f0f0f0"/>
+  <use href="#mail" x="106" y="354" width="32" height="32"/>
+  <text x="171" y="380" font-size="25" letter-spacing="-.6">Email</text>
+  <rect x="72" y="468" width="280" height="104" rx="12" class="card"/>
+  <rect x="94" y="492" width="56" height="56" rx="10" fill="#f0f0f0"/>
+  <use href="#message" x="106" y="504" width="32" height="32"/>
+  <text x="171" y="530" font-size="25" letter-spacing="-.6">WhatsApp</text>
+  <rect x="72" y="618" width="280" height="104" rx="12" class="card"/>
+  <rect x="94" y="642" width="56" height="56" rx="10" fill="#f0f0f0"/>
+  <use href="#web" x="106" y="654" width="32" height="32"/>
+  <text x="171" y="680" font-size="25" letter-spacing="-.6">Web forms</text>
+
+  <rect x="510" y="428" width="280" height="184" rx="14" fill="#081423" filter="url(#card-shadow)"/>
+  <rect x="520" y="438" width="260" height="164" rx="9" stroke="#34485b"/>
+  <g stroke="#eee" stroke-width="1.7"><circle cx="548" cy="465" r="4"/><circle cx="548" cy="487" r="4"/><circle cx="583" cy="476" r="4"/><path d="M552 465h10q7 0 7 7v4h10M552 487h10q7 0 7-7v-4"/></g>
+  <text x="756" y="482" text-anchor="end" font-size="17" style="fill:#bdbdbd">Route</text>
+  <text x="544" y="548" font-size="34" letter-spacing="-1" style="fill:#fff">Triage agent</text>
+  <text x="544" y="581" font-size="18" style="fill:#c8c8c8">Understand and route</text>
+
+  <rect x="902" y="308" width="478" height="168" rx="12" fill="#d8d8d8" stroke="#c9c9c9"/>
+  <rect x="890" y="296" width="478" height="168" rx="12" class="card"/>
+  <rect x="910" y="316" width="52" height="52" rx="10" fill="#f0f0f0"/>
+  <use href="#reply" x="920" y="326" width="32" height="32"/>
+  <text x="976" y="352" font-size="31" letter-spacing="-.7">Support agent</text>
+  <text x="920" y="402" font-size="19" class="muted">Answer questions. Update tickets.</text>
+  <text x="920" y="431" font-size="19" class="muted">Keep the conversation in context.</text>
+  <rect x="902" y="588" width="478" height="168" rx="12" fill="#d8d8d8" stroke="#c9c9c9"/>
+  <rect x="890" y="576" width="478" height="168" rx="12" class="card"/>
+  <rect x="910" y="596" width="52" height="52" rx="10" fill="#f0f0f0"/>
+  <use href="#person" x="920" y="606" width="32" height="32"/>
+  <text x="976" y="632" font-size="31" letter-spacing="-.7">Escalation agent</text>
+  <text x="920" y="682" font-size="19" class="muted">Pass complex cases to a person,</text>
+  <text x="920" y="711" font-size="19" class="muted">with the history already attached.</text>
+
+  <rect x="510" y="802" width="858" height="86" rx="12" class="card"/>
+  <use href="#database" x="540" y="829" width="32" height="32"/>
+  <text x="594" y="854" font-size="25" letter-spacing="-.5">Shared CRM</text>
+  <path d="M793 825v40" stroke="#d0d0d0"/>
+  <text x="825" y="852" font-size="20" class="muted">Customer history and ticket records</text>
+</svg>
