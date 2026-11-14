@@ -27,6 +27,10 @@ export default function Showcase() {
   return <div ref={root} className={styles.showcase}>
     <section className={styles.introduction} aria-labelledby="home-intro-title">
       <h2 id="home-intro-title" className="sr-only">{homeContent.title}</h2>
+      <div className={styles.introMedia}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/design-development-workspace.webp" alt="Illustrative workspace with a laptop and paper interface sketches" width="1920" height="768" decoding="async" />
+      </div>
       <div className={styles.introCopy} data-home-reveal>
         <p className={styles.introStatement}>{homeContent.statement.map((part, index) => part.emphasis ? <strong key={index}>{part.text}</strong> : <span key={index}>{part.text}</span>)}</p>
         <Link href="/about" className={styles.textLink}><span>{homeContent.about}</span></Link>
@@ -35,6 +39,15 @@ export default function Showcase() {
         <h3 id="home-capabilities-title">{homeContent.capabilitiesTitle}</h3>
         <ul>{homeContent.capabilities.map((capability) => <li key={capability}>{capability}</li>)}</ul>
       </aside>
+    </section>
+
+    <section className={styles.nextProject} aria-labelledby="home-next-project-title">
+      <h2 id="home-next-project-title" data-home-reveal>{homeContent.nextProjectTitle}<span>{homeContent.nextProjectEmphasis}</span></h2>
+      <div className={styles.conversation} data-home-reveal>
+        <p>{homeContent.nextProjectDescription}</p>
+        <ul className={styles.conversationPrompts}>{homeContent.nextProjectPrompts.map((prompt) => <li key={prompt}>{prompt}</li>)}</ul>
+        <Link href="#pricing" className={`${styles.textLink} ${styles.conversationLink}`}>{homeContent.nextProjectAction}</Link>
+      </div>
     </section>
 
     <section id="work" className={styles.work} aria-labelledby="home-work-title">
@@ -55,15 +68,6 @@ export default function Showcase() {
           <div className={styles.previewFrame}>{projects.map((project, index) => <div key={project.slug} className={styles.previewImage} data-active={selectedProject === index} aria-hidden={selectedProject !== index}><ProjectArtwork item={project} /></div>)}</div>
           <div className={styles.projectHeading} aria-live="polite"><h3>{activeProject.name}</h3><span className={styles.textLink}>{homeContent.viewProject}</span></div>
         </Link>
-      </div>
-    </section>
-
-    <section className={styles.nextProject} aria-labelledby="home-next-project-title">
-      <h2 id="home-next-project-title" data-home-reveal>{homeContent.nextProjectTitle}<span>{homeContent.nextProjectEmphasis}</span></h2>
-      <div className={styles.conversation} data-home-reveal>
-        <p>{homeContent.nextProjectDescription}</p>
-        <ul className={styles.conversationPrompts}>{homeContent.nextProjectPrompts.map((prompt) => <li key={prompt}>{prompt}</li>)}</ul>
-        <Link href="#pricing" className={`${styles.textLink} ${styles.conversationLink}`}>{homeContent.nextProjectAction}</Link>
       </div>
     </section>
 

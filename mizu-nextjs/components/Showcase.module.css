@@ -1,11 +1,15 @@
 .showcase { --gutter: clamp(18px,2.4vw,40px); --space: clamp(56px,6vw,100px); --ease: cubic-bezier(.22,.61,.36,1); background: var(--color-surface,#fafafa); color: var(--color-ink); }
 .showcase h2 { font-size: clamp(36px,4vw,64px); font-weight: 400; line-height: 1.1; letter-spacing: -.04em; color: var(--color-brand-ink); }
-.introduction { display: grid; grid-template-columns: minmax(0,1fr) minmax(240px,330px); align-items: center; gap: clamp(48px,7vw,128px); padding: clamp(72px,7vw,112px) var(--gutter); background: #101316; color: var(--color-on-dark,#fff); }
-.introCopy { min-width: 0; }
-.introStatement { max-width: 46ch; font-size: clamp(24px,2.2vw,42px); line-height: 1.25; letter-spacing: -.025em; color: #a8a8a8; }
+.introduction { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0,1fr) minmax(240px,330px); align-items: end; gap: clamp(48px,7vw,128px); min-height: clamp(600px,49vw,820px); padding: clamp(320px,28vw,440px) var(--gutter) clamp(48px,5vw,80px); background: #101316; color: var(--color-on-dark,#fff); }
+.introCopy { position: relative; z-index: 1; min-width: 0; }
+.introMedia { position: absolute; inset: 0; overflow: hidden; z-index: -1; }
+.introMedia::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg,rgb(16 19 22 / .04) 10%,rgb(16 19 22 / .24) 35%,rgb(16 19 22 / .87) 67%,rgb(16 19 22 / .98) 100%); }
+.introMedia img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 44%; }
+.introStatement { max-width: 46ch; font-size: clamp(24px,2.2vw,42px); line-height: 1.25; letter-spacing: -.025em; color: #c8cacc; }
 .introStatement strong { font-weight: 400; color: var(--color-on-dark,#fff); }
 .introCopy>.textLink { margin-top: 16px; color: var(--color-on-dark,#fff); }
-.capabilities h3 { font-size: 15px; line-height: 1.5; font-weight: 400; color: #a8a8a8; margin-bottom: 12px; }
+.capabilities { position: relative; z-index: 1; }
+.capabilities h3 { font-size: 15px; line-height: 1.5; font-weight: 400; color: #c8cacc; margin-bottom: 12px; }
 .capabilities ul { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 24px; list-style: none; margin: 0; padding: 0; }
 .capabilities li { border-top: 1px solid rgb(255 255 255 / .18); padding: 8px 0; font-size: 14px; line-height: 1.5; }
 .textLink { display: inline-flex; align-items: center; min-height: 44px; width: fit-content; position: relative; font-size: 14px; text-decoration: none; color: var(--color-brand-ink); }
@@ -54,5 +58,6 @@
 .serviceList li { border-top: 1px solid rgb(8 20 35 / .16); padding-top: 20px; min-width: 0; }
 .serviceList h3 { font-size: clamp(21px,1.7vw,27px); font-weight: 400; line-height: 1.25; letter-spacing: -.025em; color: var(--color-brand-ink); }
 .serviceList p { max-width: 42ch; margin-top: 12px; font-size: 15px; line-height: 1.65; color: #666; }
+@media (max-width:860px) { .introduction { min-height: 0; align-items: center; }.introMedia { position: relative; inset: auto; grid-column: 1 / -1; margin: -64px calc(-1 * var(--gutter)) 0; z-index: 0; }.introMedia::after { display: none; }.introMedia img { height: clamp(240px,45vw,360px); }.introStatement,.capabilities h3 { color: #a8a8a8; } }
 @media (max-width:1024px) { .services { grid-template-columns: 1fr; gap: 36px; } }
 @media (max-width:600px) { .serviceList { grid-template-columns: 1fr; gap: 28px; } }
